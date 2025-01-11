@@ -1,0 +1,59 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rgwfuncs"
+version = "0.0.1"
+authors = [
+  { name = "Ryan Gerard Wilson", email = "ryangerardwilson@gmail.com" },
+]
+description = "A functional programming paradigm for mathematical modelling and data science"
+readme = "README.md"
+requires-python = ">=3.12"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "pandas",
+    "numpy<2.0.0",
+    "pymssql",
+    "mysql-connector-python",
+    "clickhouse-connect",
+    "google-cloud-bigquery",
+    "google-auth",
+    "google-cloud-storage",
+    "google-auth-oauthlib", 
+    "google-auth-httplib2",
+    "google-api-python-client",
+    "pandas-gbq",
+    "xgboost",
+    "matplotlib",
+    "pillow",
+    "scipy",
+    "seaborn",
+    "scikit-learn",
+    "pyarrow",
+    "distributed",
+    "requests",
+    "pymysql",
+    "openai",
+    "filetype",
+    "tqdm",
+    "requests-html",
+    "openai-whisper",
+    "slack-sdk",
+    "lxml[html_clean]",
+]
+
+dynamic = ["scripts"]
+
+[project.urls]
+Homepage = "https://github.com/ryangerardwilson/rgwfuncs"
+Issues = "https://github.com/ryangerardwilson/rgwfuncs"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
