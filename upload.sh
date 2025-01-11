@@ -38,7 +38,7 @@ upload_package() {
 # Step 4: Verify by installing the specific version
 verify_package() {
     local new_version=$1
-    echo "Execute this command after a minute to verify the new version $new_version: pip3 install --upgrade rgwml"
+    echo "Execute this command after a minute to verify the new version $new_version: pip3 install --upgrade rgwfunc"
 }
 
 # Execute the steps
