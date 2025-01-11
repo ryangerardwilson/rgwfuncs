@@ -2,298 +2,976 @@ RGWML
 
 ***By Ryan Gerard Wilson (https://ryangerardwilson.com)***
 
-***Manipulate data with code that is less a golden retriever, and more a Samurai's sword***
-
-1. Install
-----------
-    
-    sudo apt update
-    sudo apt install ffmpeg
-    pip3 install --upgrade rgwml
-
-2. Import & Load Data
----------------------
-
-    import rgwml as r
-
-    # For 99% use cases a Pandas df is good enough
-    d1 = r.p()
-    d1.fp('/path/to/your/file')
-
-    # For the remaining 1%
-    d2 = r.d()
-    d2.fp('/path/to/your/file')
-    
-3. Create a rgwml.config file
------------------------------
-
-An rgwml.config file is required for MSSQL, CLICKHOUSE, MYSQL, GOOGLE BIG QUERY, OPEN AI, NETLIFY and VERCEL integrations. It allows you to namespace your db connections, so you can query like this:
-
-    import rgwml as r
-    d = r.p()
-    d.fq('mysql_db2','SELECT * FROM your_table')
-
-Set out below is the format of a rgwml.config file. Place it anywhere in your Desktop, Downloads or Documents directories.
-
-    {
-      "db_presets" : [
-        {
-          "name": "mssql_db9",
-          "db_type": "mssql",
-          "host": "",
-          "username": "",
-          "password": "",
-          "database": ""
-        },
-        {
-          "name": "clickhouse_db7",
-          "db_type": "clickhouse",
-          "host": "",
-          "username": "",
-          "password": "",
-          "database": ""
-        },
-        {
-          "name": "mysql_db2",
-          "db_type": "mysql",
-          "host": "",
-          "username": "",
-          "password": "",
-          "database": ""
-        },
-        {
-          "name": "bq_db1",
-          "db_type": "google_big_query",
-          "json_file_path": "",
-          "project_id": ""
-        }
-      ],
-    "vm_presets": [
-        {
-          "name": "main_server",
-          "host": "",
-          "ssh_user": "",
-          "ssh_key_path": ""
-        }
-      ],
-    "cloud_storage_presets": [
-        {
-          "name": "gcs_bucket_name",
-          "credential_path": "path/to/your/credentials.json"
-        }
-      ],
-    "open_ai_key": "",
-    "netlify_token": "",
-    "vercel_token": ""
-  }
-
-4. `r.p()` Class Methods
-------------------------
-
-Instantiate this class by `d = r.p()`
-
-### 4.1. LOAD
-
-    # From raw data
-    d.frd(['col1','col2'],[[1,2,3],[4,5,6]])
-
-    # From path
-    d.fp('/absolute/path')
-
-    # From Directory (select from your last 7 recently modified files in your Desktop/Downloads/Documents directories)
-    d.fd()
-
-    # From query
-    d.fq('rgwml_config_db_preset_name','SELECT * FROM your_table')
+# RGWFuncs
 
-    # FROM chunkable query
-    d.fcq('rgwml_config_db_preset_name', 'SELECT * FROM your_table', chunk_size)
-    
-### 4.2. INSPECT
+This library provides a variety of functions for manipulating and analyzing pandas DataFrames. 
 
-    # Describe
-    d.d()
+--------------------------------------------------------------------------------
 
-    # Print
-    d.pr()
+## Installation
 
-    # First n rows
-    d.fnr('n')
+Install the package using:
+```bash
+pip install rgwfuncs
+```
 
-    # Last n rows
-    d.lnr('n')
+--------------------------------------------------------------------------------
 
-    # Top n unique values for specified columns
-    d.tnuv(n, ['col1', 'col2'])
+## Basic Usage
 
-    # Bottom n unique values for specified columns
-    d.bnuv(n, ['col1', 'col2'])
+Import the library:
+    ```
+    import rgwfuncs
+    ```
 
-    # Is empty. Returns boolean, not chainable.
-    d.ie()
+View available function docstrings in alphabetical order:
+    ```
+    rgwfuncs.docs()
+    ```
 
-    # Memory usage print.
-    d.mem()
+View specific docstrings by providing a filter (comma-separated). For example, to display docstrings about "numeric_clean":
+    ```
+    rgwfuncs.docs(method_type_filter='numeric_clean')
+    ```
 
-    # Print correlation
-    d.prc([('column1','column2'), ('column3','column4')])
+To display all docstrings, use:
+    ```
+    rgwfuncs.docs(method_type_filter='*')
+    ```
 
-    # Print n frequency linear. Optional: order_by (str), which has options: ASC, DESC, FREQ_ASC, FREQ_DESC (default)
-    d.pnfl(5,'Column1,Columns')
+--------------------------------------------------------------------------------
 
-    # Print n frequency cascading. Optional: order_by (str), which has options: ASC, DESC, FREQ_ASC, FREQ_DESC (default)
-    d.pnfc(5,'Column1,Columns')
+## Function References and Syntax Examples
 
-### 4.3. APPEND
+Below is a quick reference of available functions, their purpose, and basic usage examples.
 
-    # Append boolean classification column
-    d.abc('column1 > 30 and column2 < 50', 'new_column_name')
+### 1. docs
+Print a list of available function names in alphabetical order. If a filter is provided, print the matching docstrings.
 
-    # Append DBSCAN cluster column. Optional: visualize (boolean)
-    d.adbscancc('Column1,Column2', 'new_cluster_column_name', eps=0.5, min_samples=5, visualize=True)
+• Parameters:
+  - `method_type_filter` (str): Optional, comma-separated to select docstring types, or '*' for all.
 
-    # Append n-cluster column. Available operations: KMEANS/ AGGLOMERATIVE/ MEAN_SHIFT/ GMM/ SPECTRAL/ BIRCH. Optional: visualize (boolean), n_cluster_finding_method (str) i.e. ELBOW/ SILHOUETTE/ FIXED:n (specify a number of n clusters).
-    d.ancc('Column1,Column2', 'KMEANS', 'new_cluster_column_name', n_clusters_finding_method='FIXED:5', visualize=True)
+• Example:
 
-    # Append percentile classification column
-    d.apc('0,25,50,75,100', 'column_to_be_analyzed', 'new_column_name')
+    import rgwfuncs
+    rgwfuncs.docs(method_type_filter='numeric_clean,limit_dataframe')
 
-    # Append ranged classification column
-    d.arc('0,500,1000,2000,5000,10000,100000,1000000', 'column_to_be_analyzed', 'new_column_name')
+--------------------------------------------------------------------------------
 
-    # Append ranged date classification column
-    d.ardc('2024-01-01,2024-02-01,2024-03-01', 'date_column', 'new_date_classification')    
+### 2. `numeric_clean`
+Cleans the numeric columns in a DataFrame according to specified treatments.
 
-    # Append count of timestamps after reference time. Requires values in YYYY-MM-DD or YYYY-MM-DD HH:MM:SS format.
-    d.atcar('comma_separated_timestamps_column', 'reference_date_or_timestamps_column', 'new_column_count_after_reference')
+• Parameters:
+  - df (pd.DataFrame): The DataFrame to clean.
+  - `column_names` (str): A comma-separated string containing the names of the columns to clean.
+  - `column_type` (str): The type to convert the column to (`INTEGER` or `FLOAT`).
+  - `irregular_value_treatment` (str): How to treat irregular values (`NAN`, `TO_ZERO`, `MEAN`).
 
-    # Append count of timestamps before reference time. Requires values in YYYY-MM-DD or YYYY-MM-DD HH:MM:SS format.
-    d.atcbr('comma_separated_timestamps_column', 'reference_date_or_timestamp_column', 'new_column_count_before_reference')
+• Returns:
+  - pd.DataFrame: A new DataFrame with cleaned numeric columns.
 
-### 4.4. DOCUMENTATION
+• Example:
 
-    # Prints docs. Optional parameter: method_type_filter (str) egs. 'APPEND, PLOT'
-    d.doc()
+    from rgwfuncs import numeric_clean
+    import pandas as pd
 
-### 4.5. JOINS
+    # Sample DataFrame
+    df = pd.DataFrame({
+        'col1': [1, 2, 3, 'x', 4],
+        'col2': [10.5, 20.1, 'not_a_number', 30.2, 40.8]
+    })
 
-    # Union join
-    d.uj(d2)
+    # Clean numeric columns
+    df_cleaned = numeric_clean(df, 'col1,col2', 'FLOAT', 'MEAN')
+    print(df_cleaned)
 
-    # Bag union join
-    d.buj(d2)
+--------------------------------------------------------------------------------
 
-    # Left join
-    d.lj(d2,'table_a_id','table_b_id')
+### 3. `limit_dataframe`
+Limit the DataFrame to a specified number of rows.
 
-    # Right join
-    d.rj(d2,'table_a_id','table_b_id')
+• Parameters:
+  - df (pd.DataFrame): The DataFrame to limit.
+  - `num_rows` (int): The number of rows to retain.
 
-### 4.6. PERSIST
+• Returns:
+  - pd.DataFrame: A new DataFrame limited to the specified number of rows.
 
-    # Save (saves as csv (default) or h5, to desktop (default) or path)
-    d.s('/filename/or/path')
-    d.s() #If the dataframe was loaded from a source with an absolute path, calling the s method without an argument will save at the same path
+• Example:
+    ``` 
+    from rgwfuncs import limit_dataframe
+    import pandas as pd
 
-### 4.7. PLOT
+    df = pd.DataFrame({'A': range(10), 'B': range(10, 20)})
+    df_limited = limit_dataframe(df, 5)
+    print(df_limited)
+    ```
+--------------------------------------------------------------------------------
+
+### 4. `from_raw_data`
+Create a DataFrame from raw data.
+
+• Parameters:
+  - headers (list): A list of column headers.
+  - data (list of lists): A two-dimensional list of data.
+
+• Returns:
+  - pd.DataFrame: A DataFrame created from the raw data.
+
+• Example:
+    ```
+    from rgwfuncs import from_raw_data
+
+    headers = ["Name", "Age"]
+    data = [
+        ["Alice", 30],
+        ["Bob", 25],
+        ["Charlie", 35]
+    ]
+
+    df = from_raw_data(headers, data)
+    print(df)
+    ```
+--------------------------------------------------------------------------------
+
+### 5. `append_rows`
+Append rows to the DataFrame.
+
+• Parameters:
+  - df (pd.DataFrame): The original DataFrame.
+  - rows (list of lists): Each inner list represents a row to be appended.
+
+• Returns:
+  - pd.DataFrame: A new DataFrame with appended rows.
+
+• Example:
+    ```
+    from rgwfuncs import append_rows
+    import pandas as pd
+
+    df = pd.DataFrame({'Name': ['Alice'], 'Age': [30]})
+    new_rows = [
+        ['Bob', 25],
+        ['Charlie', 35]
+    ]
+    df_appended = append_rows(df, new_rows)
+    print(df_appended)
+    ```
+--------------------------------------------------------------------------------
+
+### 6. `append_columns`
+Append new columns to the DataFrame with None values.
+
+• Parameters:
+  - df (pd.DataFrame): The original DataFrame.
+  - `col_names` (list or comma-separated string): The names of the columns to add.
+
+• Returns:
+  - pd.DataFrame: A new DataFrame with the new columns appended.
+
+• Example:
+    ```
+    from rgwfuncs import append_columns
+    import pandas as pd
+
+    df = pd.DataFrame({'Name': ['Alice', 'Bob'], 'Age': [30, 25]})
+    df_new = append_columns(df, ['Salary', 'Department'])
+    print(df_new)
+    ```
+--------------------------------------------------------------------------------
+
+### 7. `update_rows`
+Update specific rows in the DataFrame based on a condition.
+
+• Parameters:
+  - df (pd.DataFrame): The original DataFrame.
+  - condition (str): A query condition to identify rows for updating.
+  - updates (dict): A dictionary with column names as keys and new values as values.
+
+• Returns:
+  - pd.DataFrame: A new DataFrame with updated rows.
+
+• Example:
+    ```
+    from rgwfuncs import update_rows
+    import pandas as pd
+
+    df = pd.DataFrame({'Name': ['Alice', 'Bob'], 'Age': [30, 25]})
+    df_updated = update_rows(df, "Name == 'Alice'", {'Age': 31})
+    print(df_updated)
+    ```
+--------------------------------------------------------------------------------
+
+### 8. `delete_rows`
+Delete rows from the DataFrame based on a condition.
+
+• Parameters:
+  - df (pd.DataFrame): The original DataFrame.
+  - condition (str): A query condition to identify rows for deletion.
+
+• Returns:
+  - pd.DataFrame: The DataFrame with specified rows deleted.
+
+• Example:
+    ```
+    from rgwfuncs import delete_rows
+    import pandas as pd
+
+    df = pd.DataFrame({'Name': ['Alice', 'Bob'], 'Age': [30, 25]})
+    df_deleted = delete_rows(df, "Age < 28")
+    print(df_deleted)
+    ```
+--------------------------------------------------------------------------------
+
+### 9. `drop_duplicates`
+Drop duplicate rows in the DataFrame, retaining the first occurrence.
+
+• Parameters:
+  - df (pd.DataFrame): The DataFrame from which duplicates will be dropped.
+
+• Returns:
+  - pd.DataFrame: A new DataFrame with duplicates removed.
+
+• Example:
+    ```
+    from rgwfuncs import drop_duplicates
+    import pandas as pd
+
+    df = pd.DataFrame({'A': [1,1,2,2], 'B': [3,3,4,4]})
+    df_no_dupes = drop_duplicates(df)
+    print(df_no_dupes)
+    ```
+--------------------------------------------------------------------------------
+
+### 10. `drop_duplicates_retain_first`
+Drop duplicate rows based on specified columns, retaining the first occurrence.
+
+• Parameters:
+  - df (pd.DataFrame): The DataFrame from which duplicates will be dropped.
+  - columns (str): Comma-separated string with column names used to identify duplicates.
+
+• Returns:
+  - pd.DataFrame: A new DataFrame with duplicates removed.
+
+• Example:
+    ```
+    from rgwfuncs import drop_duplicates_retain_first
+    import pandas as pd
+
+    df = pd.DataFrame({'A': [1,1,2,2], 'B': [3,3,4,4]})
+    df_no_dupes = drop_duplicates_retain_first(df, 'A')
+    print(df_no_dupes)
+    ```
+--------------------------------------------------------------------------------
+
+### 11. `drop_duplicates_retain_last`
+Drop duplicate rows based on specified columns, retaining the last occurrence.
+
+• Parameters:
+  - df (pd.DataFrame): The DataFrame from which duplicates will be dropped.
+  - columns (str): Comma-separated string with column names used to identify duplicates.
+
+• Returns:
+  - pd.DataFrame: A new DataFrame with duplicates removed.
+
+• Example:
+    ```
+    from rgwfuncs import drop_duplicates_retain_last
+    import pandas as pd
+
+    df = pd.DataFrame({'A': [1,1,2,2], 'B': [3,3,4,4]})
+    df_no_dupes = drop_duplicates_retain_last(df, 'A')
+    print(df_no_dupes)
+    ```
+
+--------------------------------------------------------------------------------
+
+### 12. `load_data_from_query`
+Load data from a database query into a DataFrame based on a configuration preset.
+
+• Parameters:
+  - `db_preset_name` (str): Name of the database preset in the config file.
+  - query (str): The SQL query to execute.
+  - `config_file_name` (str): Name of the configuration file (default: "rgwml.config").
+
+• Returns:
+  - pd.DataFrame: A DataFrame containing the query result.
+
+• Example:
+    ```
+    from rgwfuncs import load_data_from_query
+
+    df = load_data_from_query(
+        db_preset_name="MyDBPreset",
+        query="SELECT * FROM my_table",
+        config_file_name="rgwml.config"
+    )
+    print(df)
+    ```
 
-    # Plot correlation heatmap for the specified columns. Optional param: image_save_path (str)
-    d.pcr(y='Column1, Column2, Column3')
+--------------------------------------------------------------------------------
 
-    # Plot distribution histograms for the specified columns. Optional param: image_save_path (str)
-    d.pdist(y='Column1, Column2, Column3')
+### 13. `load_data_from_path`
+Load data from a file into a DataFrame based on the file extension.
 
-    # Plot line chart. Optional param: x (str), i.e. a single column name for the x axis eg. 'Column5', image_save_path (str)
-    d.plc(y='Column1, Column2, Column3')
+• Parameters:
+  - `file_path` (str): The absolute path to the data file.
+
+• Returns:
+  - pd.DataFrame: A DataFrame containing the loaded data.
+
+• Example:
+    ```
+    from rgwfuncs import load_data_from_path
+
+    df = load_data_from_path("/absolute/path/to/data.csv")
+    print(df)
+    ```
 
-    # Plot Q-Q plots for the specified columns. Optional param: image_save_path (str)
-    d.pqq(y='Column1, Column2, Column3')
+--------------------------------------------------------------------------------
 
-### 4.8. PREDICT
+### 14. `load_data_from_sqlite_path`
+Execute a query on a SQLite database file and return the results as a DataFrame.
 
-    # Append XGB training labels based on a ratio string. Specify a ratio a:b:c to split into TRAIN, VALIDATE and TEST, or a:b to split into TRAIN and TEST.
-    d.axl('70:20:10')
+• Parameters:
+  - `sqlite_path` (str): The absolute path to the SQLite database file.
+  - query (str): The SQL query to execute.
 
-    # Append XGB regression predictions. Assumes labelling by the .axl() method. Optional params: boosting_rounds (int), model_path (str)
-    d.axlinr('target_column','feature1, feature2, feature3','prediction_column_name')
+• Returns:
+  - pd.DataFrame: A DataFrame containing the query results.
+
+• Example:
+    ```
+    from rgwfuncs import load_data_from_sqlite_path
+
+    df = load_data_from_sqlite_path("/path/to/database.db", "SELECT * FROM my_table")
+    print(df)
+    ```
+
+--------------------------------------------------------------------------------
 
-    # Append XGB logistic regression predictions. Assumes labeling by the .axl() method. Optional params: boosting_rounds (int), model_path (str)
-    d.axlogr('target_column','feature1, feature2, feature3','prediction_column_name')
+### 15. `first_n_rows`
+Display the first n rows of the DataFrame (prints out in dictionary format).
 
-### 4.9. TINKER
+• Parameters:
+  - df (pd.DataFrame)
+  - n (int): Number of rows to display.
 
-    # Cascade sort by specified columns.
-    d.cs(['Column1', 'Column2'])
+• Example:
+    ```
+    from rgwfuncs import first_n_rows
+    import pandas as pd
 
-    # Filter
-    d.f("col1 > 100 and Col1 == Col3 and Col5 == 'XYZ'")
+    df = pd.DataFrame({'A': [1,2,3], 'B': [4,5,6]})
+    first_n_rows(df, 2)
+    ```
 
-    # Filter Indian Mobiles
-    d.fim('mobile')
+--------------------------------------------------------------------------------
 
-    # Filter Indian Mobiles (complement)
-    d.fimc('mobile')
+### 16. `last_n_rows`
+Display the last n rows of the DataFrame (prints out in dictionary format).
 
-    # Make numerically parseable by defaulting to zero for specified column
-    d.mnpdz(['Column1', Column2])
+• Parameters:
+  - df (pd.DataFrame)
+  - n (int): Number of rows to display.
 
-    # Rename columns
-    d.rnc({'old_col1': 'new_col1', 'old_col2': 'new_col2'})
+• Example:
+    ```
+    from rgwfuncs import last_n_rows
+    import pandas as pd
 
-### 4.10. TRANSFORM
+    df = pd.DataFrame({'A': [1,2,3,4,5], 'B': [6,7,8,9,10]})
+    last_n_rows(df, 2)
+    ```
 
-    # Group. Permits multiple aggregations on the same column. Available agg options: sum, mean, min, max, count, size, std, var, median, css (comma-separated strings), etc.
-    d.(['group_by_columns'], ['column1::sum', 'column1::count', 'column3::sum'])
+--------------------------------------------------------------------------------
 
-    # Pivot. Optional param: seg_columns. Available agg options: sum, mean, min, max, count, size, std, var, median, etc.
-    d.p(['group_by_cols'], 'values_to_agg_col', 'sum', ['seg_columns'])
+### 17. `top_n_unique_values`
+Print the top n unique values for specified columns in the DataFrame.
 
-5. `r.d()` Methods
-------------------
+• Parameters:
+  - df (pd.DataFrame): The DataFrame to evaluate.
+  - n (int): Number of top values to display.
+  - columns (list): List of columns for which to display top unique values.
 
-Instantiate this class by `d = r.d()`
+• Example:
+    ```
+    from rgwfuncs import top_n_unique_values
+    import pandas as pd
 
-### 5.1. LOAD
+    df = pd.DataFrame({'Cities': ['NY', 'LA', 'NY', 'SF', 'LA', 'LA']})
+    top_n_unique_values(df, 2, ['Cities'])
+    ```
 
-    # From raw data
-    d.frd(['col1','col2'],[[1,2,3],[4,5,6]])
+--------------------------------------------------------------------------------
 
-    # From path
-    d.fp('/absolute/path')
+### 18. `bottom_n_unique_values`
+Print the bottom n unique values for specified columns in the DataFrame.
 
-### 5.2. INSPECT
-    
-    # Print
-    d.pr()
+• Parameters:
+  - df (pd.DataFrame)
+  - n (int)
+  - columns (list)
 
-### 5.3. DOCUMENTATION
+• Example:
+    ```
+    from rgwfuncs import bottom_n_unique_values
+    import pandas as pd
 
-    # Prints docs. Optional parameter: method_type_filter (str) egs. 'APPEND, PLOT'
-    d.doc()
+    df = pd.DataFrame({'Cities': ['NY', 'LA', 'NY', 'SF', 'LA', 'LA']})
+    bottom_n_unique_values(df, 1, ['Cities'])
+    ```
 
-### 5.4. JOINS
+--------------------------------------------------------------------------------
 
-    # Union join
-    d.uj(d2)
+### 19. `print_correlation`
+Print correlation for multiple pairs of columns in the DataFrame.
 
-### 5.5. PERSIST
-    
-    # Save (saves as csv (default) or h5, to desktop (default) or path)
-    d.s('/filename/or/path')
+• Parameters:
+  - df (pd.DataFrame)
+  - `column_pairs` (list of tuples): E.g., `[('col1','col2'), ('colA','colB')]`.
 
-### 5.6. TINKER
-    
-    # Filter Indian Mobiles
-    d.fim('mobile')
+• Example:
+    ```
+    from rgwfuncs import print_correlation
+    import pandas as pd
 
-    # Filter Indian Mobiles (complement)
-    d.fimc('mobile')
+    df = pd.DataFrame({
+        'col1': [1,2,3,4,5],
+        'col2': [2,4,6,8,10],
+        'colA': [10,9,8,7,6],
+        'colB': [5,4,3,2,1]
+    })
 
-### 5.7. TRANSFORM
+    pairs = [('col1','col2'), ('colA','colB')]
+    print_correlation(df, pairs)
+    ```
 
-    # Group. Permits multiple aggregations on the same column. Available agg options: sum, mean, min, max, count, size, std, var, median, css (comma-separated strings), etc.
-    d.(['group_by_columns'], ['column1::sum', 'column1::count', 'column3::sum'])
+--------------------------------------------------------------------------------
 
-    # Pivot. Optional param: seg_columns. Available agg options: sum, mean, min, max, count, size, std, var, median, etc.
-    d.p(['group_by_cols'], 'values_to_agg_col', 'sum', ['seg_columns'])
+### 20. `print_memory_usage`
+Print the memory usage of the DataFrame in megabytes.
+
+• Parameters:
+  - df (pd.DataFrame)
+
+• Example:
+    ```
+    from rgwfuncs import print_memory_usage
+    import pandas as pd
+
+    df = pd.DataFrame({'A': range(1000)})
+    print_memory_usage(df)
+    ```
+
+--------------------------------------------------------------------------------
+
+### 21. `filter_dataframe`
+Return a new DataFrame filtered by a given query expression.
+
+• Parameters:
+  - df (pd.DataFrame)
+  - `filter_expr` (str)
+
+• Returns:
+  - pd.DataFrame
+
+• Example:
+    ```
+    from rgwfuncs import filter_dataframe
+    import pandas as pd
+
+    df = pd.DataFrame({
+        'Name': ['Alice', 'Bob', 'Charlie'],
+        'Age': [30, 20, 25]
+    })
+
+    df_filtered = filter_dataframe(df, "Age > 23")
+    print(df_filtered)
+    ```
+
+--------------------------------------------------------------------------------
+
+### 22. `filter_indian_mobiles`
+Filter and return rows containing valid Indian mobile numbers in the specified column.
+
+• Parameters:
+  - df (pd.DataFrame)
+  - `mobile_col` (str): The column name with mobile numbers.
+
+• Returns:
+  - pd.DataFrame
+
+• Example:
+    ```
+    from rgwfuncs import filter_indian_mobiles
+    import pandas as pd
+
+    df = pd.DataFrame({'Phone': ['9876543210', '12345', '7000012345']})
+    df_indian = filter_indian_mobiles(df, 'Phone')
+    print(df_indian)
+    ```
+
+--------------------------------------------------------------------------------
+
+### 23. `print_dataframe`
+Print the entire DataFrame and its column types. Optionally print a source path.
+
+• Parameters:
+  - df (pd.DataFrame)
+  - source (str, optional)
+
+• Example:
+    ```
+    from rgwfuncs import print_dataframe
+    import pandas as pd
+
+    df = pd.DataFrame({'Name': ['Alice'], 'Age': [30]})
+    print_dataframe(df, source='SampleData.csv')
+    ```
+
+--------------------------------------------------------------------------------
+
+### 24. `send_dataframe_via_telegram`
+Send a DataFrame via Telegram using a specified bot configuration.
+
+• Parameters:
+  - df (pd.DataFrame)
+  - `bot_name` (str)
+  - message (str)
+  - `as_file` (bool)
+  - `remove_after_send` (bool)
+
+• Example:
+    ```
+    from rgwfuncs import send_dataframe_via_telegram
+
+    # Suppose your bot config is in "rgwml.config" under [TelegramBots] section
+    df = ...  # Some DataFrame
+    send_dataframe_via_telegram(
+        df,
+        bot_name='MyTelegramBot',
+        message='Hello from RGWFuncs!',
+        as_file=True,
+        remove_after_send=True
+    )
+    ```
+
+--------------------------------------------------------------------------------
+
+### 25. `send_data_to_email`
+Send an email with an optional DataFrame attachment using the Gmail API via a specified preset.
+
+• Parameters:
+  - df (pd.DataFrame)
+  - `preset_name` (str)
+  - `to_email` (str)
+  - subject (str, optional)
+  - body (str, optional)
+  - `as_file` (bool)
+  - `remove_after_send` (bool)
+
+• Example:
+    ```
+    from rgwfuncs import send_data_to_email
+
+    df = ...  # Some DataFrame
+    send_data_to_email(
+        df,
+        preset_name='MyEmailPreset',
+        to_email='recipient@example.com',
+        subject='Hello from RGWFuncs',
+        body='Here is the data you requested.',
+        as_file=True,
+        remove_after_send=True
+    )
+    ```
+
+--------------------------------------------------------------------------------
+
+### 26. `send_data_to_slack`
+Send a DataFrame or message to Slack using a specified bot configuration.
+
+• Parameters:
+  - df (pd.DataFrame)
+  - `bot_name` (str)
+  - message (str)
+  - `as_file` (bool)
+  - `remove_after_send` (bool)
+
+• Example:
+    ```
+    from rgwfuncs import send_data_to_slack
+
+    df = ...  # Some DataFrame
+    send_data_to_slack(
+        df,
+        bot_name='MySlackBot',
+        message='Hello Slack!',
+        as_file=True,
+        remove_after_send=True
+    )
+    ```
+
+--------------------------------------------------------------------------------
+
+### 27. `order_columns`
+Reorder the columns of a DataFrame based on a string input.
+
+• Parameters:
+  - df (pd.DataFrame)
+  - `column_order_str` (str): Comma-separated column order.
+
+• Returns:
+  - pd.DataFrame
+
+• Example:
+    ```
+    from rgwfuncs import order_columns
+    import pandas as pd
+
+    df = pd.DataFrame({'Name': ['Alice', 'Bob'], 'Age': [30, 25], 'Salary': [1000, 1200]})
+    df_reordered = order_columns(df, 'Salary,Name,Age')
+    print(df_reordered)
+    ```
+
+--------------------------------------------------------------------------------
+
+### 28. `append_ranged_classification_column`
+Append a ranged classification column to the DataFrame.
+
+• Parameters:
+  - df (pd.DataFrame)
+  - ranges (str): Ranges separated by commas (e.g., "0-10,11-20,21-30").
+  - `target_col` (str): The column to classify.
+  - `new_col_name` (str): Name of the new classification column.
+
+• Returns:
+  - pd.DataFrame
+
+• Example:
+    ```
+    from rgwfuncs import append_ranged_classification_column
+    import pandas as pd
+
+    df = pd.DataFrame({'Scores': [5, 12, 25]})
+    df_classified = append_ranged_classification_column(df, '0-10,11-20,21-30', 'Scores', 'ScoreRange')
+    print(df_classified)
+    ```
+
+--------------------------------------------------------------------------------
+
+### 29. `append_percentile_classification_column`
+Append a percentile classification column to the DataFrame.
+
+• Parameters:
+  - df (pd.DataFrame)
+  - percentiles (str): Percentile values separated by commas (e.g., "25,50,75").
+  - `target_col` (str)
+  - `new_col_name` (str)
+
+• Returns:
+  - pd.DataFrame
+
+• Example:
+    ```
+    from rgwfuncs import append_percentile_classification_column
+    import pandas as pd
+
+    df = pd.DataFrame({'Values': [10, 20, 30, 40, 50]})
+    df_classified = append_percentile_classification_column(df, '25,50,75', 'Values', 'ValuePercentile')
+    print(df_classified)
+    ```
+
+--------------------------------------------------------------------------------
+
+### 30. `append_ranged_date_classification_column`
+Append a ranged date classification column to the DataFrame.
+
+• Parameters:
+  - df (pd.DataFrame)
+  - `date_ranges` (str): Date ranges separated by commas, e.g., `2020-01-01_2020-06-30,2020-07-01_2020-12-31`
+  - `target_col` (str)
+  - `new_col_name` (str)
+
+• Returns:
+  - pd.DataFrame
+
+• Example:
+    ```
+    from rgwfuncs import append_ranged_date_classification_column
+    import pandas as pd
+
+    df = pd.DataFrame({'EventDate': pd.to_datetime(['2020-03-15','2020-08-10'])})
+    df_classified = append_ranged_date_classification_column(
+        df,
+        '2020-01-01_2020-06-30,2020-07-01_2020-12-31',
+        'EventDate',
+        'DateRange'
+    )
+    print(df_classified)
+    ```
+
+--------------------------------------------------------------------------------
+
+### 31. `rename_columns`
+Rename columns in the DataFrame.
+
+• Parameters:
+  - df (pd.DataFrame)
+  - `rename_pairs` (dict): Mapping old column names to new ones.
+
+• Returns:
+  - pd.DataFrame
+
+• Example:
+    ```
+    from rgwfuncs import rename_columns
+    import pandas as pd
+
+    df = pd.DataFrame({'OldName': [1,2,3]})
+    df_renamed = rename_columns(df, {'OldName': 'NewName'})
+    print(df_renamed)
+    ```
+
+--------------------------------------------------------------------------------
+
+### 32. `cascade_sort`
+Cascade sort the DataFrame by specified columns and order.
+
+• Parameters:
+  - df (pd.DataFrame)
+  - columns (list): e.g. ["Column1::ASC", "Column2::DESC"].
+
+• Returns:
+  - pd.DataFrame
+
+• Example:
+    ```
+    from rgwfuncs import cascade_sort
+    import pandas as pd
+
+    df = pd.DataFrame({
+        'Name': ['Charlie', 'Alice', 'Bob'],
+        'Age': [25, 30, 22]
+    })
+
+    sorted_df = cascade_sort(df, ["Name::ASC", "Age::DESC"])
+    print(sorted_df)
+    ```
+
+--------------------------------------------------------------------------------
+
+### 33. `append_xgb_labels`
+Append XGB training labels (TRAIN, VALIDATE, TEST) based on a ratio string.
+
+• Parameters:
+  - df (pd.DataFrame)
+  - `ratio_str` (str): e.g. "8:2", "7:2:1".
+
+• Returns:
+  - pd.DataFrame
+
+• Example:
+    ```
+    from rgwfuncs import append_xgb_labels
+    import pandas as pd
+
+    df = pd.DataFrame({'A': range(10)})
+    df_labeled = append_xgb_labels(df, "7:2:1")
+    print(df_labeled)
+    ```
+
+--------------------------------------------------------------------------------
+
+### 34. `append_xgb_regression_predictions`
+Append XGB regression predictions to the DataFrame. Requires an `XGB_TYPE` column for TRAIN/TEST splits.
+
+• Parameters:
+  - df (pd.DataFrame)
+  - `target_col` (str)
+  - `feature_cols` (str): Comma-separated feature columns.
+  - `pred_col` (str)
+  - `boosting_rounds` (int, optional)
+  - `model_path` (str, optional)
+
+• Returns:
+  - pd.DataFrame
+
+• Example:
+    ```
+    from rgwfuncs import append_xgb_regression_predictions
+    import pandas as pd
+
+    df = pd.DataFrame({
+        'XGB_TYPE': ['TRAIN','TRAIN','TEST','TEST'],
+        'Feature1': [1.2, 2.3, 3.4, 4.5],
+        'Feature2': [5.6, 6.7, 7.8, 8.9],
+        'Target': [10, 20, 30, 40]
+    })
+
+    df_pred = append_xgb_regression_predictions(df, 'Target', 'Feature1,Feature2', 'PredictedTarget')
+    print(df_pred)
+    ```
+
+--------------------------------------------------------------------------------
+
+### 35. `append_xgb_logistic_regression_predictions`
+Append XGB logistic regression predictions to the DataFrame. Requires an `XGB_TYPE` column for TRAIN/TEST splits.
+
+• Parameters:
+  - df (pd.DataFrame)
+  - `target_col` (str)
+  - `feature_cols` (str)
+  - `pred_col` (str)
+  - `boosting_rounds` (int, optional)
+  - `model_path` (str, optional)
+
+• Returns:
+  - pd.DataFrame
+
+• Example:
+    ```
+    from rgwfuncs import append_xgb_logistic_regression_predictions
+    import pandas as pd
+
+    df = pd.DataFrame({
+        'XGB_TYPE': ['TRAIN','TRAIN','TEST','TEST'],
+        'Feature1': [1, 0, 1, 0],
+        'Feature2': [0.5, 0.2, 0.8, 0.1],
+        'Target': [1, 0, 1, 0]
+    })
+
+    df_pred = append_xgb_logistic_regression_predictions(df, 'Target', 'Feature1,Feature2', 'PredictedTarget')
+    print(df_pred)
+    ```
+
+--------------------------------------------------------------------------------
+
+### 36. `print_n_frequency_cascading`
+Print the cascading frequency of top n values for specified columns.
+
+• Parameters:
+  - df (pd.DataFrame)
+  - n (int)
+  - columns (str): Comma-separated column names.
+  - `order_by` (str): `ASC`, `DESC`, `FREQ_ASC`, `FREQ_DESC`.
+
+• Example:
+    ```
+    from rgwfuncs import print_n_frequency_cascading
+    import pandas as pd
+
+    df = pd.DataFrame({'City': ['NY','LA','NY','SF','LA','LA']})
+    print_n_frequency_cascading(df, 2, 'City', 'FREQ_DESC')
+    ```
+
+--------------------------------------------------------------------------------
+
+### 37. `print_n_frequency_linear`
+Print the linear frequency of top n values for specified columns.
+
+• Parameters:
+  - df (pd.DataFrame)
+  - n (int)
+  - columns (str): Comma-separated columns.
+  - `order_by` (str)
+
+• Example:
+    ```
+    from rgwfuncs import print_n_frequency_linear
+    import pandas as pd
+
+    df = pd.DataFrame({'City': ['NY','LA','NY','SF','LA','LA']})
+    print_n_frequency_linear(df, 2, 'City', 'FREQ_DESC')
+    ```
+
+--------------------------------------------------------------------------------
+
+### 38. `retain_columns`
+Retain specified columns in the DataFrame and drop the others.
+
+• Parameters:
+  - df (pd.DataFrame)
+  - `columns_to_retain` (list or str)
+
+• Returns:
+  - pd.DataFrame
+
+• Example:
+    ```
+    from rgwfuncs import retain_columns
+    import pandas as pd
+
+    df = pd.DataFrame({'A': [1,2], 'B': [3,4], 'C': [5,6]})
+    df_reduced = retain_columns(df, ['A','C'])
+    print(df_reduced)
+    ```
+
+--------------------------------------------------------------------------------
+
+### 39. `mask_against_dataframe`
+Retain only rows with common column values between two DataFrames.
+
+• Parameters:
+  - df (pd.DataFrame)
+  - `other_df` (pd.DataFrame)
+  - `column_name` (str)
+
+• Returns:
+  - pd.DataFrame
+
+• Example:
+    ```
+    from rgwfuncs import mask_against_dataframe
+    import pandas as pd
+
+    df1 = pd.DataFrame({'ID': [1,2,3], 'Value': [10,20,30]})
+    df2 = pd.DataFrame({'ID': [2,3,4], 'Extra': ['X','Y','Z']})
+
+    df_masked = mask_against_dataframe(df1, df2, 'ID')
+    print(df_masked)
+    ```
+
+--------------------------------------------------------------------------------
+
+### 40. `mask_against_dataframe_converse`
+Retain only rows with uncommon column values between two DataFrames.
+
+• Parameters:
+  - df (pd.DataFrame)
+  - `other_df` (pd.DataFrame)
+  - `column_name` (str)
+
+• Returns:
+  - pd.DataFrame
+
+• Example:
+    ```
+    from rgwfuncs import mask_against_dataframe_converse
+    import pandas as pd
+
+    df1 = pd.DataFrame({'ID': [1,2,3], 'Value': [10,20,30]})
+    df2 = pd.DataFrame({'ID': [2,3,4], 'Extra': ['X','Y','Z']})
+
+    df_uncommon = mask_against_dataframe_converse(df1, df2, 'ID')
+    print(df_uncommon)
+    ```
+
+--------------------------------------------------------------------------------
+
+## Additional Info
+
+For more information, refer to each function’s docstring by calling:
+```
+rgwfuncs.docs(method_type_filter='function_name')
+```
+or display all docstrings with:
+```python
+rgwfuncs.docs(method_type_filter='*')
+```
+
+--------------------------------------------------------------------------------
+
+© 2025 Ryan Gerard Wilson. All rights reserved.
 
