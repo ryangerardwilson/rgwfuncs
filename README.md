@@ -1,8 +1,6 @@
-RGWML
+# RGWFUNCS
 
 ***By Ryan Gerard Wilson (https://ryangerardwilson.com)***
-
-# RGWFuncs
 
 This library provides a variety of functions for manipulating and analyzing pandas DataFrames. 
 
