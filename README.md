@@ -11,33 +11,29 @@ This library provides a variety of functions for manipulating and analyzing pand
 ## Installation
 
 Install the package using:
-```bash
+bash
 pip install rgwfuncs
-```
+
 
 --------------------------------------------------------------------------------
 
 ## Basic Usage
 
 Import the library:
-    ```
+
     import rgwfuncs
-    ```
 
 View available function docstrings in alphabetical order:
-    ```
+    
     rgwfuncs.docs()
-    ```
 
 View specific docstrings by providing a filter (comma-separated). For example, to display docstrings about "numeric_clean":
-    ```
+    
     rgwfuncs.docs(method_type_filter='numeric_clean')
-    ```
 
 To display all docstrings, use:
-    ```
+    
     rgwfuncs.docs(method_type_filter='*')
-    ```
 
 --------------------------------------------------------------------------------
 
@@ -98,14 +94,14 @@ Limit the DataFrame to a specified number of rows.
   - pd.DataFrame: A new DataFrame limited to the specified number of rows.
 
 • Example:
-    ``` 
+    
     from rgwfuncs import limit_dataframe
     import pandas as pd
 
     df = pd.DataFrame({'A': range(10), 'B': range(10, 20)})
     df_limited = limit_dataframe(df, 5)
     print(df_limited)
-    ```
+
 --------------------------------------------------------------------------------
 
 ### 4. `from_raw_data`
@@ -119,7 +115,7 @@ Create a DataFrame from raw data.
   - pd.DataFrame: A DataFrame created from the raw data.
 
 • Example:
-    ```
+    
     from rgwfuncs import from_raw_data
 
     headers = ["Name", "Age"]
@@ -131,7 +127,7 @@ Create a DataFrame from raw data.
 
     df = from_raw_data(headers, data)
     print(df)
-    ```
+
 --------------------------------------------------------------------------------
 
 ### 5. `append_rows`
@@ -145,7 +141,7 @@ Append rows to the DataFrame.
   - pd.DataFrame: A new DataFrame with appended rows.
 
 • Example:
-    ```
+    
     from rgwfuncs import append_rows
     import pandas as pd
 
@@ -156,7 +152,7 @@ Append rows to the DataFrame.
     ]
     df_appended = append_rows(df, new_rows)
     print(df_appended)
-    ```
+
 --------------------------------------------------------------------------------
 
 ### 6. `append_columns`
@@ -170,14 +166,14 @@ Append new columns to the DataFrame with None values.
   - pd.DataFrame: A new DataFrame with the new columns appended.
 
 • Example:
-    ```
+    
     from rgwfuncs import append_columns
     import pandas as pd
 
     df = pd.DataFrame({'Name': ['Alice', 'Bob'], 'Age': [30, 25]})
     df_new = append_columns(df, ['Salary', 'Department'])
     print(df_new)
-    ```
+    
 --------------------------------------------------------------------------------
 
 ### 7. `update_rows`
@@ -192,14 +188,14 @@ Update specific rows in the DataFrame based on a condition.
   - pd.DataFrame: A new DataFrame with updated rows.
 
 • Example:
-    ```
+    
     from rgwfuncs import update_rows
     import pandas as pd
 
     df = pd.DataFrame({'Name': ['Alice', 'Bob'], 'Age': [30, 25]})
     df_updated = update_rows(df, "Name == 'Alice'", {'Age': 31})
     print(df_updated)
-    ```
+    
 --------------------------------------------------------------------------------
 
 ### 8. `delete_rows`
@@ -213,14 +209,14 @@ Delete rows from the DataFrame based on a condition.
   - pd.DataFrame: The DataFrame with specified rows deleted.
 
 • Example:
-    ```
+    
     from rgwfuncs import delete_rows
     import pandas as pd
 
     df = pd.DataFrame({'Name': ['Alice', 'Bob'], 'Age': [30, 25]})
     df_deleted = delete_rows(df, "Age < 28")
     print(df_deleted)
-    ```
+    
 --------------------------------------------------------------------------------
 
 ### 9. `drop_duplicates`
@@ -233,14 +229,14 @@ Drop duplicate rows in the DataFrame, retaining the first occurrence.
   - pd.DataFrame: A new DataFrame with duplicates removed.
 
 • Example:
-    ```
+    
     from rgwfuncs import drop_duplicates
     import pandas as pd
 
     df = pd.DataFrame({'A': [1,1,2,2], 'B': [3,3,4,4]})
     df_no_dupes = drop_duplicates(df)
     print(df_no_dupes)
-    ```
+    
 --------------------------------------------------------------------------------
 
 ### 10. `drop_duplicates_retain_first`
@@ -254,14 +250,14 @@ Drop duplicate rows based on specified columns, retaining the first occurrence.
   - pd.DataFrame: A new DataFrame with duplicates removed.
 
 • Example:
-    ```
+    
     from rgwfuncs import drop_duplicates_retain_first
     import pandas as pd
 
     df = pd.DataFrame({'A': [1,1,2,2], 'B': [3,3,4,4]})
     df_no_dupes = drop_duplicates_retain_first(df, 'A')
     print(df_no_dupes)
-    ```
+    
 --------------------------------------------------------------------------------
 
 ### 11. `drop_duplicates_retain_last`
@@ -275,14 +271,14 @@ Drop duplicate rows based on specified columns, retaining the last occurrence.
   - pd.DataFrame: A new DataFrame with duplicates removed.
 
 • Example:
-    ```
+    
     from rgwfuncs import drop_duplicates_retain_last
     import pandas as pd
 
     df = pd.DataFrame({'A': [1,1,2,2], 'B': [3,3,4,4]})
     df_no_dupes = drop_duplicates_retain_last(df, 'A')
     print(df_no_dupes)
-    ```
+    
 
 --------------------------------------------------------------------------------
 
@@ -298,7 +294,7 @@ Load data from a database query into a DataFrame based on a configuration preset
   - pd.DataFrame: A DataFrame containing the query result.
 
 • Example:
-    ```
+    
     from rgwfuncs import load_data_from_query
 
     df = load_data_from_query(
@@ -307,7 +303,7 @@ Load data from a database query into a DataFrame based on a configuration preset
         config_file_name="rgwml.config"
     )
     print(df)
-    ```
+    
 
 --------------------------------------------------------------------------------
 
@@ -321,12 +317,12 @@ Load data from a file into a DataFrame based on the file extension.
   - pd.DataFrame: A DataFrame containing the loaded data.
 
 • Example:
-    ```
+    
     from rgwfuncs import load_data_from_path
 
     df = load_data_from_path("/absolute/path/to/data.csv")
     print(df)
-    ```
+    
 
 --------------------------------------------------------------------------------
 
@@ -341,12 +337,12 @@ Execute a query on a SQLite database file and return the results as a DataFrame.
   - pd.DataFrame: A DataFrame containing the query results.
 
 • Example:
-    ```
+    
     from rgwfuncs import load_data_from_sqlite_path
 
     df = load_data_from_sqlite_path("/path/to/database.db", "SELECT * FROM my_table")
     print(df)
-    ```
+    
 
 --------------------------------------------------------------------------------
 
@@ -358,13 +354,13 @@ Display the first n rows of the DataFrame (prints out in dictionary format).
   - n (int): Number of rows to display.
 
 • Example:
-    ```
+    
     from rgwfuncs import first_n_rows
     import pandas as pd
 
     df = pd.DataFrame({'A': [1,2,3], 'B': [4,5,6]})
     first_n_rows(df, 2)
-    ```
+    
 
 --------------------------------------------------------------------------------
 
@@ -376,13 +372,13 @@ Display the last n rows of the DataFrame (prints out in dictionary format).
   - n (int): Number of rows to display.
 
 • Example:
-    ```
+    
     from rgwfuncs import last_n_rows
     import pandas as pd
 
     df = pd.DataFrame({'A': [1,2,3,4,5], 'B': [6,7,8,9,10]})
     last_n_rows(df, 2)
-    ```
+    
 
 --------------------------------------------------------------------------------
 
@@ -395,13 +391,13 @@ Print the top n unique values for specified columns in the DataFrame.
   - columns (list): List of columns for which to display top unique values.
 
 • Example:
-    ```
+    
     from rgwfuncs import top_n_unique_values
     import pandas as pd
 
     df = pd.DataFrame({'Cities': ['NY', 'LA', 'NY', 'SF', 'LA', 'LA']})
     top_n_unique_values(df, 2, ['Cities'])
-    ```
+    
 
 --------------------------------------------------------------------------------
 
@@ -414,13 +410,13 @@ Print the bottom n unique values for specified columns in the DataFrame.
   - columns (list)
 
 • Example:
-    ```
+    
     from rgwfuncs import bottom_n_unique_values
     import pandas as pd
 
     df = pd.DataFrame({'Cities': ['NY', 'LA', 'NY', 'SF', 'LA', 'LA']})
     bottom_n_unique_values(df, 1, ['Cities'])
-    ```
+    
 
 --------------------------------------------------------------------------------
 
@@ -432,7 +428,7 @@ Print correlation for multiple pairs of columns in the DataFrame.
   - `column_pairs` (list of tuples): E.g., `[('col1','col2'), ('colA','colB')]`.
 
 • Example:
-    ```
+    
     from rgwfuncs import print_correlation
     import pandas as pd
 
@@ -445,7 +441,7 @@ Print correlation for multiple pairs of columns in the DataFrame.
 
     pairs = [('col1','col2'), ('colA','colB')]
     print_correlation(df, pairs)
-    ```
+    
 
 --------------------------------------------------------------------------------
 
@@ -456,13 +452,13 @@ Print the memory usage of the DataFrame in megabytes.
   - df (pd.DataFrame)
 
 • Example:
-    ```
+    
     from rgwfuncs import print_memory_usage
     import pandas as pd
 
     df = pd.DataFrame({'A': range(1000)})
     print_memory_usage(df)
-    ```
+    
 
 --------------------------------------------------------------------------------
 
@@ -477,7 +473,7 @@ Return a new DataFrame filtered by a given query expression.
   - pd.DataFrame
 
 • Example:
-    ```
+    
     from rgwfuncs import filter_dataframe
     import pandas as pd
 
@@ -488,7 +484,7 @@ Return a new DataFrame filtered by a given query expression.
 
     df_filtered = filter_dataframe(df, "Age > 23")
     print(df_filtered)
-    ```
+    
 
 --------------------------------------------------------------------------------
 
@@ -503,14 +499,14 @@ Filter and return rows containing valid Indian mobile numbers in the specified c
   - pd.DataFrame
 
 • Example:
-    ```
+    
     from rgwfuncs import filter_indian_mobiles
     import pandas as pd
 
     df = pd.DataFrame({'Phone': ['9876543210', '12345', '7000012345']})
     df_indian = filter_indian_mobiles(df, 'Phone')
     print(df_indian)
-    ```
+    
 
 --------------------------------------------------------------------------------
 
@@ -522,13 +518,13 @@ Print the entire DataFrame and its column types. Optionally print a source path.
   - source (str, optional)
 
 • Example:
-    ```
+    
     from rgwfuncs import print_dataframe
     import pandas as pd
 
     df = pd.DataFrame({'Name': ['Alice'], 'Age': [30]})
     print_dataframe(df, source='SampleData.csv')
-    ```
+    
 
 --------------------------------------------------------------------------------
 
@@ -543,7 +539,7 @@ Send a DataFrame via Telegram using a specified bot configuration.
   - `remove_after_send` (bool)
 
 • Example:
-    ```
+    
     from rgwfuncs import send_dataframe_via_telegram
 
     # Suppose your bot config is in "rgwml.config" under [TelegramBots] section
@@ -555,7 +551,7 @@ Send a DataFrame via Telegram using a specified bot configuration.
         as_file=True,
         remove_after_send=True
     )
-    ```
+    
 
 --------------------------------------------------------------------------------
 
@@ -572,7 +568,7 @@ Send an email with an optional DataFrame attachment using the Gmail API via a sp
   - `remove_after_send` (bool)
 
 • Example:
-    ```
+    
     from rgwfuncs import send_data_to_email
 
     df = ...  # Some DataFrame
@@ -585,7 +581,7 @@ Send an email with an optional DataFrame attachment using the Gmail API via a sp
         as_file=True,
         remove_after_send=True
     )
-    ```
+    
 
 --------------------------------------------------------------------------------
 
@@ -600,7 +596,7 @@ Send a DataFrame or message to Slack using a specified bot configuration.
   - `remove_after_send` (bool)
 
 • Example:
-    ```
+    
     from rgwfuncs import send_data_to_slack
 
     df = ...  # Some DataFrame
@@ -611,7 +607,7 @@ Send a DataFrame or message to Slack using a specified bot configuration.
         as_file=True,
         remove_after_send=True
     )
-    ```
+    
 
 --------------------------------------------------------------------------------
 
@@ -626,14 +622,14 @@ Reorder the columns of a DataFrame based on a string input.
   - pd.DataFrame
 
 • Example:
-    ```
+    
     from rgwfuncs import order_columns
     import pandas as pd
 
     df = pd.DataFrame({'Name': ['Alice', 'Bob'], 'Age': [30, 25], 'Salary': [1000, 1200]})
     df_reordered = order_columns(df, 'Salary,Name,Age')
     print(df_reordered)
-    ```
+    
 
 --------------------------------------------------------------------------------
 
@@ -650,14 +646,14 @@ Append a ranged classification column to the DataFrame.
   - pd.DataFrame
 
 • Example:
-    ```
+    
     from rgwfuncs import append_ranged_classification_column
     import pandas as pd
 
     df = pd.DataFrame({'Scores': [5, 12, 25]})
     df_classified = append_ranged_classification_column(df, '0-10,11-20,21-30', 'Scores', 'ScoreRange')
     print(df_classified)
-    ```
+    
 
 --------------------------------------------------------------------------------
 
@@ -674,14 +670,14 @@ Append a percentile classification column to the DataFrame.
   - pd.DataFrame
 
 • Example:
-    ```
+    
     from rgwfuncs import append_percentile_classification_column
     import pandas as pd
 
     df = pd.DataFrame({'Values': [10, 20, 30, 40, 50]})
     df_classified = append_percentile_classification_column(df, '25,50,75', 'Values', 'ValuePercentile')
     print(df_classified)
-    ```
+    
 
 --------------------------------------------------------------------------------
 
@@ -698,7 +694,7 @@ Append a ranged date classification column to the DataFrame.
   - pd.DataFrame
 
 • Example:
-    ```
+    
     from rgwfuncs import append_ranged_date_classification_column
     import pandas as pd
 
@@ -710,7 +706,7 @@ Append a ranged date classification column to the DataFrame.
         'DateRange'
     )
     print(df_classified)
-    ```
+    
 
 --------------------------------------------------------------------------------
 
@@ -725,14 +721,14 @@ Rename columns in the DataFrame.
   - pd.DataFrame
 
 • Example:
-    ```
+    
     from rgwfuncs import rename_columns
     import pandas as pd
 
     df = pd.DataFrame({'OldName': [1,2,3]})
     df_renamed = rename_columns(df, {'OldName': 'NewName'})
     print(df_renamed)
-    ```
+    
 
 --------------------------------------------------------------------------------
 
@@ -747,7 +743,7 @@ Cascade sort the DataFrame by specified columns and order.
   - pd.DataFrame
 
 • Example:
-    ```
+    
     from rgwfuncs import cascade_sort
     import pandas as pd
 
@@ -758,7 +754,7 @@ Cascade sort the DataFrame by specified columns and order.
 
     sorted_df = cascade_sort(df, ["Name::ASC", "Age::DESC"])
     print(sorted_df)
-    ```
+    
 
 --------------------------------------------------------------------------------
 
@@ -773,14 +769,14 @@ Append XGB training labels (TRAIN, VALIDATE, TEST) based on a ratio string.
   - pd.DataFrame
 
 • Example:
-    ```
+    
     from rgwfuncs import append_xgb_labels
     import pandas as pd
 
     df = pd.DataFrame({'A': range(10)})
     df_labeled = append_xgb_labels(df, "7:2:1")
     print(df_labeled)
-    ```
+    
 
 --------------------------------------------------------------------------------
 
@@ -799,7 +795,7 @@ Append XGB regression predictions to the DataFrame. Requires an `XGB_TYPE` colum
   - pd.DataFrame
 
 • Example:
-    ```
+    
     from rgwfuncs import append_xgb_regression_predictions
     import pandas as pd
 
@@ -812,7 +808,7 @@ Append XGB regression predictions to the DataFrame. Requires an `XGB_TYPE` colum
 
     df_pred = append_xgb_regression_predictions(df, 'Target', 'Feature1,Feature2', 'PredictedTarget')
     print(df_pred)
-    ```
+    
 
 --------------------------------------------------------------------------------
 
@@ -831,7 +827,7 @@ Append XGB logistic regression predictions to the DataFrame. Requires an `XGB_TY
   - pd.DataFrame
 
 • Example:
-    ```
+    
     from rgwfuncs import append_xgb_logistic_regression_predictions
     import pandas as pd
 
@@ -844,7 +840,7 @@ Append XGB logistic regression predictions to the DataFrame. Requires an `XGB_TY
 
     df_pred = append_xgb_logistic_regression_predictions(df, 'Target', 'Feature1,Feature2', 'PredictedTarget')
     print(df_pred)
-    ```
+    
 
 --------------------------------------------------------------------------------
 
@@ -858,13 +854,13 @@ Print the cascading frequency of top n values for specified columns.
   - `order_by` (str): `ASC`, `DESC`, `FREQ_ASC`, `FREQ_DESC`.
 
 • Example:
-    ```
+    
     from rgwfuncs import print_n_frequency_cascading
     import pandas as pd
 
     df = pd.DataFrame({'City': ['NY','LA','NY','SF','LA','LA']})
     print_n_frequency_cascading(df, 2, 'City', 'FREQ_DESC')
-    ```
+    
 
 --------------------------------------------------------------------------------
 
@@ -878,13 +874,13 @@ Print the linear frequency of top n values for specified columns.
   - `order_by` (str)
 
 • Example:
-    ```
+    
     from rgwfuncs import print_n_frequency_linear
     import pandas as pd
 
     df = pd.DataFrame({'City': ['NY','LA','NY','SF','LA','LA']})
     print_n_frequency_linear(df, 2, 'City', 'FREQ_DESC')
-    ```
+    
 
 --------------------------------------------------------------------------------
 
@@ -899,14 +895,14 @@ Retain specified columns in the DataFrame and drop the others.
   - pd.DataFrame
 
 • Example:
-    ```
+    
     from rgwfuncs import retain_columns
     import pandas as pd
 
     df = pd.DataFrame({'A': [1,2], 'B': [3,4], 'C': [5,6]})
     df_reduced = retain_columns(df, ['A','C'])
     print(df_reduced)
-    ```
+    
 
 --------------------------------------------------------------------------------
 
@@ -922,7 +918,7 @@ Retain only rows with common column values between two DataFrames.
   - pd.DataFrame
 
 • Example:
-    ```
+    
     from rgwfuncs import mask_against_dataframe
     import pandas as pd
 
@@ -931,7 +927,7 @@ Retain only rows with common column values between two DataFrames.
 
     df_masked = mask_against_dataframe(df1, df2, 'ID')
     print(df_masked)
-    ```
+    
 
 --------------------------------------------------------------------------------
 
@@ -947,7 +943,7 @@ Retain only rows with uncommon column values between two DataFrames.
   - pd.DataFrame
 
 • Example:
-    ```
+    
     from rgwfuncs import mask_against_dataframe_converse
     import pandas as pd
 
@@ -956,20 +952,20 @@ Retain only rows with uncommon column values between two DataFrames.
 
     df_uncommon = mask_against_dataframe_converse(df1, df2, 'ID')
     print(df_uncommon)
-    ```
+    
 
 --------------------------------------------------------------------------------
 
 ## Additional Info
 
 For more information, refer to each function’s docstring by calling:
-```
-rgwfuncs.docs(method_type_filter='function_name')
-```
+
+    rgwfuncs.docs(method_type_filter='function_name')
+
 or display all docstrings with:
-```python
-rgwfuncs.docs(method_type_filter='*')
-```
+    
+    rgwfuncs.docs(method_type_filter='*')
+
 
 --------------------------------------------------------------------------------
 
