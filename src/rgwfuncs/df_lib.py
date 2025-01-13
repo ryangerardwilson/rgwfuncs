@@ -23,7 +23,10 @@ from googleapiclient.discovery import build
 import base64
 import inspect
 from typing import Optional, Callable, Dict, List, Tuple, Any
+import warnings
 
+# Suppress all FutureWarnings
+warnings.filterwarnings("ignore", category=FutureWarning)
 
 def docs(method_type_filter: Optional[str] = None) -> None:
     """
@@ -1629,27 +1632,9 @@ def union_join(df1: pd.DataFrame, df2: pd.DataFrame) -> pd.DataFrame:
     Raises:
         ValueError: If the DataFrames do not have the same columns.
     """
-    # Inspect initial columns
-    # print("Initial df1 columns:", df1.columns)
-    # print("Initial df2 columns:", df2.columns)
-
-    # Standardize columns by adding missing columns filled with NaN
-    for col in df2.columns:
-        if col not in df1:
-            df1[col] = pd.NA
-
-    for col in df1.columns:
-        if col not in df2:
-            df2[col] = pd.NA
-
-    # print("Standardized df1 columns:", df1.columns)
-    # print("Standardized df2 columns:", df2.columns)
-
-    # Check if columns match now
     if set(df1.columns) != set(df2.columns):
-        raise ValueError("Both DataFrames must have the same columns after standardizing columns")
+        raise ValueError("Both DataFrames must have the same columns for a union join")
 
-    # Concatenate and drop duplicates
     result_df = pd.concat([df1, df2], ignore_index=True).drop_duplicates()
     return result_df
 
@@ -1668,27 +1653,9 @@ def bag_union_join(df1: pd.DataFrame, df2: pd.DataFrame) -> pd.DataFrame:
     Raises:
         ValueError: If the DataFrames do not have the same columns.
     """
-    # Inspect initial columns
-    # print("Initial df1 columns:", df1.columns)
-    # print("Initial df2 columns:", df2.columns)
-
-    # Standardize columns by adding missing columns filled with NaN
-    for col in df2.columns:
-        if col not in df1:
-            df1[col] = pd.NA
-
-    for col in df1.columns:
-        if col not in df2:
-            df2[col] = pd.NA
-
-    # print("Standardized df1 columns:", df1.columns)
-    # print("Standardized df2 columns:", df2.columns)
-
-    # Ensure they have the same columns after standardizing
     if set(df1.columns) != set(df2.columns):
-        raise ValueError("Both DataFrames must have the same columns after standardizing columns")
+        raise ValueError("Both DataFrames must have the same columns for a bag union join")
 
-    # Concatenate without dropping duplicates
     result_df = pd.concat([df1, df2], ignore_index=True)
     return result_df
 
