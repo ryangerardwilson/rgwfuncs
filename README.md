@@ -954,6 +954,103 @@ Retain only rows with uncommon column values between two DataFrames.
 
 --------------------------------------------------------------------------------
 
+### 41. `union_join`
+Perform a union join, concatenating two DataFrames and dropping duplicates.
+
+• Parameters:
+  - `df1` (pd.DataFrame): First DataFrame.
+  - `df2` (pd.DataFrame): Second DataFrame.
+
+• Returns:
+  - pd.DataFrame: A new DataFrame with the union of `df1` and `df2`, without duplicates.
+
+• Example:
+
+    from rgwfuncs import union_join
+    import pandas as pd
+
+    df1 = pd.DataFrame({'ID': [1, 2, 3], 'Value': [10, 20, 30]})
+    df2 = pd.DataFrame({'ID': [2, 3, 4], 'Value': [20, 30, 40]})
+
+    df_union = union_join(df1, df2)
+    print(df_union)
+
+--------------------------------------------------------------------------------
+
+### 42. `bag_union_join`
+Perform a bag union join, concatenating two DataFrames without dropping duplicates.
+
+• Parameters:
+  - `df1` (pd.DataFrame): First DataFrame.
+  - `df2` (pd.DataFrame): Second DataFrame.
+
+• Returns:
+  - pd.DataFrame: A new DataFrame with the concatenated data of `df1` and `df2`.
+
+• Example:
+
+    from rgwfuncs import bag_union_join
+    import pandas as pd
+
+    df1 = pd.DataFrame({'ID': [1, 2, 3], 'Value': [10, 20, 30]})
+    df2 = pd.DataFrame({'ID': [2, 3, 4], 'Value': [20, 30, 40]})
+
+    df_bag_union = bag_union_join(df1, df2)
+    print(df_bag_union)
+
+--------------------------------------------------------------------------------
+
+### 43. `left_join`
+Perform a left join on two DataFrames.
+
+• Parameters:
+  - `df1` (pd.DataFrame): The left DataFrame.
+  - `df2` (pd.DataFrame): The right DataFrame.
+  - `left_on` (str): Column name in `df1` to join on.
+  - `right_on` (str): Column name in `df2` to join on.
+
+• Returns:
+  - pd.DataFrame: A new DataFrame as the result of a left join.
+
+• Example:
+
+    from rgwfuncs import left_join
+    import pandas as pd
+
+    df1 = pd.DataFrame({'ID': [1, 2, 3], 'Value': [10, 20, 30]})
+    df2 = pd.DataFrame({'ID': [2, 3, 4], 'Extra': ['A', 'B', 'C']})
+
+    df_left_join = left_join(df1, df2, 'ID', 'ID')
+    print(df_left_join)
+
+--------------------------------------------------------------------------------
+
+### 44. `right_join`
+Perform a right join on two DataFrames.
+
+• Parameters:
+  - `df1` (pd.DataFrame): The left DataFrame.
+  - `df2` (pd.DataFrame): The right DataFrame.
+  - `left_on` (str): Column name in `df1` to join on.
+  - `right_on` (str): Column name in `df2` to join on.
+
+• Returns:
+  - pd.DataFrame: A new DataFrame as the result of a right join.
+
+• Example:
+
+    from rgwfuncs import right_join
+    import pandas as pd
+
+    df1 = pd.DataFrame({'ID': [1, 2, 3], 'Value': [10, 20, 30]})
+    df2 = pd.DataFrame({'ID': [2, 3, 4], 'Extra': ['A', 'B', 'C']})
+
+    df_right_join = right_join(df1, df2, 'ID', 'ID')
+    print(df_right_join)
+
+
+--------------------------------------------------------------------------------
+
 ## Additional Info
 
 For more information, refer to each function’s docstring by calling:
