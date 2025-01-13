@@ -9,9 +9,8 @@ This library provides a variety of functions for manipulating and analyzing pand
 ## Installation
 
 Install the package using:
-bash
-pip install rgwfuncs
 
+    pip install rgwfuncs
 
 --------------------------------------------------------------------------------
 
