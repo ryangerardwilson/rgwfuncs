@@ -1125,6 +1125,30 @@ Perform a right join on two DataFrames.
 
 --------------------------------------------------------------------------------
 
+### 45. `sync_dataframe_to_sqlite_database`
+Processes and saves a DataFrame to an SQLite database, adding a timestamp column and replacing the existing table if needed. Creates the table if it does not exist.
+
+• Parameters:
+  - `db_path` (str): Path to the SQLite database file.
+  - `tablename` (str): The name of the table in the database.
+  - `df` (pd.DataFrame): The DataFrame to be processed and saved.
+
+• Returns:
+  - None
+
+• Example:
+
+    from rgwfuncs import sync_dataframe_to_sqlite_database
+    import pandas as pd
+
+    df = pd.DataFrame({'ID': [1, 2, 3], 'Value': [10, 20, 30]})
+    db_path = 'my_database.db'
+    tablename = 'my_table'
+
+    sync_dataframe_to_sqlite_database(db_path, tablename, df)
+
+--------------------------------------------------------------------------------
+
 ## Additional Info
 
 For more information, refer to each function’s docstring by calling:

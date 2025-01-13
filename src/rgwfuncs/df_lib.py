@@ -27,10 +27,13 @@ from typing import Optional, Callable, Dict, List, Tuple, Any
 
 def docs(method_type_filter: Optional[str] = None) -> None:
     """
-    Print a list of function names in alphabetical order. If method_type_filter is specified, print the docstrings of the functions that match the filter. Using '*' as a filter will print the docstrings for all functions.
+    Print a list of function names in alphabetical order. If method_type_filter
+    is specified, print the docstrings of the functions that match the filter.
+    Using '*' as a filter will print the docstrings for all functions.
 
     Parameters:
-        method_type_filter: Optional filter string, comma-separated to select docstring types, or '*' for all.
+        method_type_filter: Optional filter string representing a function name,
+        or '*' to display docstrings for all functions.
     """
     # Get the current module's namespace
     current_module = __name__
@@ -41,7 +44,7 @@ def docs(method_type_filter: Optional[str] = None) -> None:
     }
 
     # List of function names sorted alphabetically
-    function_names: List[str] = sorted(local_functions.keys())
+    function_names = sorted(local_functions.keys())
 
     # Print function names
     print("Functions in alphabetical order:")
@@ -50,25 +53,13 @@ def docs(method_type_filter: Optional[str] = None) -> None:
 
     # If a filter is provided or '*', print the docstrings of functions
     if method_type_filter:
-        print("\nFiltered function documentation:")
+        # print("\nFiltered function documentation:")
         for name, func in local_functions.items():
             docstring: Optional[str] = func.__doc__
             if docstring:
-                if method_type_filter == '*':
-                    # Print the entire docstring for each function
+                if method_type_filter == '*' or method_type_filter == name:
+                    # Print the entire docstring for the matching function
                     print(f"\n{name}:\n{docstring}")
-                else:
-                    # Extract only the first line of the docstring
-                    first_line: str = docstring.split('\n')[0]
-                    if "::" in first_line:
-                        # Find the first occurrence of "::" and split there
-                        split_index: int = first_line.find("::")
-                        function_type: str = first_line[:split_index].strip()
-                        function_type_list: List[str] = [
-                            mt.strip() for mt in method_type_filter.split(',')]
-                        if function_type in function_type_list:
-                            # Print the entire docstring if the filter matches
-                            print(f"\n{name}:\n{docstring}")
 
 
 def numeric_clean(df: pd.DataFrame, column_names: str, column_type: str, irregular_value_treatment: str) -> pd.DataFrame:
@@ -1638,9 +1629,27 @@ def union_join(df1: pd.DataFrame, df2: pd.DataFrame) -> pd.DataFrame:
     Raises:
         ValueError: If the DataFrames do not have the same columns.
     """
-    if set(df1.columns) != set(df2.columns):
-        raise ValueError("Both DataFrames must have the same columns for a union join")
+    # Inspect initial columns
+    # print("Initial df1 columns:", df1.columns)
+    # print("Initial df2 columns:", df2.columns)
 
+    # Standardize columns by adding missing columns filled with NaN
+    for col in df2.columns:
+        if col not in df1:
+            df1[col] = pd.NA
+
+    for col in df1.columns:
+        if col not in df2:
+            df2[col] = pd.NA
+
+    # print("Standardized df1 columns:", df1.columns)
+    # print("Standardized df2 columns:", df2.columns)
+
+    # Check if columns match now
+    if set(df1.columns) != set(df2.columns):
+        raise ValueError("Both DataFrames must have the same columns after standardizing columns")
+
+    # Concatenate and drop duplicates
     result_df = pd.concat([df1, df2], ignore_index=True).drop_duplicates()
     return result_df
 
@@ -1659,9 +1668,27 @@ def bag_union_join(df1: pd.DataFrame, df2: pd.DataFrame) -> pd.DataFrame:
     Raises:
         ValueError: If the DataFrames do not have the same columns.
     """
-    if set(df1.columns) != set(df2.columns):
-        raise ValueError("Both DataFrames must have the same columns for a bag union join")
+    # Inspect initial columns
+    # print("Initial df1 columns:", df1.columns)
+    # print("Initial df2 columns:", df2.columns)
 
+    # Standardize columns by adding missing columns filled with NaN
+    for col in df2.columns:
+        if col not in df1:
+            df1[col] = pd.NA
+
+    for col in df1.columns:
+        if col not in df2:
+            df2[col] = pd.NA
+
+    # print("Standardized df1 columns:", df1.columns)
+    # print("Standardized df2 columns:", df2.columns)
+
+    # Ensure they have the same columns after standardizing
+    if set(df1.columns) != set(df2.columns):
+        raise ValueError("Both DataFrames must have the same columns after standardizing columns")
+
+    # Concatenate without dropping duplicates
     result_df = pd.concat([df1, df2], ignore_index=True)
     return result_df
 
@@ -1696,3 +1723,59 @@ def right_join(df1: pd.DataFrame, df2: pd.DataFrame, left_on: str, right_on: str
         A new DataFrame as the result of a right join.
     """
     return df1.merge(df2, how='right', left_on=left_on, right_on=right_on)
+
+
+def sync_dataframe_to_sqlite_database(db_path: str, tablename: str, df: pd.DataFrame) -> None:
+    """
+    Processes and saves a DataFrame to an SQLite database, adding a timestamp column
+    and replacing the existing table if needed. Creates the table if it does not exist.
+
+    Parameters:
+    - db_path (str): Path to the SQLite database file.
+    - tablename (str): The name of the table in the database.
+    - df (pd.DataFrame): The DataFrame to be processed and saved.
+    """
+    # Step 1: Add a timestamp column to the dataframe
+    df['rgwfuncs_sync_timestamp'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+    # Define a simple mapping from pandas dtypes to SQLite types
+    dtype_mapping = {
+        'int64': 'INTEGER',
+        'float64': 'REAL',
+        'object': 'TEXT',
+        'datetime64[ns]': 'TEXT',  # Dates are stored as text in SQLite
+        'bool': 'INTEGER',  # SQLite does not have a separate Boolean storage class
+    }
+
+    # Helper function to map pandas dtype to SQLite type
+    def map_dtype(dtype):
+        return dtype_mapping.get(str(dtype), 'TEXT')
+
+    # Step 2: Save df in SQLite3 db as '{tablename}_new'
+    with sqlite3.connect(db_path) as conn:
+        new_table_name = f"{tablename}_new"
+
+        # Check if the new table already exists, create if not
+        cursor = conn.cursor()
+        cursor.execute(f"PRAGMA table_info({new_table_name})")
+        if cursor.fetchall() == []:  # Table does not exist
+            # Create a table using the DataFrame's column names and types
+            columns_with_types = ', '.join(
+                f'"{col}" {map_dtype(dtype)}' for col, dtype in zip(df.columns, df.dtypes)
+            )
+            create_table_query = f'CREATE TABLE "{new_table_name}" ({columns_with_types})'
+            conn.execute(create_table_query)
+
+        # Insert data into the new table
+        df.to_sql(new_table_name, conn, if_exists='replace', index=False)
+
+        # Step 3: If '{tablename}_new' is not empty, delete table '{tablename}' (if it exists), and rename '{tablename}_new' to '{tablename}'
+        # Check if the new table is not empty
+        cursor.execute(f"SELECT COUNT(*) FROM {new_table_name}")
+        count = cursor.fetchone()[0]
+
+        if count > 0:
+            # Drop the old table if it exists
+            conn.execute(f"DROP TABLE IF EXISTS {tablename}")
+            # Rename the new table to the old table name
+            conn.execute(f"ALTER TABLE {new_table_name} RENAME TO {tablename}")
