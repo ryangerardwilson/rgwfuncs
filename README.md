@@ -2,7 +2,7 @@
 
 ***By Ryan Gerard Wilson (https://ryangerardwilson.com)***
 
-This library provides a variety of functions for manipulating and analyzing pandas DataFrames. 
+This library is meant to make ML/ Data Science pipelines more readable. It assumes a linux environment, and the existence of a `rgwml.config` file for certain features (like db querying, sending data to slack, etc.)
 
 --------------------------------------------------------------------------------
 
@@ -11,6 +11,81 @@ This library provides a variety of functions for manipulating and analyzing pand
 Install the package using:
 
     pip install rgwfuncs
+
+--------------------------------------------------------------------------------
+
+## Create a `rgwml.config` File
+
+A `rgwml.config` file (located at `vi ~/Documents/rgwml.config) is required for MSSQL, CLICKHOUSE, MYSQL, GOOGLE BIG QUERY, SLACK, TELEGRAM, and GMAIL integrations.
+
+    {
+      "db_presets" : [
+        {
+          "name": "mssql_db9",
+          "db_type": "mssql",
+          "host": "",
+          "username": "",
+          "password": "",
+          "database": ""
+        },
+        {
+          "name": "clickhouse_db7",
+          "db_type": "clickhouse",
+          "host": "",
+          "username": "",
+          "password": "",
+          "database": ""
+        },
+        {
+          "name": "mysql_db2",
+          "db_type": "mysql",
+          "host": "",
+          "username": "",
+          "password": "",
+          "database": ""
+        },
+        {
+          "name": "bq_db1",
+          "db_type": "google_big_query",
+          "json_file_path": "",
+          "project_id": ""
+        }
+      ],
+    "vm_presets": [
+        {
+          "name": "main_server",
+          "host": "",
+          "ssh_user": "",
+          "ssh_key_path": ""
+        }
+      ],
+    "cloud_storage_presets": [
+        {
+          "name": "gcs_bucket_name",
+          "credential_path": "path/to/your/credentials.json"
+        }
+      ],
+    "telegram_bot_presets": [
+      {
+        "name": "rgwml-bot",
+        "chat_id": "",
+        "bot_token": ""
+      }
+    ],
+    "slack_bot_presets": [
+      {
+        "name": "labs-channel",
+        "channel_id": "",
+        "bot_token": ""
+      }
+    ],
+    "gmail_bot_presets": [
+      {
+        "name": "info@xyz.com",
+        "service_account_credentials_path": "/home/user/Documents/credentials/your_creds.json"
+      }
+    ]
+  }
 
 --------------------------------------------------------------------------------
 
