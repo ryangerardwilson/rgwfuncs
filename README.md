@@ -51,7 +51,7 @@ A `rgwml.config` file (located at `vi ~/Documents/rgwml.config) is required for 
           "project_id": ""
         }
       ],
-    "vm_presets": [
+      "vm_presets": [
         {
           "name": "main_server",
           "host": "",
@@ -59,34 +59,34 @@ A `rgwml.config` file (located at `vi ~/Documents/rgwml.config) is required for 
           "ssh_key_path": ""
         }
       ],
-    "cloud_storage_presets": [
+      "cloud_storage_presets": [
         {
           "name": "gcs_bucket_name",
-          "credential_path": "path/to/your/credentials.json"
+          "credential_path": "/path/to/your/credentials.json"
         }
       ],
-    "telegram_bot_presets": [
-      {
-        "name": "rgwml-bot",
-        "chat_id": "",
-        "bot_token": ""
-      }
-    ],
-    "slack_bot_presets": [
-      {
-        "name": "labs-channel",
-        "channel_id": "",
-        "bot_token": ""
-      }
-    ],
-    "gmail_bot_presets": [
-      {
-        "name": "info@xyz.com",
-        "service_account_credentials_path": "/home/user/Documents/credentials/your_creds.json"
-      }
-    ]
-  }
-
+      "telegram_bot_presets": [
+        {
+          "name": "rgwml-bot",
+          "chat_id": "",
+          "bot_token": ""
+        }
+      ],
+      "slack_bot_presets": [
+        {
+          "name": "labs-channel",
+          "channel_id": "",
+          "bot_token": ""
+        }
+      ],
+      "gmail_bot_presets": [
+        {
+          "name": "info@xyz.com",
+          "service_account_credentials_path": "/path/to/your/credentials.json"
+        }
+      ]
+    }
+    
 --------------------------------------------------------------------------------
 
 ## Basic Usage
