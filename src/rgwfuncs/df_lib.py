@@ -66,7 +66,11 @@ def docs(method_type_filter: Optional[str] = None) -> None:
                     print(f"\n{name}:\n{docstring}")
 
 
-def numeric_clean(df: pd.DataFrame, column_names: str, column_type: str, irregular_value_treatment: str) -> pd.DataFrame:
+def numeric_clean(
+        df: pd.DataFrame,
+        column_names: str,
+        column_type: str,
+        irregular_value_treatment: str) -> pd.DataFrame:
     """
     Cleans the numeric columns based on specified treatments.
 
@@ -297,7 +301,9 @@ def drop_duplicates(df: pd.DataFrame) -> pd.DataFrame:
     return df.drop_duplicates(keep='first')
 
 
-def drop_duplicates_retain_first(df: pd.DataFrame, columns: Optional[str] = None) -> pd.DataFrame:
+def drop_duplicates_retain_first(
+        df: pd.DataFrame,
+        columns: Optional[str] = None) -> pd.DataFrame:
     """
     Drop duplicate rows in the DataFrame based on specified columns, retaining the first occurrence.
 
@@ -319,7 +325,9 @@ def drop_duplicates_retain_first(df: pd.DataFrame, columns: Optional[str] = None
     return df.drop_duplicates(subset=columns_list, keep='first')
 
 
-def drop_duplicates_retain_last(df: pd.DataFrame, columns: Optional[str] = None) -> pd.DataFrame:
+def drop_duplicates_retain_last(
+        df: pd.DataFrame,
+        columns: Optional[str] = None) -> pd.DataFrame:
     """
     Drop duplicate rows in the DataFrame based on specified columns, retaining the last occurrence.
 
@@ -336,7 +344,8 @@ def drop_duplicates_retain_last(df: pd.DataFrame, columns: Optional[str] = None)
     if df is None:
         raise ValueError("DataFrame is not initialized.")
 
-    columns_list = [col.strip() for col in columns.split(',')] if columns else None
+    columns_list = [col.strip()
+                    for col in columns.split(',')] if columns else None
     return df.drop_duplicates(subset=columns_list, keep='last')
 
 
@@ -380,11 +389,13 @@ def load_data_from_query(db_preset_name: str, query: str) -> pd.DataFrame:
             with conn.cursor() as cursor:
                 cursor.execute(query)
                 rows = cursor.fetchall()
-                columns = ([desc[0] for desc in cursor.description] if cursor.description else [])
+                columns = ([desc[0] for desc in cursor.description]
+                           if cursor.description else [])
 
         return pd.DataFrame(rows, columns=columns)
 
-    def query_clickhouse(db_preset: Dict[str, Any], query: str) -> pd.DataFrame:
+    def query_clickhouse(
+            db_preset: Dict[str, Any], query: str) -> pd.DataFrame:
         host = db_preset['host']
         user = db_preset['username']
         password = db_preset['password']
@@ -395,7 +406,8 @@ def load_data_from_query(db_preset_name: str, query: str) -> pd.DataFrame:
 
         for attempt in range(max_retries):
             try:
-                client = clickhouse_connect.get_client(host=host, port='8123', username=user, password=password, database=database)
+                client = clickhouse_connect.get_client(
+                    host=host, port='8123', username=user, password=password, database=database)
                 data = client.query(query)
                 rows = data.result_rows
                 columns = data.column_names
@@ -409,11 +421,13 @@ def load_data_from_query(db_preset_name: str, query: str) -> pd.DataFrame:
                     raise ConnectionError(
                         "All attempts to connect to ClickHouse failed.")
 
-    def query_google_big_query(db_preset: Dict[str, Any], query: str) -> pd.DataFrame:
+    def query_google_big_query(
+            db_preset: Dict[str, Any], query: str) -> pd.DataFrame:
         json_file_path = db_preset['json_file_path']
         project_id = db_preset['project_id']
 
-        credentials = service_account.Credentials.from_service_account_file(json_file_path)
+        credentials = service_account.Credentials.from_service_account_file(
+            json_file_path)
         client = bigquery.Client(credentials=credentials, project=project_id)
 
         query_job = client.query(query)
@@ -429,7 +443,9 @@ def load_data_from_query(db_preset_name: str, query: str) -> pd.DataFrame:
         config = json.load(f)
 
     db_presets = config.get('db_presets', [])
-    db_preset = next((preset for preset in db_presets if preset['name'] == db_preset_name), None)
+    db_preset = next(
+        (preset for preset in db_presets if preset['name'] == db_preset_name),
+        None)
     if not db_preset:
         raise ValueError(f"No matching db_preset found for {db_preset_name}")
 
@@ -445,7 +461,6 @@ def load_data_from_query(db_preset_name: str, query: str) -> pd.DataFrame:
         return query_google_big_query(db_preset, query)
     else:
         raise ValueError(f"Unsupported db_type: {db_type}")
-
 
 
 def load_data_from_path(file_path: str) -> pd.DataFrame:
@@ -608,10 +623,20 @@ def top_n_unique_values(df: pd.DataFrame, n: int, columns: List[str]) -> None:
         for column in columns:
             if column in df.columns:
                 frequency = df[column].astype(str).value_counts(dropna=False)
-                frequency = frequency.rename(index={'nan': 'NaN', 'NaT': 'NaT', 'None': 'None', '': 'Empty'})
+                frequency = frequency.rename(
+                    index={
+                        'nan': 'NaN',
+                        'NaT': 'NaT',
+                        'None': 'None',
+                        '': 'Empty'})
                 top_n_values = frequency.nlargest(n)
-                report[column] = {str(value): str(count) for value, count in top_n_values.items()}
-                print(f"Top {n} unique values for column '{column}':\n{json.dumps(report[column], indent=2)}\n")
+                report[column] = {str(value): str(count)
+                                  for value, count in top_n_values.items()}
+                print(
+                    f"Top {n} unique values for column '{column}':\n{
+                        json.dumps(
+                            report[column],
+                            indent=2)}\n")
             else:
                 print(f"Column '{column}' does not exist in the DataFrame.")
     else:
@@ -621,7 +646,10 @@ def top_n_unique_values(df: pd.DataFrame, n: int, columns: List[str]) -> None:
     gc.collect()
 
 
-def bottom_n_unique_values(df: pd.DataFrame, n: int, columns: List[str]) -> None:
+def bottom_n_unique_values(
+        df: pd.DataFrame,
+        n: int,
+        columns: List[str]) -> None:
     """
     Print the bottom `n` unique values for specified columns in the DataFrame.
 
@@ -641,12 +669,21 @@ def bottom_n_unique_values(df: pd.DataFrame, n: int, columns: List[str]) -> None
         for column in columns:
             if column in df.columns:
                 frequency = df[column].astype(str).value_counts(dropna=False)
-                frequency = frequency.rename(index={'nan': 'NaN', 'NaT': 'NaT', 'None': 'None', '': 'Empty'})
+                frequency = frequency.rename(
+                    index={
+                        'nan': 'NaN',
+                        'NaT': 'NaT',
+                        'None': 'None',
+                        '': 'Empty'})
                 bottom_n_values = frequency.nsmallest(n)
                 report[column] = {
                     str(value): str(count) for value,
                     count in bottom_n_values.items()}
-                print(f"Bottom {n} unique values for column '{column}':\n{json.dumps(report[column], indent=2)}\n")
+                print(
+                    f"Bottom {n} unique values for column '{column}':\n{
+                        json.dumps(
+                            report[column],
+                            indent=2)}\n")
             else:
                 print(f"Column '{column}' does not exist in the DataFrame.")
     else:
@@ -656,7 +693,8 @@ def bottom_n_unique_values(df: pd.DataFrame, n: int, columns: List[str]) -> None
     gc.collect()
 
 
-def print_correlation(df: pd.DataFrame, column_pairs: List[Tuple[str, str]]) -> None:
+def print_correlation(
+        df: pd.DataFrame, column_pairs: List[Tuple[str, str]]) -> None:
     """
     Print correlation for multiple pairs of columns in the DataFrame.
 
@@ -675,13 +713,16 @@ def print_correlation(df: pd.DataFrame, column_pairs: List[Tuple[str, str]]) -> 
 
                     correlation = numeric_col1.corr(numeric_col2)
                     if pd.notnull(correlation):
-                        print(f"The correlation between '{col1}' and '{col2}' is {correlation}.")
+                        print(
+                            f"The correlation between '{col1}' and '{col2}' is {correlation}.")
                     else:
-                        print(f"Cannot calculate correlation between '{col1}' and '{col2}' due to insufficient numeric data.")
+                        print(
+                            f"Cannot calculate correlation between '{col1}' and '{col2}' due to insufficient numeric data.")
                 except Exception as e:
                     print(f"Error processing cols '{col1}' and '{col2}': {e}")
             else:
-                print(f"One or both of the specified cols ('{col1}', '{col2}') do not exist in the DataFrame.")
+                print(
+                    f"One or both of the specified cols ('{col1}', '{col2}') do not exist in the DataFrame.")
     else:
         print("The DataFrame is empty.")
 
@@ -701,7 +742,8 @@ def print_memory_usage(df: pd.DataFrame) -> None:
     - ValueError: If the DataFrame is `None`.
     """
     if df is not None:
-        memory_usage = df.memory_usage(deep=True).sum() / (1024 * 1024)  # Convert bytes to MB
+        memory_usage = df.memory_usage(deep=True).sum(
+        ) / (1024 * 1024)  # Convert bytes to MB
         print(f"Memory usage of DataFrame: {memory_usage:.2f} MB")
     else:
         raise ValueError("No DataFrame to print. Please provide a DataFrame.")
@@ -782,7 +824,8 @@ def print_dataframe(df: pd.DataFrame, source: Optional[str] = None) -> None:
     """
     if df is not None:
         print(df)
-        columns_with_types = [f"{col} ({df[col].dtypes})" for col in df.columns]
+        columns_with_types = [
+            f"{col} ({df[col].dtypes})" for col in df.columns]
         print("Columns:", columns_with_types)
         if source:
             print(f"Source: {source}")
@@ -792,7 +835,12 @@ def print_dataframe(df: pd.DataFrame, source: Optional[str] = None) -> None:
     gc.collect()
 
 
-def send_dataframe_via_telegram(df: pd.DataFrame, bot_name: str, message: Optional[str] = None, as_file: bool = True, remove_after_send: bool = True) -> None:
+def send_dataframe_via_telegram(
+        df: pd.DataFrame,
+        bot_name: str,
+        message: Optional[str] = None,
+        as_file: bool = True,
+        remove_after_send: bool = True) -> None:
     """
     Send a DataFrame via Telegram using a specified bot configuration.
 
@@ -820,7 +868,9 @@ def send_dataframe_via_telegram(df: pd.DataFrame, bot_name: str, message: Option
     config_path = os.path.expanduser('~/.rgwfuncsrc')
     config = get_config(config_path)
 
-    bot_config = next((bot for bot in config['telegram_bot_presets'] if bot['name'] == bot_name), None)
+    bot_config = next(
+        (bot for bot in config['telegram_bot_presets'] if bot['name'] == bot_name),
+        None)
     if not bot_config:
         raise ValueError(f"No bot found with the name {bot_name}")
 
@@ -834,9 +884,15 @@ def send_dataframe_via_telegram(df: pd.DataFrame, bot_name: str, message: Option
         df.to_csv(file_name, index=False)
         try:
             with open(file_name, 'rb') as file:
-                payload = {'chat_id': bot_config['chat_id'], 'caption': message or ''}
+                payload = {
+                    'chat_id': bot_config['chat_id'],
+                    'caption': message or ''}
                 files = {'document': file}
-                response = requests.post(f"https://api.telegram.org/bot{bot_config['bot_token']}/sendDocument", data=payload, files=files)
+                response = requests.post(
+                    f"https://api.telegram.org/bot{
+                        bot_config['bot_token']}/sendDocument",
+                    data=payload,
+                    files=files)
             if remove_after_send and os.path.exists(file_name):
                 os.remove(file_name)
         except Exception as e:
@@ -849,7 +905,8 @@ def send_dataframe_via_telegram(df: pd.DataFrame, bot_name: str, message: Option
             'text': (message + "\n\n" + df_str) if message else df_str,
             'parse_mode': 'HTML'
         }
-        response = requests.post(f"https://api.telegram.org/bot{bot_config['bot_token']}/sendMessage", data=payload)
+        response = requests.post(
+            f"https://api.telegram.org/bot{bot_config['bot_token']}/sendMessage", data=payload)
 
     if response and not response.ok:
         raise Exception(f"Error sending message: {response.text}")
@@ -857,7 +914,14 @@ def send_dataframe_via_telegram(df: pd.DataFrame, bot_name: str, message: Option
     print("Message sent successfully.")
 
 
-def send_data_to_email(df: pd.DataFrame, preset_name: str, to_email: str, subject: Optional[str] = None, body: Optional[str] = None, as_file: bool = True, remove_after_send: bool = True) -> None:
+def send_data_to_email(
+        df: pd.DataFrame,
+        preset_name: str,
+        to_email: str,
+        subject: Optional[str] = None,
+        body: Optional[str] = None,
+        as_file: bool = True,
+        remove_after_send: bool = True) -> None:
     """
     Send an email with an optional DataFrame attachment using the Gmail API via a specified preset.
 
@@ -885,7 +949,9 @@ def send_data_to_email(df: pd.DataFrame, preset_name: str, to_email: str, subjec
             except json.JSONDecodeError as e:
                 raise ValueError(f"Invalid JSON format in config file: {e}")
 
-    def authenticate_service_account(service_account_credentials_path: str, sender_email_id: str) -> Any:
+    def authenticate_service_account(
+            service_account_credentials_path: str,
+            sender_email_id: str) -> Any:
         credentials = service_account.Credentials.from_service_account_file(
             service_account_credentials_path,
             scopes=['https://mail.google.com/'],
@@ -898,7 +964,9 @@ def send_data_to_email(df: pd.DataFrame, preset_name: str, to_email: str, subjec
     config = get_config(config_path)
 
     # Retrieve Gmail preset configuration
-    gmail_config = next((preset for preset in config['gmail_bot_presets'] if preset['name'] == preset_name), None)
+    gmail_config = next(
+        (preset for preset in config['gmail_bot_presets'] if preset['name'] == preset_name),
+        None)
 
     if not gmail_config:
         raise ValueError(f"No preset found with the name {preset_name}")
@@ -921,13 +989,18 @@ def send_data_to_email(df: pd.DataFrame, preset_name: str, to_email: str, subjec
             message['to'] = to_email
             message['from'] = sender_email
             message['subject'] = subject if subject else 'DataFrame CSV File'
-            message.attach(MIMEText(body if body else 'Please find the CSV file attached.'))
+            message.attach(
+                MIMEText(
+                    body if body else 'Please find the CSV file attached.'))
 
             with open(tmp_file_name, 'rb') as file:
                 part = MIMEBase('application', 'octet-stream')
                 part.set_payload(file.read())
                 encoders.encode_base64(part)
-                part.add_header('Content-Disposition', f'attachment; filename={os.path.basename(tmp_file_name)}')
+                part.add_header(
+                    'Content-Disposition',
+                    f'attachment; filename={
+                        os.path.basename(tmp_file_name)}')
                 message.attach(part)
 
             if remove_after_send and os.path.exists(tmp_file_name):
@@ -949,13 +1022,19 @@ def send_data_to_email(df: pd.DataFrame, preset_name: str, to_email: str, subjec
     try:
         raw = base64.urlsafe_b64encode(message.as_bytes()).decode()
         email_body = {'raw': raw}
-        sent_message = service.users().messages().send(userId="me", body=email_body).execute()
+        sent_message = service.users().messages().send(
+            userId="me", body=email_body).execute()
         print(f"Email with Message Id {sent_message['id']} successfully sent.")
     except Exception as error:
         raise Exception(f"Error sending email: {error}")
 
 
-def send_data_to_slack(df: pd.DataFrame, bot_name: str, message: Optional[str] = None, as_file: bool = True, remove_after_send: bool = True) -> None:
+def send_data_to_slack(
+        df: pd.DataFrame,
+        bot_name: str,
+        message: Optional[str] = None,
+        as_file: bool = True,
+        remove_after_send: bool = True) -> None:
     """
     Send a DataFrame or message to Slack using a specified bot configuration.
 
@@ -983,7 +1062,9 @@ def send_data_to_slack(df: pd.DataFrame, bot_name: str, message: Optional[str] =
     config_path = os.path.expanduser('~/.rgwfuncsrc')
     config = get_config(config_path)
 
-    bot_config = next((bot for bot in config['slack_bot_presets'] if bot['name'] == bot_name), None)
+    bot_config = next(
+        (bot for bot in config['slack_bot_presets'] if bot['name'] == bot_name),
+        None)
 
     if not bot_config:
         raise ValueError(f"No bot found with the name {bot_name}")
@@ -1070,7 +1151,11 @@ def order_columns(df: pd.DataFrame, column_order_str: str) -> pd.DataFrame:
     return df[new_order]
 
 
-def append_ranged_classification_column(df: pd.DataFrame, ranges: str, target_col: str, new_col_name: str) -> pd.DataFrame:
+def append_ranged_classification_column(
+        df: pd.DataFrame,
+        ranges: str,
+        target_col: str,
+        new_col_name: str) -> pd.DataFrame:
     """
     Append a ranged classification column to the DataFrame.
 
@@ -1138,16 +1223,27 @@ def append_ranged_classification_column(df: pd.DataFrame, ranges: str, target_co
             for r in range_list
         )
 
-        labels = [f"{pad_number(range_list[i], max_integer_length)} to {pad_number(range_list[i + 1], max_integer_length)}" for i in range(len(range_list) - 1)]
+        labels = [f"{pad_number(range_list[i],
+                                max_integer_length)} to {pad_number(range_list[i + 1],
+                                                                    max_integer_length)}" for i in range(len(range_list) - 1)]
 
     # Ensure the target column is numeric
     df[target_col] = pd.to_numeric(df[target_col], errors='coerce')
-    df[new_col_name] = pd.cut(df[target_col], bins=range_list, labels=labels, right=False, include_lowest=True)
+    df[new_col_name] = pd.cut(
+        df[target_col],
+        bins=range_list,
+        labels=labels,
+        right=False,
+        include_lowest=True)
 
     return df
 
 
-def append_percentile_classification_column(df: pd.DataFrame, percentiles: str, target_col: str, new_col_name: str) -> pd.DataFrame:
+def append_percentile_classification_column(
+        df: pd.DataFrame,
+        percentiles: str,
+        target_col: str,
+        new_col_name: str) -> pd.DataFrame:
     """
     Append a percentile classification column to the DataFrame.
 
@@ -1175,14 +1271,21 @@ def append_percentile_classification_column(df: pd.DataFrame, percentiles: str, 
 
     if has_decimals:
         percentiles_list = [float(p) for p in percentiles_list]
-        max_decimal_length = max(len(str(p).split('.')[1]) for p in percentiles_list if '.' in str(p))
-        max_integer_length = max(len(str(int(float(p)))) for p in percentiles_list)
+        max_decimal_length = max(
+            len(str(p).split('.')[1]) for p in percentiles_list if '.' in str(p))
+        max_integer_length = max(len(str(int(float(p))))
+                                 for p in percentiles_list)
 
         labels = []
 
         for i in range(len(percentiles_list) - 1):
-            start = pad_number(percentiles_list[i], max_integer_length, max_decimal_length, decimal=True)
-            end = pad_number(percentiles_list[i + 1], max_integer_length, max_decimal_length, decimal=True)
+            start = pad_number(
+                percentiles_list[i],
+                max_integer_length,
+                max_decimal_length,
+                decimal=True)
+            end = pad_number(
+                percentiles_list[i + 1], max_integer_length, max_decimal_length, decimal=True)
 
             label = f"{start} to {end}"
             labels.append(label)
@@ -1205,12 +1308,20 @@ def append_percentile_classification_column(df: pd.DataFrame, percentiles: str, 
     df[target_col] = pd.to_numeric(df[target_col], errors='coerce')
     quantiles = [df[target_col].quantile(p / 100) for p in percentiles_list]
 
-    df[new_col_name] = pd.cut(df[target_col], bins=quantiles, labels=labels, include_lowest=True)
+    df[new_col_name] = pd.cut(
+        df[target_col],
+        bins=quantiles,
+        labels=labels,
+        include_lowest=True)
 
     return df
 
 
-def append_ranged_date_classification_column(df: pd.DataFrame, date_ranges: str, target_col: str, new_col_name: str) -> pd.DataFrame:
+def append_ranged_date_classification_column(
+        df: pd.DataFrame,
+        date_ranges: str,
+        target_col: str,
+        new_col_name: str) -> pd.DataFrame:
     """
     Append a ranged date classification column to the DataFrame.
 
@@ -1243,7 +1354,9 @@ def append_ranged_date_classification_column(df: pd.DataFrame, date_ranges: str,
     return df
 
 
-def rename_columns(df: pd.DataFrame, rename_pairs: Dict[str, str]) -> pd.DataFrame:
+def rename_columns(df: pd.DataFrame,
+                   rename_pairs: Dict[str,
+                                      str]) -> pd.DataFrame:
     """
     Rename columns in the DataFrame.
 
@@ -1255,7 +1368,8 @@ def rename_columns(df: pd.DataFrame, rename_pairs: Dict[str, str]) -> pd.DataFra
         A new DataFrame with columns renamed.
     """
     if df is None:
-        raise ValueError("No DataFrame to rename columns. Please provide a valid DataFrame.")
+        raise ValueError(
+            "No DataFrame to rename columns. Please provide a valid DataFrame.")
 
     return df.rename(columns=rename_pairs)
 
@@ -1273,7 +1387,8 @@ def cascade_sort(df: pd.DataFrame, columns: List[str]) -> pd.DataFrame:
         A new DataFrame sorted by specified columns.
     """
     if df is None:
-        raise ValueError("No DataFrame to sort. Please provide a valid DataFrame.")
+        raise ValueError(
+            "No DataFrame to sort. Please provide a valid DataFrame.")
 
     col_names = []
     asc_order = []
@@ -1308,7 +1423,8 @@ def append_xgb_labels(df: pd.DataFrame, ratio_str: str) -> pd.DataFrame:
         A new DataFrame with XGB_TYPE labels appended.
     """
     if df is None:
-        raise ValueError("No DataFrame to add labels. Please provide a valid DataFrame.")
+        raise ValueError(
+            "No DataFrame to add labels. Please provide a valid DataFrame.")
 
     ratios = list(map(int, ratio_str.split(':')))
     total_ratio = sum(ratios)
@@ -1325,7 +1441,8 @@ def append_xgb_labels(df: pd.DataFrame, ratio_str: str) -> pd.DataFrame:
         labels = ['TRAIN'] * train_rows + ['VALIDATE'] * \
             validate_rows + ['TEST'] * test_rows
     else:
-        raise ValueError("Invalid ratio string format. Use 'TRAIN:TEST' or 'TRAIN:VALIDATE:TEST'.")
+        raise ValueError(
+            "Invalid ratio string format. Use 'TRAIN:TEST' or 'TRAIN:VALIDATE:TEST'.")
 
     df_with_labels = df.copy()
     df_with_labels['XGB_TYPE'] = labels
@@ -1333,7 +1450,13 @@ def append_xgb_labels(df: pd.DataFrame, ratio_str: str) -> pd.DataFrame:
     return df_with_labels
 
 
-def append_xgb_regression_predictions(df: pd.DataFrame, target_col: str, feature_cols: str, pred_col: str, boosting_rounds: int = 100, model_path: Optional[str] = None) -> pd.DataFrame:
+def append_xgb_regression_predictions(
+        df: pd.DataFrame,
+        target_col: str,
+        feature_cols: str,
+        pred_col: str,
+        boosting_rounds: int = 100,
+        model_path: Optional[str] = None) -> pd.DataFrame:
     """
     Append XGB regression predictions to DataFrame. Assumes data is labeled by an 'XGB_TYPE' column.
 
@@ -1349,7 +1472,8 @@ def append_xgb_regression_predictions(df: pd.DataFrame, target_col: str, feature
         DataFrame with predictions appended.
     """
     if df is None or 'XGB_TYPE' not in df.columns:
-        raise ValueError("DataFrame is not initialized or 'XGB_TYPE' column is missing.")
+        raise ValueError(
+            "DataFrame is not initialized or 'XGB_TYPE' column is missing.")
 
     features = feature_cols.replace(' ', '').split(',')
 
@@ -1365,16 +1489,27 @@ def append_xgb_regression_predictions(df: pd.DataFrame, target_col: str, feature
     else:
         validate_data = None
 
-    dtrain = xgb.DMatrix(train_data[features], label=train_data[target_col], enable_categorical=True)
+    dtrain = xgb.DMatrix(
+        train_data[features],
+        label=train_data[target_col],
+        enable_categorical=True)
     evals = [(dtrain, 'train')]
 
     if validate_data is not None:
-        dvalidate = xgb.DMatrix(validate_data[features], label=validate_data[target_col], enable_categorical=True)
+        dvalidate = xgb.DMatrix(
+            validate_data[features],
+            label=validate_data[target_col],
+            enable_categorical=True)
         evals.append((dvalidate, 'validate'))
 
     params = {'objective': 'reg:squarederror', 'eval_metric': 'rmse'}
 
-    model = xgb.train(params, dtrain, num_boost_round=boosting_rounds, evals=evals, early_stopping_rounds=10 if validate_data is not None else None)
+    model = xgb.train(
+        params,
+        dtrain,
+        num_boost_round=boosting_rounds,
+        evals=evals,
+        early_stopping_rounds=10 if validate_data is not None else None)
 
     # Make predictions for all data
     dall = xgb.DMatrix(df[features], enable_categorical=True)
@@ -1383,13 +1518,20 @@ def append_xgb_regression_predictions(df: pd.DataFrame, target_col: str, feature
     if model_path:
         model.save_model(model_path)
 
-    columns_order = [col for col in df.columns if col not in ['XGB_TYPE', target_col, pred_col]] + ['XGB_TYPE', target_col, pred_col]
+    columns_order = [col for col in df.columns if col not in [
+        'XGB_TYPE', target_col, pred_col]] + ['XGB_TYPE', target_col, pred_col]
     df = df[columns_order]
 
     return df
 
 
-def append_xgb_logistic_regression_predictions(df: pd.DataFrame, target_col: str, feature_cols: str, pred_col: str, boosting_rounds: int = 100, model_path: Optional[str] = None) -> pd.DataFrame:
+def append_xgb_logistic_regression_predictions(
+        df: pd.DataFrame,
+        target_col: str,
+        feature_cols: str,
+        pred_col: str,
+        boosting_rounds: int = 100,
+        model_path: Optional[str] = None) -> pd.DataFrame:
     """
     Append XGB logistic regression predictions to DataFrame. Assumes data is labeled by an 'XGB_TYPE' column.
 
@@ -1421,16 +1563,27 @@ def append_xgb_logistic_regression_predictions(df: pd.DataFrame, target_col: str
     if 'VALIDATE' in df['XGB_TYPE'].values:
         validate_data = df[df['XGB_TYPE'] == 'VALIDATE']
 
-    dtrain = xgb.DMatrix(train_data[features], label=train_data[target_col], enable_categorical=True)
+    dtrain = xgb.DMatrix(
+        train_data[features],
+        label=train_data[target_col],
+        enable_categorical=True)
     evals = [(dtrain, 'train')]
 
     if validate_data is not None:
-        dvalidate = xgb.DMatrix(validate_data[features], label=validate_data[target_col], enable_categorical=True)
+        dvalidate = xgb.DMatrix(
+            validate_data[features],
+            label=validate_data[target_col],
+            enable_categorical=True)
         evals.append((dvalidate, 'validate'))
 
     params = {'objective': 'binary:logistic', 'eval_metric': 'auc'}
 
-    model = xgb.train(params, dtrain, num_boost_round=boosting_rounds, evals=evals, early_stopping_rounds=10 if validate_data is not None else None)
+    model = xgb.train(
+        params,
+        dtrain,
+        num_boost_round=boosting_rounds,
+        evals=evals,
+        early_stopping_rounds=10 if validate_data is not None else None)
 
     # Make predictions for all data
     dall = xgb.DMatrix(df[features], enable_categorical=True)
@@ -1439,13 +1592,18 @@ def append_xgb_logistic_regression_predictions(df: pd.DataFrame, target_col: str
     if model_path:
         model.save_model(model_path)
 
-    columns_order = [col for col in df.columns if col not in ['XGB_TYPE', target_col, pred_col]] + ['XGB_TYPE', target_col, pred_col]
+    columns_order = [col for col in df.columns if col not in [
+        'XGB_TYPE', target_col, pred_col]] + ['XGB_TYPE', target_col, pred_col]
     df = df[columns_order]
 
     return df
 
 
-def print_n_frequency_cascading(df: pd.DataFrame, n: int, columns: str, order_by: str = "FREQ_DESC") -> None:
+def print_n_frequency_cascading(
+        df: pd.DataFrame,
+        n: int,
+        columns: str,
+        order_by: str = "FREQ_DESC") -> None:
     """
     Print the cascading frequency of top n values for specified columns.
 
@@ -1468,7 +1626,12 @@ def print_n_frequency_cascading(df: pd.DataFrame, n: int, columns: str, order_by
         # Convert the column to string representation
         df[current_col] = df[current_col].astype(str)
         frequency = df[current_col].value_counts(dropna=False)
-        frequency = frequency.rename(index={'nan': 'NaN', 'NaT': 'NaT', 'None': 'None', '': 'Empty'})
+        frequency = frequency.rename(
+            index={
+                'nan': 'NaN',
+                'NaT': 'NaT',
+                'None': 'None',
+                '': 'Empty'})
 
         if limit is not None:
             frequency = frequency.nlargest(limit)
@@ -1483,8 +1646,11 @@ def print_n_frequency_cascading(df: pd.DataFrame, n: int, columns: str, order_by
                 filtered_df = df[df[current_col] == value]
 
             if len(columns) > 1:
-                sub_report = generate_cascade_report(filtered_df, columns[1:], limit, order_by)
-                report[value] = {"count": str(count), f"sub_distribution({columns[1]})": sub_report if sub_report else {}}
+                sub_report = generate_cascade_report(
+                    filtered_df, columns[1:], limit, order_by)
+                report[value] = {
+                    "count": str(count), f"sub_distribution({
+                        columns[1]})": sub_report if sub_report else {}}
             else:
                 report[value] = {"count": str(count)}
 
@@ -1494,17 +1660,29 @@ def print_n_frequency_cascading(df: pd.DataFrame, n: int, columns: str, order_by
         if order_by == "ASC":
             return dict(sorted(frequency.items(), key=lambda item: item[0]))
         elif order_by == "DESC":
-            return dict(sorted(frequency.items(), key=lambda item: item[0], reverse=True))
+            return dict(
+                sorted(
+                    frequency.items(),
+                    key=lambda item: item[0],
+                    reverse=True))
         elif order_by == "FREQ_ASC":
             return dict(sorted(frequency.items(), key=lambda item: item[1]))
         else:  # Default to "FREQ_DESC"
-            return dict(sorted(frequency.items(), key=lambda item: item[1], reverse=True))
+            return dict(
+                sorted(
+                    frequency.items(),
+                    key=lambda item: item[1],
+                    reverse=True))
 
     report = generate_cascade_report(df, columns, n, order_by)
     print(json.dumps(report, indent=2))
 
 
-def print_n_frequency_linear(df: pd.DataFrame, n: int, columns: str, order_by: str = "FREQ_DESC") -> None:
+def print_n_frequency_linear(
+        df: pd.DataFrame,
+        n: int,
+        columns: str,
+        order_by: str = "FREQ_DESC") -> None:
     """
     Print the linear frequency of top n values for specified columns.
 
@@ -1524,13 +1702,19 @@ def print_n_frequency_linear(df: pd.DataFrame, n: int, columns: str, order_by: s
                 continue
 
             frequency = df[current_col].astype(str).value_counts(dropna=False)
-            frequency = frequency.rename(index={'nan': 'NaN', 'NaT': 'NaT', 'None': 'None', '': 'Empty'})
+            frequency = frequency.rename(
+                index={
+                    'nan': 'NaN',
+                    'NaT': 'NaT',
+                    'None': 'None',
+                    '': 'Empty'})
 
             if limit is not None:
                 frequency = frequency.nlargest(limit)
 
             sorted_frequency = sort_frequency(frequency, order_by)
-            col_report = {str(value): str(count) for value, count in sorted_frequency.items()}
+            col_report = {str(value): str(count)
+                          for value, count in sorted_frequency.items()}
             report[current_col] = col_report
 
         return report
@@ -1539,17 +1723,27 @@ def print_n_frequency_linear(df: pd.DataFrame, n: int, columns: str, order_by: s
         if order_by == "ASC":
             return dict(sorted(frequency.items(), key=lambda item: item[0]))
         elif order_by == "DESC":
-            return dict(sorted(frequency.items(), key=lambda item: item[0], reverse=True))
+            return dict(
+                sorted(
+                    frequency.items(),
+                    key=lambda item: item[0],
+                    reverse=True))
         elif order_by == "FREQ_ASC":
             return dict(sorted(frequency.items(), key=lambda item: item[1]))
         else:  # Default to "FREQ_DESC"
-            return dict(sorted(frequency.items(), key=lambda item: item[1], reverse=True))
+            return dict(
+                sorted(
+                    frequency.items(),
+                    key=lambda item: item[1],
+                    reverse=True))
 
     report = generate_linear_report(df, columns, n, order_by)
     print(json.dumps(report, indent=2))
 
 
-def retain_columns(df: pd.DataFrame, columns_to_retain: List[str]) -> pd.DataFrame:
+def retain_columns(
+        df: pd.DataFrame,
+        columns_to_retain: List[str]) -> pd.DataFrame:
     """
     Retain specified columns in the DataFrame and drop the others.
 
@@ -1565,7 +1759,10 @@ def retain_columns(df: pd.DataFrame, columns_to_retain: List[str]) -> pd.DataFra
     return df[columns_to_retain]
 
 
-def mask_against_dataframe(df: pd.DataFrame, other_df: pd.DataFrame, column_name: str) -> pd.DataFrame:
+def mask_against_dataframe(
+        df: pd.DataFrame,
+        other_df: pd.DataFrame,
+        column_name: str) -> pd.DataFrame:
     """
     Retain only rows with common column values between two DataFrames.
 
@@ -1582,7 +1779,10 @@ def mask_against_dataframe(df: pd.DataFrame, other_df: pd.DataFrame, column_name
     return df[df[column_name].isin(other_df[column_name])]
 
 
-def mask_against_dataframe_converse(df: pd.DataFrame, other_df: pd.DataFrame, column_name: str) -> pd.DataFrame:
+def mask_against_dataframe_converse(
+        df: pd.DataFrame,
+        other_df: pd.DataFrame,
+        column_name: str) -> pd.DataFrame:
     """
     Retain only rows with uncommon column values between two DataFrames.
 
@@ -1616,7 +1816,8 @@ def union_join(df1: pd.DataFrame, df2: pd.DataFrame) -> pd.DataFrame:
         ValueError: If the DataFrames do not have the same columns.
     """
     if set(df1.columns) != set(df2.columns):
-        raise ValueError("Both DataFrames must have the same columns for a union join")
+        raise ValueError(
+            "Both DataFrames must have the same columns for a union join")
 
     result_df = pd.concat([df1, df2], ignore_index=True).drop_duplicates()
     return result_df
@@ -1637,13 +1838,18 @@ def bag_union_join(df1: pd.DataFrame, df2: pd.DataFrame) -> pd.DataFrame:
         ValueError: If the DataFrames do not have the same columns.
     """
     if set(df1.columns) != set(df2.columns):
-        raise ValueError("Both DataFrames must have the same columns for a bag union join")
+        raise ValueError(
+            "Both DataFrames must have the same columns for a bag union join")
 
     result_df = pd.concat([df1, df2], ignore_index=True)
     return result_df
 
 
-def left_join(df1: pd.DataFrame, df2: pd.DataFrame, left_on: str, right_on: str) -> pd.DataFrame:
+def left_join(
+        df1: pd.DataFrame,
+        df2: pd.DataFrame,
+        left_on: str,
+        right_on: str) -> pd.DataFrame:
     """
     Perform a left join on two DataFrames.
 
@@ -1659,7 +1865,11 @@ def left_join(df1: pd.DataFrame, df2: pd.DataFrame, left_on: str, right_on: str)
     return df1.merge(df2, how='left', left_on=left_on, right_on=right_on)
 
 
-def right_join(df1: pd.DataFrame, df2: pd.DataFrame, left_on: str, right_on: str) -> pd.DataFrame:
+def right_join(
+        df1: pd.DataFrame,
+        df2: pd.DataFrame,
+        left_on: str,
+        right_on: str) -> pd.DataFrame:
     """
     Perform a right join on two DataFrames.
 
@@ -1675,7 +1885,10 @@ def right_join(df1: pd.DataFrame, df2: pd.DataFrame, left_on: str, right_on: str
     return df1.merge(df2, how='right', left_on=left_on, right_on=right_on)
 
 
-def insert_dataframe_in_sqlite_database(db_path: str, tablename: str, df: pd.DataFrame) -> None:
+def insert_dataframe_in_sqlite_database(
+        db_path: str,
+        tablename: str,
+        df: pd.DataFrame) -> None:
     """
     Inserts a Pandas DataFrame into a SQLite database table.
 
@@ -1683,7 +1896,7 @@ def insert_dataframe_in_sqlite_database(db_path: str, tablename: str, df: pd.Dat
         db_path: str
             The file path to the SQLite database. If the database does not exist,
             it will be created.
-            
+
         tablename: str
             The name of the table where the data will be inserted. If the table does
             not exist, it will be created based on the DataFrame's columns and types.
@@ -1697,8 +1910,8 @@ def insert_dataframe_in_sqlite_database(db_path: str, tablename: str, df: pd.Dat
         - Inserts the DataFrame's data into the table, appending to any existing data.
 
     Data Type Mapping:
-        - Converts Pandas data types to SQLite types: 'int64' to 'INTEGER', 
-          'float64' to 'REAL', 'object' to 'TEXT', 'datetime64[ns]' to 'TEXT', 
+        - Converts Pandas data types to SQLite types: 'int64' to 'INTEGER',
+          'float64' to 'REAL', 'object' to 'TEXT', 'datetime64[ns]' to 'TEXT',
           and 'bool' to 'INTEGER'.
 
     Returns:
@@ -1706,9 +1919,9 @@ def insert_dataframe_in_sqlite_database(db_path: str, tablename: str, df: pd.Dat
     """
 
     def table_exists(cursor, table_name):
-        cursor.execute(f"SELECT count(name) FROM sqlite_master WHERE type='table' AND name='{table_name}'")
+        cursor.execute(
+            f"SELECT count(name) FROM sqlite_master WHERE type='table' AND name='{table_name}'")
         return cursor.fetchone()[0] == 1
-
 
     dtype_mapping = {
         'int64': 'INTEGER',
@@ -1726,15 +1939,21 @@ def insert_dataframe_in_sqlite_database(db_path: str, tablename: str, df: pd.Dat
 
         if not table_exists(cursor, tablename):
             columns_with_types = ', '.join(
-                f'"{col}" {map_dtype(dtype)}' for col, dtype in zip(df.columns, df.dtypes)
-            )
+                f'"{col}" {
+                    map_dtype(dtype)}' for col,
+                dtype in zip(
+                    df.columns,
+                    df.dtypes))
             create_table_query = f'CREATE TABLE "{tablename}" ({columns_with_types})'
             conn.execute(create_table_query)
 
         df.to_sql(tablename, conn, if_exists='append', index=False)
 
 
-def sync_dataframe_to_sqlite_database(db_path: str, tablename: str, df: pd.DataFrame) -> None:
+def sync_dataframe_to_sqlite_database(
+        db_path: str,
+        tablename: str,
+        df: pd.DataFrame) -> None:
     """
     Processes and saves a DataFrame to an SQLite database, adding a timestamp column
     and replacing the existing table if needed. Creates the table if it does not exist.
@@ -1770,8 +1989,11 @@ def sync_dataframe_to_sqlite_database(db_path: str, tablename: str, df: pd.DataF
         if cursor.fetchall() == []:  # Table does not exist
             # Create a table using the DataFrame's column names and types
             columns_with_types = ', '.join(
-                f'"{col}" {map_dtype(dtype)}' for col, dtype in zip(df.columns, df.dtypes)
-            )
+                f'"{col}" {
+                    map_dtype(dtype)}' for col,
+                dtype in zip(
+                    df.columns,
+                    df.dtypes))
             create_table_query = f'CREATE TABLE "{new_table_name}" ({columns_with_types})'
             conn.execute(create_table_query)
 
