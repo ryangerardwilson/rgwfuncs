@@ -28,6 +28,7 @@ import warnings
 # Suppress all FutureWarnings
 warnings.filterwarnings("ignore", category=FutureWarning)
 
+
 def docs(method_type_filter: Optional[str] = None) -> None:
     """
     Print a list of function names in alphabetical order. If method_type_filter
@@ -339,16 +340,13 @@ def drop_duplicates_retain_last(df: pd.DataFrame, columns: Optional[str] = None)
     return df.drop_duplicates(subset=columns_list, keep='last')
 
 
-def load_data_from_query(db_preset_name: str, query: str, config_file_name: str = "rgwml.config") -> pd.DataFrame:
+def load_data_from_query(db_preset_name: str, query: str) -> pd.DataFrame:
     """
-    Load data from a database query into a DataFrame based on a configuration
-    preset.
+    Load data from a database query into a DataFrame based on a configuration preset.
 
     Parameters:
         db_preset_name: The name of the database preset in the configuration file.
         query: The SQL query to execute.
-        config_file_name: Name of the configuration file
-        (default: 'rgwml.config').
 
     Returns:
         A DataFrame containing the query result.
@@ -357,17 +355,6 @@ def load_data_from_query(db_preset_name: str, query: str, config_file_name: str 
         FileNotFoundError: If the configuration file is not found.
         ValueError: If the database preset or db_type is invalid.
     """
-
-    def locate_config_file(filename: str = config_file_name) -> str:
-        home_dir = os.path.expanduser("~")
-        search_paths = [os.path.join(home_dir, "Desktop"), os.path.join(home_dir, "Documents"), os.path.join(home_dir, "Downloads"),]
-
-        for path in search_paths:
-            for root, dirs, files in os.walk(path):
-                if filename in files:
-                    return os.path.join(root, filename)
-        raise FileNotFoundError(
-            f"{filename} not found in Desktop, Documents, or Downloads folders")
 
     def query_mssql(db_preset: Dict[str, Any], query: str) -> pd.DataFrame:
         server = db_preset['host']
@@ -398,7 +385,6 @@ def load_data_from_query(db_preset_name: str, query: str, config_file_name: str 
         return pd.DataFrame(rows, columns=columns)
 
     def query_clickhouse(db_preset: Dict[str, Any], query: str) -> pd.DataFrame:
-
         host = db_preset['host']
         user = db_preset['username']
         password = db_preset['password']
@@ -437,8 +423,8 @@ def load_data_from_query(db_preset_name: str, query: str, config_file_name: str 
 
         return pd.DataFrame(rows, columns=columns)
 
-    # Read the configuration file to get the database preset
-    config_path = locate_config_file()
+    # Assume the configuration file is located at ~/.rgwfuncsrc
+    config_path = os.path.expanduser('~/.rgwfuncsrc')
     with open(config_path, 'r') as f:
         config = json.load(f)
 
@@ -459,6 +445,7 @@ def load_data_from_query(db_preset_name: str, query: str, config_file_name: str 
         return query_google_big_query(db_preset, query)
     else:
         raise ValueError(f"Unsupported db_type: {db_type}")
+
 
 
 def load_data_from_path(file_path: str) -> pd.DataFrame:
@@ -811,39 +798,36 @@ def send_dataframe_via_telegram(df: pd.DataFrame, bot_name: str, message: Option
 
     Parameters:
         df: The DataFrame to send.
-        bot_name: The name of the Telegram bot as specified in the configuration.
-        message: Custom message to send along with the DataFrame or file.
-        as_file: Boolean flag to decide whether to send the DataFrame as a file or as text.
-        remove_after_send: If True, removes the file after sending.
+        bot_name: The name of the Telegram bot as specified in the configuration file.
+        message: Custom message to send along with the DataFrame or file. Defaults to None.
+        as_file: Boolean flag to indicate whether the DataFrame should be sent as a file (True) or as text (False). Defaults to True.
+        remove_after_send: If True, removes the CSV file after sending. Defaults to True.
+
+    Raises:
+        ValueError: If the specified bot is not found or if no DataFrame is provided.
+        Exception: If the message sending fails.
+
+    Notes:
+        The configuration file is assumed to be located at `~/.rgwfuncsrc`.
     """
 
-    def locate_config_file(filename: str = "rgwml.config") -> str:
-        """Retrieve the configuration file path."""
-        home_dir = os.path.expanduser("~")
-        search_paths = [os.path.join(home_dir, folder) for folder in ["Desktop", "Documents", "Downloads"]]
-
-        for path in search_paths:
-            for root, _, files in os.walk(path):
-                if filename in files:
-                    return os.path.join(root, filename)
-        raise FileNotFoundError(
-            f"{filename} not found in Desktop, Documents, or Downloads")
-
     def get_config(config_path: str) -> dict:
-        """Load configuration from a json file."""
+        """Load configuration from a JSON file."""
         with open(config_path, 'r') as file:
             return json.load(file)
 
-    config_path = locate_config_file()
+    # Assume the configuration file is located at ~/.rgwfuncsrc
+    config_path = os.path.expanduser('~/.rgwfuncsrc')
     config = get_config(config_path)
-    bot_config = next((bot for bot in config['telegram_bot_presets'] if bot['name'] == bot_name), None)
 
+    bot_config = next((bot for bot in config['telegram_bot_presets'] if bot['name'] == bot_name), None)
     if not bot_config:
         raise ValueError(f"No bot found with the name {bot_name}")
 
     if df is None:
         raise ValueError("No DataFrame to send. Please provide a DataFrame.")
 
+    response = None
     if as_file:
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
         file_name = f"df_{timestamp}.csv"
@@ -862,11 +846,12 @@ def send_dataframe_via_telegram(df: pd.DataFrame, bot_name: str, message: Option
         df_str = df.to_string()
         payload = {
             'chat_id': bot_config['chat_id'],
-            'text': message + "\n\n" + df_str if message else df_str,
-            'parse_mode': 'HTML'}
+            'text': (message + "\n\n" + df_str) if message else df_str,
+            'parse_mode': 'HTML'
+        }
         response = requests.post(f"https://api.telegram.org/bot{bot_config['bot_token']}/sendMessage", data=payload)
 
-    if not response.ok:
+    if response and not response.ok:
         raise Exception(f"Error sending message: {response.text}")
 
     print("Message sent successfully.")
@@ -874,28 +859,24 @@ def send_dataframe_via_telegram(df: pd.DataFrame, bot_name: str, message: Option
 
 def send_data_to_email(df: pd.DataFrame, preset_name: str, to_email: str, subject: Optional[str] = None, body: Optional[str] = None, as_file: bool = True, remove_after_send: bool = True) -> None:
     """
-    Send an email with optional DataFrame attachment using Gmail API via a specified preset.
+    Send an email with an optional DataFrame attachment using the Gmail API via a specified preset.
 
     Parameters:
         df: The DataFrame to send.
         preset_name: The configuration preset name to use for sending the email.
         to_email: The recipient email address.
-        subject: Optional subject of the email.
-        body: Optional message body of the email.
-        as_file: Boolean flag to decide whether to send the DataFrame as a file.
-        remove_after_send: If True, removes the CSV file after sending.
+        subject: Optional subject of the email. Defaults to 'DataFrame CSV File' if not given.
+        body: Optional message body of the email. Defaults to 'Please find the CSV file attached.' if not given.
+        as_file: Boolean flag to decide whether to send the DataFrame as a file (True) or embed it in the email (False). Defaults to True.
+        remove_after_send: If True, removes the CSV file after sending. Defaults to True.
+
+    Raises:
+        ValueError: If the preset is not found in the configuration.
+        Exception: If the email preparation or sending fails.
+
+    Notes:
+        The configuration file is assumed to be located at `~/.rgwfuncsrc`.
     """
-
-    def locate_config_file(filename: str = "rgwml.config") -> str:
-        """Locate config file in common user directories."""
-        home_dir = os.path.expanduser("~")
-        search_paths = [os.path.join(home_dir, folder) for folder in ["Desktop", "Documents", "Downloads"]]
-
-        for path in search_paths:
-            for root, _, files in os.walk(path):
-                if filename in files:
-                    return os.path.join(root, filename)
-        raise FileNotFoundError(f"{filename} not found in Desktop, Documents, or Downloads folders")
 
     def get_config(config_path: str) -> dict:
         with open(config_path, 'r') as file:
@@ -904,9 +885,7 @@ def send_data_to_email(df: pd.DataFrame, preset_name: str, to_email: str, subjec
             except json.JSONDecodeError as e:
                 raise ValueError(f"Invalid JSON format in config file: {e}")
 
-    def authenticate_service_account(
-            service_account_credentials_path: str,
-            sender_email_id: str) -> Any:
+    def authenticate_service_account(service_account_credentials_path: str, sender_email_id: str) -> Any:
         credentials = service_account.Credentials.from_service_account_file(
             service_account_credentials_path,
             scopes=['https://mail.google.com/'],
@@ -914,8 +893,8 @@ def send_data_to_email(df: pd.DataFrame, preset_name: str, to_email: str, subjec
         )
         return build('gmail', 'v1', credentials=credentials)
 
-    # Load configuration
-    config_path = locate_config_file()
+    # Load configuration from ~/.rgwfuncsrc
+    config_path = os.path.expanduser('~/.rgwfuncsrc')
     config = get_config(config_path)
 
     # Retrieve Gmail preset configuration
@@ -983,30 +962,25 @@ def send_data_to_slack(df: pd.DataFrame, bot_name: str, message: Optional[str] =
     Parameters:
         df: The DataFrame to send.
         bot_name: The Slack bot configuration preset name.
-        message: Custom message to send along with the DataFrame or file.
-        as_file: Boolean flag to decide whether to send the DataFrame as a file.
-        remove_after_send: If True, removes the CSV file after sending.
+        message: Custom message to send along with the DataFrame or file. Defaults to None.
+        as_file: Boolean flag to decide whether to send the DataFrame as a file (True) or as text (False). Defaults to True.
+        remove_after_send: If True, removes the CSV file after sending. Defaults to True.
+
+    Raises:
+        ValueError: If the specified bot is not found in the configuration.
+        Exception: If the message sending fails.
+
+    Notes:
+        The configuration file is assumed to be located at `~/.rgwfuncsrc`.
     """
-
-    def locate_config_file(filename: str = "rgwml.config") -> str:
-        """Locate config file in common user directories."""
-        home_dir = os.path.expanduser("~")
-        search_paths = [os.path.join(home_dir, folder) for folder in ["Desktop", "Documents", "Downloads"]]
-
-        for path in search_paths:
-            for root, _, files in os.walk(path):
-                if filename in files:
-                    return os.path.join(root, filename)
-        raise FileNotFoundError(
-            f"{filename} not found in Desktop, Documents, or Downloads folders")
 
     def get_config(config_path: str) -> dict:
         """Load configuration from a JSON file."""
         with open(config_path, 'r') as file:
             return json.load(file)
 
-    # Load the Slack configuration
-    config_path = locate_config_file()
+    # Load the Slack configuration from ~/.rgwfuncsrc
+    config_path = os.path.expanduser('~/.rgwfuncsrc')
     config = get_config(config_path)
 
     bot_config = next((bot for bot in config['slack_bot_presets'] if bot['name'] == bot_name), None)
@@ -1024,13 +998,22 @@ def send_data_to_slack(df: pd.DataFrame, bot_name: str, message: Optional[str] =
 
         try:
             with open(file_name, 'rb') as file:
-                response = client.files_upload(channels=bot_config['channel_id'], file=file, filename=os.path.basename(file_name), title="DataFrame Upload", initial_comment=message or '')
+                response = client.files_upload(
+                    channels=bot_config['channel_id'],
+                    file=file,
+                    filename=os.path.basename(file_name),
+                    title="DataFrame Upload",
+                    initial_comment=message or ''
+                )
         finally:
             if remove_after_send and os.path.exists(file_name):
                 os.remove(file_name)
     else:
         df_str = df.to_string()
-        response = client.chat_postMessage(channel=bot_config['channel_id'], text=(message + "\n\n" + df_str) if message else df_str)
+        response = client.chat_postMessage(
+            channel=bot_config['channel_id'],
+            text=(message + "\n\n" + df_str) if message else df_str
+        )
 
     # Check if the message was sent successfully
     if not response["ok"]:
@@ -1692,6 +1675,65 @@ def right_join(df1: pd.DataFrame, df2: pd.DataFrame, left_on: str, right_on: str
     return df1.merge(df2, how='right', left_on=left_on, right_on=right_on)
 
 
+def insert_dataframe_in_sqlite_database(db_path: str, tablename: str, df: pd.DataFrame) -> None:
+    """
+    Inserts a Pandas DataFrame into a SQLite database table.
+
+    Parameters:
+        db_path: str
+            The file path to the SQLite database. If the database does not exist,
+            it will be created.
+            
+        tablename: str
+            The name of the table where the data will be inserted. If the table does
+            not exist, it will be created based on the DataFrame's columns and types.
+
+        df: pd.DataFrame
+            The DataFrame containing the data to be inserted into the database.
+
+    Functionality:
+        - Checks if the specified table exists in the database.
+        - Creates the table with appropriate column types if it doesn't exist.
+        - Inserts the DataFrame's data into the table, appending to any existing data.
+
+    Data Type Mapping:
+        - Converts Pandas data types to SQLite types: 'int64' to 'INTEGER', 
+          'float64' to 'REAL', 'object' to 'TEXT', 'datetime64[ns]' to 'TEXT', 
+          and 'bool' to 'INTEGER'.
+
+    Returns:
+        None
+    """
+
+    def table_exists(cursor, table_name):
+        cursor.execute(f"SELECT count(name) FROM sqlite_master WHERE type='table' AND name='{table_name}'")
+        return cursor.fetchone()[0] == 1
+
+
+    dtype_mapping = {
+        'int64': 'INTEGER',
+        'float64': 'REAL',
+        'object': 'TEXT',
+        'datetime64[ns]': 'TEXT',
+        'bool': 'INTEGER',
+    }
+
+    def map_dtype(dtype):
+        return dtype_mapping.get(str(dtype), 'TEXT')
+
+    with sqlite3.connect(db_path) as conn:
+        cursor = conn.cursor()
+
+        if not table_exists(cursor, tablename):
+            columns_with_types = ', '.join(
+                f'"{col}" {map_dtype(dtype)}' for col, dtype in zip(df.columns, df.dtypes)
+            )
+            create_table_query = f'CREATE TABLE "{tablename}" ({columns_with_types})'
+            conn.execute(create_table_query)
+
+        df.to_sql(tablename, conn, if_exists='append', index=False)
+
+
 def sync_dataframe_to_sqlite_database(db_path: str, tablename: str, df: pd.DataFrame) -> None:
     """
     Processes and saves a DataFrame to an SQLite database, adding a timestamp column
@@ -1702,6 +1744,10 @@ def sync_dataframe_to_sqlite_database(db_path: str, tablename: str, df: pd.DataF
     - tablename (str): The name of the table in the database.
     - df (pd.DataFrame): The DataFrame to be processed and saved.
     """
+    # Helper function to map pandas dtype to SQLite type
+    def map_dtype(dtype):
+        return dtype_mapping.get(str(dtype), 'TEXT')
+
     # Step 1: Add a timestamp column to the dataframe
     df['rgwfuncs_sync_timestamp'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
@@ -1713,10 +1759,6 @@ def sync_dataframe_to_sqlite_database(db_path: str, tablename: str, df: pd.DataF
         'datetime64[ns]': 'TEXT',  # Dates are stored as text in SQLite
         'bool': 'INTEGER',  # SQLite does not have a separate Boolean storage class
     }
-
-    # Helper function to map pandas dtype to SQLite type
-    def map_dtype(dtype):
-        return dtype_mapping.get(str(dtype), 'TEXT')
 
     # Step 2: Save df in SQLite3 db as '{tablename}_new'
     with sqlite3.connect(db_path) as conn:

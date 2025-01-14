@@ -14,9 +14,9 @@ Install the package using:
 
 --------------------------------------------------------------------------------
 
-## Create a `rgwml.config` File
+## Create a `.rgwfuncsrc` File
 
-A `rgwml.config` file (located at `vi ~/Documents/rgwml.config) is required for MSSQL, CLICKHOUSE, MYSQL, GOOGLE BIG QUERY, SLACK, TELEGRAM, and GMAIL integrations.
+A `.rgwfuncsrc` file (located at `vi ~/.rgwfuncsrc) is required for MSSQL, CLICKHOUSE, MYSQL, GOOGLE BIG QUERY, SLACK, TELEGRAM, and GMAIL integrations.
 
     {
       "db_presets" : [
@@ -355,28 +355,30 @@ Drop duplicate rows based on specified columns, retaining the last occurrence.
 --------------------------------------------------------------------------------
 
 ### 12. `load_data_from_query`
+
 Load data from a database query into a DataFrame based on a configuration preset.
 
-• Parameters:
-  - `db_preset_name` (str): Name of the database preset in the config file.
-  - query (str): The SQL query to execute.
-  - `config_file_name` (str): Name of the configuration file (default: "rgwml.config").
+- **Parameters:**
+  - `db_preset_name` (str): Name of the database preset in the configuration file.
+  - `query` (str): The SQL query to execute.
 
-• Returns:
-  - pd.DataFrame: A DataFrame containing the query result.
+- **Returns:**
+  - `pd.DataFrame`: A DataFrame containing the query result.
 
-• Example:
+- **Notes:**
+  - The configuration file is assumed to be located at `~/.rgwfuncsrc`.
+
+- **Example:**
+
+  from rgwfuncs import load_data_from_query
+
+  df = load_data_from_query(
+      db_preset_name="MyDBPreset",
+      query="SELECT * FROM my_table"
+  )
+  print(df)
+
     
-    from rgwfuncs import load_data_from_query
-
-    df = load_data_from_query(
-        db_preset_name="MyDBPreset",
-        query="SELECT * FROM my_table",
-        config_file_name="rgwml.config"
-    )
-    print(df)
-    
-
 --------------------------------------------------------------------------------
 
 ### 13. `load_data_from_path`
@@ -1122,10 +1124,47 @@ Perform a right join on two DataFrames.
     df_right_join = right_join(df1, df2, 'ID', 'ID')
     print(df_right_join)
 
+--------------------------------------------------------------------------------
+
+### 45. `insert_dataframe_in_sqlite_database`
+
+Inserts a Pandas DataFrame into a SQLite database table. If the specified table does not exist, it will be created with column types automatically inferred from the DataFrame's data types.
+
+- **Parameters:**
+  - `db_path` (str): The path to the SQLite database file. If the database does not exist, it will be created.
+  - `tablename` (str): The name of the table in the database. If the table does not exist, it is created with the DataFrame's columns and data types.
+  - `df` (pd.DataFrame): The DataFrame containing the data to be inserted into the database table.
+
+- **Returns:**
+  - `None`
+
+- **Notes:**
+  - Data types in the DataFrame are converted to SQLite-compatible types:
+    - `int64` is mapped to `INTEGER`
+    - `float64` is mapped to `REAL`
+    - `object` is mapped to `TEXT`
+    - `datetime64[ns]` is mapped to `TEXT` (dates are stored as text)
+    - `bool` is mapped to `INTEGER` (SQLite does not have a separate Boolean type)
+
+- **Example:**
+
+    from rgwfuncs import insert_dataframe_in_sqlite_database
+    import pandas as pd
+
+    df = pd.DataFrame({
+        'ID': [1, 2, 3],
+        'Name': ['Alice', 'Bob', 'Charlie'],
+        'Score': [88.5, 92.3, 85.0]
+    })
+
+    db_path = 'my_database.db'
+    tablename = 'students'
+
+    insert_dataframe_in_sqlite_database(db_path, tablename, df)
 
 --------------------------------------------------------------------------------
 
-### 45. `sync_dataframe_to_sqlite_database`
+### 46. `sync_dataframe_to_sqlite_database`
 Processes and saves a DataFrame to an SQLite database, adding a timestamp column and replacing the existing table if needed. Creates the table if it does not exist.
 
 • Parameters:
