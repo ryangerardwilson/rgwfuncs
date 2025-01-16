@@ -29,7 +29,7 @@ import warnings
 warnings.filterwarnings("ignore", category=FutureWarning)
 
 
-def docs(method_type_filter: Optional[str] = None) -> None:
+def df_docs(method_type_filter: Optional[str] = None) -> None:
     """
     Print a list of function names in alphabetical order. If method_type_filter
     is specified, print the docstrings of the functions that match the filter.
@@ -835,12 +835,7 @@ def print_dataframe(df: pd.DataFrame, source: Optional[str] = None) -> None:
     gc.collect()
 
 
-def send_dataframe_via_telegram(
-        df: pd.DataFrame,
-        bot_name: str,
-        message: Optional[str] = None,
-        as_file: bool = True,
-        remove_after_send: bool = True) -> None:
+def send_dataframe_via_telegram(df: pd.DataFrame, bot_name: str, message: Optional[str] = None, as_file: bool = True, remove_after_send: bool = True) -> None:
     """
     Send a DataFrame via Telegram using a specified bot configuration.
 
@@ -1885,10 +1880,7 @@ def right_join(
     return df1.merge(df2, how='right', left_on=left_on, right_on=right_on)
 
 
-def insert_dataframe_in_sqlite_database(
-        db_path: str,
-        tablename: str,
-        df: pd.DataFrame) -> None:
+def insert_dataframe_in_sqlite_database(db_path: str, tablename: str, df: pd.DataFrame) -> None:
     """
     Inserts a Pandas DataFrame into a SQLite database table.
 

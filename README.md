@@ -109,11 +109,9 @@ To display all docstrings, use:
 
 --------------------------------------------------------------------------------
 
-## Function References and Syntax Examples
+## String Based Functions
 
-Below is a quick reference of available functions, their purpose, and basic usage examples.
-
-### 1. docs
+### 1. str_docs
 Print a list of available function names in alphabetical order. If a filter is provided, print the matching docstrings.
 
 • Parameters:
@@ -122,7 +120,46 @@ Print a list of available function names in alphabetical order. If a filter is p
 • Example:
 
     import rgwfuncs
-    rgwfuncs.docs(method_type_filter='numeric_clean,limit_dataframe')
+    rgwfuncs.str_docs(method_type_filter='numeric_clean,limit_dataframe')
+
+--------------------------------------------------------------------------------
+
+### 2. send_telegram_message
+
+Send a message to a Telegram chat using a specified preset from your configuration file.
+
+• Parameters:
+  - `preset_name` (str): The name of the preset to use for sending the message. This should match a preset in the configuration file.
+  - `message` (str): The message text that you want to send to the Telegram chat.
+
+• Raises:
+  - `RuntimeError`: If the preset is not found in the configuration file or if necessary details (bot token or chat ID) are missing.
+
+• Example:
+
+    from rgwfuncs import send_telegram_message
+    
+    preset_name = "daily_updates"
+    message = "Here is your daily update!"
+
+    send_telegram_message(preset_name, message)
+
+--------------------------------------------------------------------------------
+
+## Dataframe Based Functions
+
+Below is a quick reference of available functions, their purpose, and basic usage examples.
+
+### 1. df_docs
+Print a list of available function names in alphabetical order. If a filter is provided, print the matching docstrings.
+
+• Parameters:
+  - `method_type_filter` (str): Optional, comma-separated to select docstring types, or '*' for all.
+
+• Example:
+
+    import rgwfuncs
+    rgwfuncs.df_docs(method_type_filter='numeric_clean,limit_dataframe')
 
 --------------------------------------------------------------------------------
 
