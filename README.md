@@ -976,22 +976,31 @@ Print the cascading frequency of top n values for specified columns.
 --------------------------------------------------------------------------------
 
 ### 37. `print_n_frequency_linear`
-Print the linear frequency of top n values for specified columns.
 
-• Parameters:
-  - df (pd.DataFrame)
-  - n (int)
-  - columns (str): Comma-separated columns.
-  - `order_by` (str)
+Prints the linear frequency of the top `n` values for specified columns.
 
-• Example:
-    
+#### Parameters:
+- **df** (`pd.DataFrame`): The DataFrame to analyze.
+- **n** (`int`): The number of top values to print for each column.
+- **columns** (`list`): A list of column names to be analyzed.
+- **order_by** (`str`): The order of frequency. The available options are:
+  - `"ASC"`: Sort keys in ascending lexicographical order.
+  - `"DESC"`: Sort keys in descending lexicographical order.
+  - `"FREQ_ASC"`: Sort the frequencies in ascending order (least frequent first).
+  - `"FREQ_DESC"`: Sort the frequencies in descending order (most frequent first).
+  - `"BY_KEYS_ASC"`: Sort keys in ascending order, numerically if possible, handling special strings like 'NaN' as typical entries.
+  - `"BY_KEYS_DESC"`: Sort keys in descending order, numerically if possible, handling special strings like 'NaN' as typical entries.
+
+#### Example:
+
     from rgwfuncs import print_n_frequency_linear
     import pandas as pd
 
-    df = pd.DataFrame({'City': ['NY','LA','NY','SF','LA','LA']})
-    print_n_frequency_linear(df, 2, 'City', 'FREQ_DESC')
-    
+    df = pd.DataFrame({'City': ['NY', 'LA', 'NY', 'SF', 'LA', 'LA']})
+    print_n_frequency_linear(df, 2, ['City'], 'FREQ_DESC')
+
+This example analyzes the `City` column, printing the top 2 most frequent values in descending order of frequency.
+
 
 --------------------------------------------------------------------------------
 

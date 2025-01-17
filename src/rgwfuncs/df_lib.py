@@ -1672,22 +1672,16 @@ def print_n_frequency_cascading(
     report = generate_cascade_report(df, columns, n, order_by)
     print(json.dumps(report, indent=2))
 
-
-def print_n_frequency_linear(
-        df: pd.DataFrame,
-        n: int,
-        columns: str,
-        order_by: str = "FREQ_DESC") -> None:
+def print_n_frequency_linear(df: pd.DataFrame, n: int, columns: list, order_by: str = "FREQ_DESC") -> None:
     """
     Print the linear frequency of top n values for specified columns.
 
     Parameters:
         df: DataFrame to analyze.
         n: Number of top values to print.
-        columns: Comma-separated column names to analyze.
-        order_by: Order of frequency: ACS, DESC, FREQ_ASC, FREQ_DESC.
+        columns: List of column names to analyze.
+        order_by: Order of frequency: ASC, DESC, FREQ_ASC, FREQ_DESC, BY_KEYS_ASC, BY_KEYS_DESC.
     """
-    columns = [col.strip() for col in columns.split(",")]
 
     def generate_linear_report(df, columns, limit, order_by):
         report = {}
@@ -1714,23 +1708,36 @@ def print_n_frequency_linear(
 
         return report
 
+    def try_parse_numeric(val):
+        """Attempt to parse a value as an integer or float."""
+        try:
+            return int(val)
+        except ValueError:
+            try:
+                return float(val)
+            except ValueError:
+                return val
+
     def sort_frequency(frequency, order_by):
-        if order_by == "ASC":
-            return dict(sorted(frequency.items(), key=lambda item: item[0]))
-        elif order_by == "DESC":
-            return dict(
-                sorted(
-                    frequency.items(),
-                    key=lambda item: item[0],
-                    reverse=True))
-        elif order_by == "FREQ_ASC":
-            return dict(sorted(frequency.items(), key=lambda item: item[1]))
-        else:  # Default to "FREQ_DESC"
-            return dict(
-                sorted(
-                    frequency.items(),
-                    key=lambda item: item[1],
-                    reverse=True))
+        keys = frequency.keys()
+
+        # Convert keys to numerical values where possible, leaving `NaN` as a special string
+        parsed_keys = [(try_parse_numeric(key), key) for key in keys]
+
+        if order_by in {"BY_KEYS_ASC", "BY_KEYS_DESC"}:
+            reverse = order_by == "BY_KEYS_DESC"
+            sorted_items = sorted(frequency.items(), key=lambda item: try_parse_numeric(item[0]), reverse=reverse)
+        else:
+            if order_by == "ASC":
+                sorted_items = sorted(frequency.items(), key=lambda item: item[0])
+            elif order_by == "DESC":
+                sorted_items = sorted(frequency.items(), key=lambda item: item[0], reverse=True)
+            elif order_by == "FREQ_ASC":
+                sorted_items = sorted(frequency.items(), key=lambda item: item[1])
+            else:  # Default to "FREQ_DESC"
+                sorted_items = sorted(frequency.items(), key=lambda item: item[1], reverse=True)
+
+        return dict(sorted_items)
 
     report = generate_linear_report(df, columns, n, order_by)
     print(json.dumps(report, indent=2))
