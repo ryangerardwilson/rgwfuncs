@@ -2,7 +2,7 @@
 
 ***By Ryan Gerard Wilson (https://ryangerardwilson.com)***
 
-This library is meant to make ML/ Data Science pipelines more readable. It assumes a linux environment, and the existence of a `rgwml.config` file for certain features (like db querying, sending data to slack, etc.)
+This library is meant to make ML/ Data Science pipelines more readable. It assumes a linux environment, and the existence of a `.rgwfuncsrc` file for certain features (like db querying, sending data to slack, etc.)
 
 --------------------------------------------------------------------------------
 

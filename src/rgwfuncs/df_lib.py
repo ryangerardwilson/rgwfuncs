@@ -1942,10 +1942,7 @@ def insert_dataframe_in_sqlite_database(db_path: str, tablename: str, df: pd.Dat
         df.to_sql(tablename, conn, if_exists='append', index=False)
 
 
-def sync_dataframe_to_sqlite_database(
-        db_path: str,
-        tablename: str,
-        df: pd.DataFrame) -> None:
+def sync_dataframe_to_sqlite_database(db_path: str, tablename: str, df: pd.DataFrame) -> None:
     """
     Processes and saves a DataFrame to an SQLite database, adding a timestamp column
     and replacing the existing table if needed. Creates the table if it does not exist.
