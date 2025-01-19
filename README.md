@@ -109,22 +109,126 @@ To display all docstrings, use:
 
 --------------------------------------------------------------------------------
 
-## String Based Functions
+## Documentation Access Functions
 
-### 1. str_docs
-Print a list of available function names in alphabetical order. If a filter is provided, print the matching docstrings.
+### 1. docs
+Print a list of available function names in alphabetical order. If a filter is provided, print the docstrings of functions containing the term.
 
 • Parameters:
   - `method_type_filter` (str): Optional, comma-separated to select docstring types, or '*' for all.
 
 • Example:
 
-    import rgwfuncs
-    rgwfuncs.str_docs(method_type_filter='numeric_clean,limit_dataframe')
+    from rgwfuncs import docs
+    docs(method_type_filter='numeric_clean,limit_dataframe')
 
 --------------------------------------------------------------------------------
 
-### 2. send_telegram_message
+## Algebra Based Functions
+
+This section provides comprehensive functions for handling algebraic expressions, performing tasks such as computation, simplification, solving equations, and prime factorization, all outputted in LaTeX format.
+
+### 1. `compute_algebraic_expression`
+
+Evaluates complex algebraic expressions and provides numerical results.
+
+- **Parameters:**
+  - `expression` (str): A string representing an arithmetic operation.
+
+- **Returns:**
+  - `float`: The computed numerical result.
+
+- **Example:**
+
+    from rgwfuncs import compute_algebraic_expression
+    result1 = compute_algebraic_expression("2 + 2")
+    print(result1)  # Output: 4.0
+
+    result2 = compute_algebraic_expression("10 % 3")
+    print(result2)  # Output: 1.0
+
+    result3 = compute_algebraic_expression("math.gcd(36, 60) * math.sin(math.radians(45)) * 10000")
+    print(result3)  # Output: 84852.8137423857
+
+These examples illustrate the ability to handle basic arithmetic, the modulo operator, and functions utilizing the Python math module.
+
+--------------------------------------------------------------------------------
+
+### 2. `simplify_algebraic_expression`
+
+Simplifies expressions and returns them in LaTeX format.
+
+- **Parameters:**
+  - `expression` (str): A string of the expression to simplify.
+
+- **Returns:**
+  - `str`: Simplified expression in LaTeX.
+
+- **Example:**
+
+    from rgwfuncs import simplify_algebraic_expression
+    simplified_expr1 = simplify_algebraic_expression("2*x + 3*x")
+    print(simplified_expr1)  # Output: "5 x"
+
+    simplified_expr2 = simplify_algebraic_expression("(np.diff(3*x**8)) / (np.diff(8*x**30) * 11*y**3)")
+    print(simplified_expr2)  # Output: "\frac{1}{110 x^{22} y^{3}}"
+
+These examples demonstrate simplification of polynomial expressions and more complex ratios involving derivatives.
+
+--------------------------------------------------------------------------------
+
+### 3. `solve_algebraic_expression`
+
+Solves equations for specified variables, with optional substitutions, returning LaTeX-formatted solutions.
+
+- **Parameters:**
+  - `expression` (str): A string of the equation to solve.
+  - `variable` (str): The variable to solve for.
+  - `subs` (Optional[Dict[str, float]]): Substitutions for variables.
+
+- **Returns:**
+  - `str`: Solutions formatted in LaTeX.
+
+- **Example:**
+
+    from rgwfuncs import solve_algebraic_expression
+    solutions1 = solve_algebraic_expression("a*x**2 + b*x + c", "x", {"a": 3, "b": 7, "c": 5})
+    print(solutions1)  # Output: "\left[-7/6 - sqrt(11)*I/6, -7/6 + sqrt(11)*I/6\right]"
+
+    solutions2 = solve_algebraic_expression("x**2 - 4", "x")
+    print(solutions2)  # Output: "\left[-2, 2\right]"
+    
+Here, we solve both a quadratic equation with complex solutions and a simpler polynomial equation.
+
+--------------------------------------------------------------------------------
+
+### 4. `get_prime_factors_latex`
+
+Computes prime factors of a number and presents them in LaTeX format.
+
+- **Parameters:**
+  - `n` (int): The integer to factorize.
+
+- **Returns:**
+  - `str`: Prime factorization in LaTeX.
+
+- **Example:**
+
+    from rgwfuncs import get_prime_factors_latex
+    factors1 = get_prime_factors_latex(100)
+    print(factors1)  # Output: "2^{2} \cdot 5^{2}"
+
+    factors2 = get_prime_factors_latex(60)
+    print(factors2)  # Output: "2^{2} \cdot 3 \cdot 5"
+
+    factors3 = get_prime_factors_latex(17)
+    print(factors3)  # Output: "17"    
+ 
+--------------------------------------------------------------------------------
+
+## String Based Functions
+
+### 1. send_telegram_message
 
 Send a message to a Telegram chat using a specified preset from your configuration file.
 
@@ -150,20 +254,7 @@ Send a message to a Telegram chat using a specified preset from your configurati
 
 Below is a quick reference of available functions, their purpose, and basic usage examples.
 
-### 1. df_docs
-Print a list of available function names in alphabetical order. If a filter is provided, print the matching docstrings.
-
-• Parameters:
-  - `method_type_filter` (str): Optional, comma-separated to select docstring types, or '*' for all.
-
-• Example:
-
-    import rgwfuncs
-    rgwfuncs.df_docs(method_type_filter='numeric_clean,limit_dataframe')
-
---------------------------------------------------------------------------------
-
-### 2. `numeric_clean`
+### 1. `numeric_clean`
 Cleans the numeric columns in a DataFrame according to specified treatments.
 
 • Parameters:
@@ -192,7 +283,7 @@ Cleans the numeric columns in a DataFrame according to specified treatments.
 
 --------------------------------------------------------------------------------
 
-### 3. `limit_dataframe`
+### 2. `limit_dataframe`
 Limit the DataFrame to a specified number of rows.
 
 • Parameters:
@@ -213,7 +304,7 @@ Limit the DataFrame to a specified number of rows.
 
 --------------------------------------------------------------------------------
 
-### 4. `from_raw_data`
+### 3. `from_raw_data`
 Create a DataFrame from raw data.
 
 • Parameters:
@@ -239,7 +330,7 @@ Create a DataFrame from raw data.
 
 --------------------------------------------------------------------------------
 
-### 5. `append_rows`
+### 4. `append_rows`
 Append rows to the DataFrame.
 
 • Parameters:
@@ -264,7 +355,7 @@ Append rows to the DataFrame.
 
 --------------------------------------------------------------------------------
 
-### 6. `append_columns`
+### 5. `append_columns`
 Append new columns to the DataFrame with None values.
 
 • Parameters:
@@ -285,7 +376,7 @@ Append new columns to the DataFrame with None values.
     
 --------------------------------------------------------------------------------
 
-### 7. `update_rows`
+### 6. `update_rows`
 Update specific rows in the DataFrame based on a condition.
 
 • Parameters:
@@ -307,7 +398,7 @@ Update specific rows in the DataFrame based on a condition.
     
 --------------------------------------------------------------------------------
 
-### 8. `delete_rows`
+### 7. `delete_rows`
 Delete rows from the DataFrame based on a condition.
 
 • Parameters:
@@ -328,7 +419,7 @@ Delete rows from the DataFrame based on a condition.
     
 --------------------------------------------------------------------------------
 
-### 9. `drop_duplicates`
+### 8. `drop_duplicates`
 Drop duplicate rows in the DataFrame, retaining the first occurrence.
 
 • Parameters:
@@ -348,7 +439,7 @@ Drop duplicate rows in the DataFrame, retaining the first occurrence.
     
 --------------------------------------------------------------------------------
 
-### 10. `drop_duplicates_retain_first`
+### 9. `drop_duplicates_retain_first`
 Drop duplicate rows based on specified columns, retaining the first occurrence.
 
 • Parameters:
@@ -369,7 +460,7 @@ Drop duplicate rows based on specified columns, retaining the first occurrence.
     
 --------------------------------------------------------------------------------
 
-### 11. `drop_duplicates_retain_last`
+### 10. `drop_duplicates_retain_last`
 Drop duplicate rows based on specified columns, retaining the last occurrence.
 
 • Parameters:
@@ -391,7 +482,7 @@ Drop duplicate rows based on specified columns, retaining the last occurrence.
 
 --------------------------------------------------------------------------------
 
-### 12. `load_data_from_query`
+### 11. `load_data_from_query`
 
 Load data from a database query into a DataFrame based on a configuration preset.
 
@@ -418,7 +509,7 @@ Load data from a database query into a DataFrame based on a configuration preset
     
 --------------------------------------------------------------------------------
 
-### 13. `load_data_from_path`
+### 12. `load_data_from_path`
 Load data from a file into a DataFrame based on the file extension.
 
 • Parameters:
@@ -437,7 +528,7 @@ Load data from a file into a DataFrame based on the file extension.
 
 --------------------------------------------------------------------------------
 
-### 14. `load_data_from_sqlite_path`
+### 13. `load_data_from_sqlite_path`
 Execute a query on a SQLite database file and return the results as a DataFrame.
 
 • Parameters:
@@ -457,7 +548,7 @@ Execute a query on a SQLite database file and return the results as a DataFrame.
 
 --------------------------------------------------------------------------------
 
-### 15. `first_n_rows`
+### 14. `first_n_rows`
 Display the first n rows of the DataFrame (prints out in dictionary format).
 
 • Parameters:
@@ -475,7 +566,7 @@ Display the first n rows of the DataFrame (prints out in dictionary format).
 
 --------------------------------------------------------------------------------
 
-### 16. `last_n_rows`
+### 15. `last_n_rows`
 Display the last n rows of the DataFrame (prints out in dictionary format).
 
 • Parameters:
@@ -493,7 +584,7 @@ Display the last n rows of the DataFrame (prints out in dictionary format).
 
 --------------------------------------------------------------------------------
 
-### 17. `top_n_unique_values`
+### 16. `top_n_unique_values`
 Print the top n unique values for specified columns in the DataFrame.
 
 • Parameters:
@@ -512,7 +603,7 @@ Print the top n unique values for specified columns in the DataFrame.
 
 --------------------------------------------------------------------------------
 
-### 18. `bottom_n_unique_values`
+### 17. `bottom_n_unique_values`
 Print the bottom n unique values for specified columns in the DataFrame.
 
 • Parameters:
@@ -531,7 +622,7 @@ Print the bottom n unique values for specified columns in the DataFrame.
 
 --------------------------------------------------------------------------------
 
-### 19. `print_correlation`
+### 18. `print_correlation`
 Print correlation for multiple pairs of columns in the DataFrame.
 
 • Parameters:
@@ -556,7 +647,7 @@ Print correlation for multiple pairs of columns in the DataFrame.
 
 --------------------------------------------------------------------------------
 
-### 20. `print_memory_usage`
+### 19. `print_memory_usage`
 Print the memory usage of the DataFrame in megabytes.
 
 • Parameters:
@@ -573,7 +664,7 @@ Print the memory usage of the DataFrame in megabytes.
 
 --------------------------------------------------------------------------------
 
-### 21. `filter_dataframe`
+### 20. `filter_dataframe`
 Return a new DataFrame filtered by a given query expression.
 
 • Parameters:
@@ -599,7 +690,7 @@ Return a new DataFrame filtered by a given query expression.
 
 --------------------------------------------------------------------------------
 
-### 22. `filter_indian_mobiles`
+### 21. `filter_indian_mobiles`
 Filter and return rows containing valid Indian mobile numbers in the specified column.
 
 • Parameters:
@@ -621,7 +712,7 @@ Filter and return rows containing valid Indian mobile numbers in the specified c
 
 --------------------------------------------------------------------------------
 
-### 23. `print_dataframe`
+### 22. `print_dataframe`
 Print the entire DataFrame and its column types. Optionally print a source path.
 
 • Parameters:
@@ -639,7 +730,7 @@ Print the entire DataFrame and its column types. Optionally print a source path.
 
 --------------------------------------------------------------------------------
 
-### 24. `send_dataframe_via_telegram`
+### 23. `send_dataframe_via_telegram`
 Send a DataFrame via Telegram using a specified bot configuration.
 
 • Parameters:
@@ -666,7 +757,7 @@ Send a DataFrame via Telegram using a specified bot configuration.
 
 --------------------------------------------------------------------------------
 
-### 25. `send_data_to_email`
+### 24. `send_data_to_email`
 Send an email with an optional DataFrame attachment using the Gmail API via a specified preset.
 
 • Parameters:
@@ -696,7 +787,7 @@ Send an email with an optional DataFrame attachment using the Gmail API via a sp
 
 --------------------------------------------------------------------------------
 
-### 26. `send_data_to_slack`
+### 25. `send_data_to_slack`
 Send a DataFrame or message to Slack using a specified bot configuration.
 
 • Parameters:
@@ -722,7 +813,7 @@ Send a DataFrame or message to Slack using a specified bot configuration.
 
 --------------------------------------------------------------------------------
 
-### 27. `order_columns`
+### 26. `order_columns`
 Reorder the columns of a DataFrame based on a string input.
 
 • Parameters:
@@ -744,7 +835,7 @@ Reorder the columns of a DataFrame based on a string input.
 
 --------------------------------------------------------------------------------
 
-### 28. `append_ranged_classification_column`
+### 27. `append_ranged_classification_column`
 Append a ranged classification column to the DataFrame.
 
 • Parameters:
@@ -768,7 +859,7 @@ Append a ranged classification column to the DataFrame.
 
 --------------------------------------------------------------------------------
 
-### 29. `append_percentile_classification_column`
+### 28. `append_percentile_classification_column`
 Append a percentile classification column to the DataFrame.
 
 • Parameters:
@@ -792,7 +883,7 @@ Append a percentile classification column to the DataFrame.
 
 --------------------------------------------------------------------------------
 
-### 30. `append_ranged_date_classification_column`
+### 29. `append_ranged_date_classification_column`
 Append a ranged date classification column to the DataFrame.
 
 • Parameters:
@@ -821,7 +912,7 @@ Append a ranged date classification column to the DataFrame.
 
 --------------------------------------------------------------------------------
 
-### 31. `rename_columns`
+### 30. `rename_columns`
 Rename columns in the DataFrame.
 
 • Parameters:
@@ -843,7 +934,7 @@ Rename columns in the DataFrame.
 
 --------------------------------------------------------------------------------
 
-### 32. `cascade_sort`
+### 31. `cascade_sort`
 Cascade sort the DataFrame by specified columns and order.
 
 • Parameters:
@@ -869,7 +960,7 @@ Cascade sort the DataFrame by specified columns and order.
 
 --------------------------------------------------------------------------------
 
-### 33. `append_xgb_labels`
+### 32. `append_xgb_labels`
 Append XGB training labels (TRAIN, VALIDATE, TEST) based on a ratio string.
 
 • Parameters:
@@ -891,7 +982,7 @@ Append XGB training labels (TRAIN, VALIDATE, TEST) based on a ratio string.
 
 --------------------------------------------------------------------------------
 
-### 34. `append_xgb_regression_predictions`
+### 33. `append_xgb_regression_predictions`
 Append XGB regression predictions to the DataFrame. Requires an `XGB_TYPE` column for TRAIN/TEST splits.
 
 • Parameters:
@@ -923,7 +1014,7 @@ Append XGB regression predictions to the DataFrame. Requires an `XGB_TYPE` colum
 
 --------------------------------------------------------------------------------
 
-### 35. `append_xgb_logistic_regression_predictions`
+### 34. `append_xgb_logistic_regression_predictions`
 Append XGB logistic regression predictions to the DataFrame. Requires an `XGB_TYPE` column for TRAIN/TEST splits.
 
 • Parameters:
@@ -955,7 +1046,7 @@ Append XGB logistic regression predictions to the DataFrame. Requires an `XGB_TY
 
 --------------------------------------------------------------------------------
 
-### 36. `print_n_frequency_cascading`
+### 35. `print_n_frequency_cascading`
 Print the cascading frequency of top n values for specified columns.
 
 • Parameters:
@@ -975,7 +1066,7 @@ Print the cascading frequency of top n values for specified columns.
 
 --------------------------------------------------------------------------------
 
-### 37. `print_n_frequency_linear`
+### 36. `print_n_frequency_linear`
 
 Prints the linear frequency of the top `n` values for specified columns.
 
@@ -1004,7 +1095,7 @@ This example analyzes the `City` column, printing the top 2 most frequent values
 
 --------------------------------------------------------------------------------
 
-### 38. `retain_columns`
+### 37. `retain_columns`
 Retain specified columns in the DataFrame and drop the others.
 
 • Parameters:
@@ -1026,7 +1117,7 @@ Retain specified columns in the DataFrame and drop the others.
 
 --------------------------------------------------------------------------------
 
-### 39. `mask_against_dataframe`
+### 38. `mask_against_dataframe`
 Retain only rows with common column values between two DataFrames.
 
 • Parameters:
@@ -1051,7 +1142,7 @@ Retain only rows with common column values between two DataFrames.
 
 --------------------------------------------------------------------------------
 
-### 40. `mask_against_dataframe_converse`
+### 39. `mask_against_dataframe_converse`
 Retain only rows with uncommon column values between two DataFrames.
 
 • Parameters:
@@ -1076,7 +1167,7 @@ Retain only rows with uncommon column values between two DataFrames.
 
 --------------------------------------------------------------------------------
 
-### 41. `union_join`
+### 40. `union_join`
 Perform a union join, concatenating two DataFrames and dropping duplicates.
 
 • Parameters:
@@ -1099,7 +1190,7 @@ Perform a union join, concatenating two DataFrames and dropping duplicates.
 
 --------------------------------------------------------------------------------
 
-### 42. `bag_union_join`
+### 41. `bag_union_join`
 Perform a bag union join, concatenating two DataFrames without dropping duplicates.
 
 • Parameters:
@@ -1122,7 +1213,7 @@ Perform a bag union join, concatenating two DataFrames without dropping duplicat
 
 --------------------------------------------------------------------------------
 
-### 43. `left_join`
+### 42. `left_join`
 Perform a left join on two DataFrames.
 
 • Parameters:
@@ -1147,7 +1238,7 @@ Perform a left join on two DataFrames.
 
 --------------------------------------------------------------------------------
 
-### 44. `right_join`
+### 43. `right_join`
 Perform a right join on two DataFrames.
 
 • Parameters:
@@ -1172,7 +1263,7 @@ Perform a right join on two DataFrames.
 
 --------------------------------------------------------------------------------
 
-### 45. `insert_dataframe_in_sqlite_database`
+### 44. `insert_dataframe_in_sqlite_database`
 
 Inserts a Pandas DataFrame into a SQLite database table. If the specified table does not exist, it will be created with column types automatically inferred from the DataFrame's data types.
 
@@ -1210,7 +1301,7 @@ Inserts a Pandas DataFrame into a SQLite database table. If the specified table 
 
 --------------------------------------------------------------------------------
 
-### 46. `sync_dataframe_to_sqlite_database`
+### 45. `sync_dataframe_to_sqlite_database`
 Processes and saves a DataFrame to an SQLite database, adding a timestamp column and replacing the existing table if needed. Creates the table if it does not exist.
 
 • Parameters:
@@ -1233,6 +1324,8 @@ Processes and saves a DataFrame to an SQLite database, adding a timestamp column
     sync_dataframe_to_sqlite_database(db_path, tablename, df)
 
 --------------------------------------------------------------------------------
+
+
 
 ## Additional Info
 

@@ -21,49 +21,12 @@ from email.mime.base import MIMEBase
 from email import encoders
 from googleapiclient.discovery import build
 import base64
-import inspect
-from typing import Optional, Callable, Dict, List, Tuple, Any
+# import inspect
+from typing import Optional, Dict, List, Tuple, Any
 import warnings
 
 # Suppress all FutureWarnings
 warnings.filterwarnings("ignore", category=FutureWarning)
-
-
-def df_docs(method_type_filter: Optional[str] = None) -> None:
-    """
-    Print a list of function names in alphabetical order. If method_type_filter
-    is specified, print the docstrings of the functions that match the filter.
-    Using '*' as a filter will print the docstrings for all functions.
-
-    Parameters:
-        method_type_filter: Optional filter string representing a function name,
-        or '*' to display docstrings for all functions.
-    """
-    # Get the current module's namespace
-    current_module = __name__
-
-    local_functions: Dict[str, Callable] = {
-        name: obj for name, obj in globals().items()
-        if inspect.isfunction(obj) and obj.__module__ == current_module
-    }
-
-    # List of function names sorted alphabetically
-    function_names = sorted(local_functions.keys())
-
-    # Print function names
-    print("Functions in alphabetical order:")
-    for name in function_names:
-        print(name)
-
-    # If a filter is provided or '*', print the docstrings of functions
-    if method_type_filter:
-        # print("\nFiltered function documentation:")
-        for name, func in local_functions.items():
-            docstring: Optional[str] = func.__doc__
-            if docstring:
-                if method_type_filter == '*' or method_type_filter == name:
-                    # Print the entire docstring for the matching function
-                    print(f"\n{name}:\n{docstring}")
 
 
 def numeric_clean(
@@ -835,7 +798,12 @@ def print_dataframe(df: pd.DataFrame, source: Optional[str] = None) -> None:
     gc.collect()
 
 
-def send_dataframe_via_telegram(df: pd.DataFrame, bot_name: str, message: Optional[str] = None, as_file: bool = True, remove_after_send: bool = True) -> None:
+def send_dataframe_via_telegram(
+        df: pd.DataFrame,
+        bot_name: str,
+        message: Optional[str] = None,
+        as_file: bool = True,
+        remove_after_send: bool = True) -> None:
     """
     Send a DataFrame via Telegram using a specified bot configuration.
 
@@ -1672,7 +1640,12 @@ def print_n_frequency_cascading(
     report = generate_cascade_report(df, columns, n, order_by)
     print(json.dumps(report, indent=2))
 
-def print_n_frequency_linear(df: pd.DataFrame, n: int, columns: list, order_by: str = "FREQ_DESC") -> None:
+
+def print_n_frequency_linear(
+        df: pd.DataFrame,
+        n: int,
+        columns: list,
+        order_by: str = "FREQ_DESC") -> None:
     """
     Print the linear frequency of top n values for specified columns.
 
@@ -1719,23 +1692,36 @@ def print_n_frequency_linear(df: pd.DataFrame, n: int, columns: list, order_by: 
                 return val
 
     def sort_frequency(frequency, order_by):
-        keys = frequency.keys()
+        # keys = frequency.keys()
 
-        # Convert keys to numerical values where possible, leaving `NaN` as a special string
-        parsed_keys = [(try_parse_numeric(key), key) for key in keys]
+        # Convert keys to numerical values where possible, leaving `NaN` as a
+        # special string
+        # parsed_keys = [(try_parse_numeric(key), key) for key in keys]
 
         if order_by in {"BY_KEYS_ASC", "BY_KEYS_DESC"}:
             reverse = order_by == "BY_KEYS_DESC"
-            sorted_items = sorted(frequency.items(), key=lambda item: try_parse_numeric(item[0]), reverse=reverse)
+            sorted_items = sorted(
+                frequency.items(),
+                key=lambda item: try_parse_numeric(
+                    item[0]),
+                reverse=reverse)
         else:
             if order_by == "ASC":
-                sorted_items = sorted(frequency.items(), key=lambda item: item[0])
+                sorted_items = sorted(
+                    frequency.items(), key=lambda item: item[0])
             elif order_by == "DESC":
-                sorted_items = sorted(frequency.items(), key=lambda item: item[0], reverse=True)
+                sorted_items = sorted(
+                    frequency.items(),
+                    key=lambda item: item[0],
+                    reverse=True)
             elif order_by == "FREQ_ASC":
-                sorted_items = sorted(frequency.items(), key=lambda item: item[1])
+                sorted_items = sorted(
+                    frequency.items(), key=lambda item: item[1])
             else:  # Default to "FREQ_DESC"
-                sorted_items = sorted(frequency.items(), key=lambda item: item[1], reverse=True)
+                sorted_items = sorted(
+                    frequency.items(),
+                    key=lambda item: item[1],
+                    reverse=True)
 
         return dict(sorted_items)
 
@@ -1887,7 +1873,10 @@ def right_join(
     return df1.merge(df2, how='right', left_on=left_on, right_on=right_on)
 
 
-def insert_dataframe_in_sqlite_database(db_path: str, tablename: str, df: pd.DataFrame) -> None:
+def insert_dataframe_in_sqlite_database(
+        db_path: str,
+        tablename: str,
+        df: pd.DataFrame) -> None:
     """
     Inserts a Pandas DataFrame into a SQLite database table.
 
@@ -1949,7 +1938,10 @@ def insert_dataframe_in_sqlite_database(db_path: str, tablename: str, df: pd.Dat
         df.to_sql(tablename, conn, if_exists='append', index=False)
 
 
-def sync_dataframe_to_sqlite_database(db_path: str, tablename: str, df: pd.DataFrame) -> None:
+def sync_dataframe_to_sqlite_database(
+        db_path: str,
+        tablename: str,
+        df: pd.DataFrame) -> None:
     """
     Processes and saves a DataFrame to an SQLite database, adding a timestamp column
     and replacing the existing table if needed. Creates the table if it does not exist.
