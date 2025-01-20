@@ -59,13 +59,10 @@ def test_compute_matrix_operation():
         ("[[10, 10, 10],[2, 4, 6]] - [[5, 3, 2],[1, 2, 1]]", r"\begin{bmatrix}5 & 7 & 8\\1 & 2 & 5\end{bmatrix}"),
         ("[[2, 4],[6, 8]] * [[1, 0.5],[2, 0.25]]", r"\begin{bmatrix}2 & 2.0\\12 & 2.0\end{bmatrix}"),
         ("[[8, 16],[32, 64]] / [[2, 2],[8, 16]]", r"\begin{bmatrix}4.0 & 8.0\\4.0 & 4.0\end{bmatrix}"),
-
         ("[[2, 6, 9], [1, 3, 5]] + [[1, 2, 3], [4, 5, 6]] - [[1, 1, 1], [1, 1, 1]]", r"\begin{bmatrix}2 & 7 & 11\\4 & 7 & 10\end{bmatrix}"),
         ("[2, 6, 9] + [1, 2, 3] - [1, 1, 1]", r"\begin{bmatrix}2 & 7 & 11\end{bmatrix}"),
         ("[[1, 2], [3, 4]] + [[2, 3], [4, 5]] + [[1, 1], [1, 1]]", r"\begin{bmatrix}4 & 6\\8 & 10\end{bmatrix}"),
         ("[3, 6, 9] - [1, 2, 3] + [5, 5, 5]", r"\begin{bmatrix}7 & 9 & 11\end{bmatrix}"),
-
-
         ("[3, 6, 9] - [1, 2, 3, 4]", r"Operations between matrices must involve matrices of the same dimension"),
 
         # Edge cases
@@ -88,6 +85,7 @@ def test_compute_ordered_series_operations():
         ("[8, 16, 32] / [2, 2, 8]", "[4.0, 8.0, 4.0]"),
         ("ddd([2, 6, 9, 60]) + ddd([78, 79, 80])", "Operations between ordered series must involve series of equal length"),
         ("ddd([1, 3, 6, 10]) - ddd([0, 1, 1, 2])", "[1, 3, 3]"),
+
         # Edge cases
         ("ddd([1])", "[]"),  # Single-element list, becomes empty
         ("ddd([])", "[]"),   # Empty list case
