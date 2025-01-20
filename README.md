@@ -226,6 +226,66 @@ Computes prime factors of a number and presents them in LaTeX format.
  
 --------------------------------------------------------------------------------
 
+### 5. `compute_matrix_operation`
+
+Computes the results of 1D or 2D matrix operations and formats them as LaTeX strings.
+
+- **Parameters:**
+  - `expression` (str): A string representing a sequence of matrix operations involving either 1D or 2D lists. Supported operations include addition (`+`), subtraction (`-`), multiplication (`*`), and division (`/`).
+
+- **Returns:**
+  - `str`: The LaTeX-formatted string representation of the computed matrix, or an error message if the operations cannot be performed due to dimensional mismatches.
+
+- **Example:**
+
+    from rgwfuncs import compute_matrix_operation
+    
+    # Example with addition of 2D matrices
+    result = compute_matrix_operation("[[2, 6, 9], [1, 3, 5]] + [[1, 2, 3], [4, 5, 6]]")
+    print(result)  # Output: \begin{bmatrix}3 & 8 & 12\\5 & 8 & 11\end{bmatrix}
+    
+    # Example of mixed operations with 1D matrices treated as 2D
+    result = compute_matrix_operation("[3, 6, 9] + [1, 2, 3] - [2, 2, 2]")
+    print(result)  # Output: \begin{bmatrix}2 & 6 & 10\end{bmatrix}
+
+    # Example with dimension mismatch
+    result = compute_matrix_operation("[[4, 3, 51]] + [[1, 1]]")
+    print(result)  # Output: Operations between matrices must involve matrices of the same dimension
+
+This function performs elementwise operations on both 1D and 2D matrices represented as Python lists and formats the result as a LaTeX string. It handles operations sequentially from left to right and gracefully handles dimension mismatches by returning a meaningful message. It utilizes Python's `ast.literal_eval` for safe and robust parsing.
+
+--------------------------------------------------------------------------------
+
+### 6. `compute_ordered_series_operations`
+
+Computes the result of operations on ordered series expressed as 1D lists, including the discrete difference operator `ddd`.
+
+- **Parameters:**
+  - `expression` (str): A series operation expression. Supports operations such as "+", "-", "*", "/", and `ddd` for discrete differences.
+
+- **Returns:**
+  - `str`: The string representation of the resultant series after performing operations, or an error message if series lengths do not match.
+
+- **Example:**
+
+    from rgwfuncs import compute_ordered_series_operations
+
+    # Example with addition and discrete differences
+    result = compute_ordered_series_operations("ddd([2, 6, 9, 60]) + ddd([78, 79, 80])")
+    print(result)  # Output: [4, 3, 51] + [1, 1]
+    
+    # Example with elementwise subtraction
+    result = compute_ordered_series_operations("[10, 15, 21] - [5, 5, 5]")
+    print(result)  # Output: [5, 10, 16]
+
+    # Example with length mismatch
+    result = compute_ordered_series_operations("[4, 3, 51] + [1, 1]")
+    print(result)  # Output: Operations between ordered series must involve series of equal length
+
+This function first applies the discrete difference operator to any series where applicable, then evaluates arithmetic operations between series. It returns a string representation of the result or an error message if the series lengths do not match. The function is robust, directly parsing and evaluating given series expressions with safety checks in place.
+
+--------------------------------------------------------------------------------
+
 ## String Based Functions
 
 ### 1. send_telegram_message

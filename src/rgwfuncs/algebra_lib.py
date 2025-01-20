@@ -1,6 +1,7 @@
 import re
 import math
 import ast
+# import numpy as np
 from sympy import symbols, latex, simplify, solve, diff, Expr
 from sympy.parsing.sympy_parser import parse_expr
 from typing import Tuple, List, Dict, Optional
@@ -240,6 +241,198 @@ def solve_algebraic_expression(
 
     except Exception as e:
         raise ValueError(f"Error solving the expression: {e}")
+
+
+def compute_matrix_operation(expression: str) -> str:
+    """
+    Computes the result of a matrix-like operation on 1D or 2D list inputs and returns it as a LaTeX string.
+
+    Evaluates an operation where lists are treated as matrices, performs operations on them sequentially, and
+    returns the result formatted as a LaTeX-style string.
+
+    Parameters:
+    expression (str): The matrix operation expression to compute. Example format includes operations such as "+", "-", "*", "/".
+
+    Returns:
+    str: The LaTeX-formatted string representation of the result or a message indicating an error in dimensions.
+    """
+
+    def elementwise_operation(matrix1: List[List[float]], matrix2: List[List[float]], operation: str) -> List[List[float]]:
+        if len(matrix1) != len(matrix2) or any(len(row1) != len(row2) for row1, row2 in zip(matrix1, matrix2)):
+            return "Operations between matrices must involve matrices of the same dimension"
+
+        if operation == '+':
+            return [[a + b for a, b in zip(row1, row2)] for row1, row2 in zip(matrix1, matrix2)]
+        elif operation == '-':
+            return [[a - b for a, b in zip(row1, row2)] for row1, row2 in zip(matrix1, matrix2)]
+        elif operation == '*':
+            return [[a * b for a, b in zip(row1, row2)] for row1, row2 in zip(matrix1, matrix2)]
+        elif operation == '/':
+            return [[a / b for a, b in zip(row1, row2) if b != 0] for row1, row2 in zip(matrix1, matrix2)]
+        else:
+            return f"Unsupported operation {operation}"
+
+    try:
+        # Use a stack-based method to properly parse matrices
+        elements = []
+        buffer = ''
+        bracket_level = 0
+        operators = set('+-*/')
+
+        for char in expression:
+            if char == '[':
+                if bracket_level == 0 and buffer.strip():
+                    elements.append(buffer.strip())
+                    buffer = ''
+                bracket_level += 1
+            elif char == ']':
+                bracket_level -= 1
+                if bracket_level == 0:
+                    buffer += char
+                    elements.append(buffer.strip())
+                    buffer = ''
+                    continue
+            if bracket_level == 0 and char in operators:
+                if buffer.strip():
+                    elements.append(buffer.strip())
+                    buffer = ''
+                elements.append(char)
+            else:
+                buffer += char
+
+        if buffer.strip():
+            elements.append(buffer.strip())
+
+        result = ast.literal_eval(elements[0])
+
+        if not any(isinstance(row, list) for row in result):
+            result = [result]  # Convert 1D matrix to 2D
+
+        i = 1
+        while i < len(elements):
+            operation = elements[i]
+            matrix = ast.literal_eval(elements[i + 1])
+
+            if not any(isinstance(row, list) for row in matrix):
+                matrix = [matrix]
+
+            operation_result = elementwise_operation(result, matrix, operation)
+
+            # Check if the operation resulted in an error message
+            if isinstance(operation_result, str):
+                return operation_result
+
+            result = operation_result
+            i += 2
+
+        # Create a LaTeX-style matrix representation
+        matrix_entries = '\\\\'.join(' & '.join(str(x) for x in row) for row in result)
+        return r"\begin{bmatrix}" + f"{matrix_entries}" + r"\end{bmatrix}"
+
+    except Exception as e:
+        return f"Error computing matrix operation: {e}"
+
+
+def compute_ordered_series_operation(expression: str) -> str:
+    """
+    Computes the result of operations on ordered series expressed as 1D lists, including discrete difference (ddd),
+    and returns it as a string.
+
+    The function first applies the discrete difference operator to any series where applicable, then evaluates
+    arithmetic operations between series.
+
+    Parameters:
+    expression (str): The series operation expression to compute. Includes operations "+", "-", "*", "/", and "ddd".
+
+    Returns:
+    str: The string representation of the resultant series after performing operations, or an error message
+    if the series lengths do not match.
+
+    Raises:
+    ValueError: If the expression cannot be evaluated.
+    """
+
+    def elementwise_operation(series1: List[float], series2: List[float], operation: str) -> List[float]:
+        if len(series1) != len(series2):
+            return "Operations between ordered series must involve series of equal length"
+
+        if operation == '+':
+            return [a + b for a, b in zip(series1, series2)]
+        elif operation == '-':
+            return [a - b for a, b in zip(series1, series2)]
+        elif operation == '*':
+            return [a * b for a, b in zip(series1, series2)]
+        elif operation == '/':
+            return [a / b for a, b in zip(series1, series2) if b != 0]
+        else:
+            return f"Unsupported operation {operation}"
+
+    def discrete_difference(series: list) -> list:
+        """Computes the discrete difference of a series."""
+        return [series[i + 1] - series[i] for i in range(len(series) - 1)]
+
+    try:
+        # First, apply the discrete difference operator where applicable
+        pattern = r'ddd\((\[[^\]]*\])\)'
+        matches = re.findall(pattern, expression)
+
+        for match in matches:
+            if match.strip() == '[]':
+                result_series = []  # Handle the empty list case
+            else:
+                series = ast.literal_eval(match)
+                result_series = discrete_difference(series)
+            expression = expression.replace(f'ddd({match})', str(result_series))
+
+        # Now parse and evaluate the full expression with basic operations
+        elements = []
+        buffer = ''
+        bracket_level = 0
+        operators = set('+-*/')
+
+        for char in expression:
+            if char == '[':
+                if bracket_level == 0 and buffer.strip():
+                    elements.append(buffer.strip())
+                    buffer = ''
+                bracket_level += 1
+            elif char == ']':
+                bracket_level -= 1
+                if bracket_level == 0:
+                    buffer += char
+                    elements.append(buffer.strip())
+                    buffer = ''
+                    continue
+            if bracket_level == 0 and char in operators:
+                if buffer.strip():
+                    elements.append(buffer.strip())
+                    buffer = ''
+                elements.append(char)
+            else:
+                buffer += char
+
+        if buffer.strip():
+            elements.append(buffer.strip())
+
+        result = ast.literal_eval(elements[0])
+
+        i = 1
+        while i < len(elements):
+            operation = elements[i]
+            series = ast.literal_eval(elements[i + 1])
+            operation_result = elementwise_operation(result, series, operation)
+
+            # Check if the operation resulted in an error message
+            if isinstance(operation_result, str):
+                return operation_result
+
+            result = operation_result
+            i += 2
+
+        return str(result)
+
+    except Exception as e:
+        return f"Error computing ordered series operation: {e}"
 
 
 def get_prime_factors_latex(n: int) -> str:
