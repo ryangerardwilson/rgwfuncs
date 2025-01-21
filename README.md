@@ -132,13 +132,13 @@ This section provides comprehensive functions for handling algebraic expressions
 
 Evaluates complex algebraic expressions and provides numerical results.
 
-- **Parameters:**
+• Parameters:
   - `expression` (str): A string representing an arithmetic operation.
 
-- **Returns:**
+• Returns:
   - `float`: The computed numerical result.
 
-- **Example:**
+• Example:
 
     from rgwfuncs import compute_algebraic_expression
     result1 = compute_algebraic_expression("2 + 2")
@@ -158,14 +158,14 @@ These examples illustrate the ability to handle basic arithmetic, the modulo ope
 
 Simplifies expressions and returns them in LaTeX format. Optionally applies substitutions to variables within the expression before simplifying.
 
-- **Parameters:**
+• Parameters:
   - `expression` (str): A string representing the algebraic expression to simplify.
   - `subs` (Optional[Dict[str, float]]): An optional dictionary of substitutions where keys are variable names and values are the numbers to substitute them with.
 
-- **Returns:**
+• Returns:
   - `str`: The simplified expression formatted as a LaTeX string.
 
-- **Example Usage:**
+• Example Usage:
 
     from rgwfuncs import simplify_algebraic_expression
 
@@ -195,15 +195,15 @@ These examples demonstrate the simplification of polynomial expressions, handlin
 
 Solves equations for specified variables, with optional substitutions, returning LaTeX-formatted solutions.
 
-- **Parameters:**
+• Parameters:
   - `expression` (str): A string of the equation to solve.
   - `variable` (str): The variable to solve for.
   - `subs` (Optional[Dict[str, float]]): Substitutions for variables.
 
-- **Returns:**
+• Returns:
   - `str`: Solutions formatted in LaTeX.
 
-- **Example:**
+• Example:
 
     from rgwfuncs import solve_algebraic_expression
     solutions1 = solve_algebraic_expression("a*x**2 + b*x + c", "x", {"a": 3, "b": 7, "c": 5})
@@ -220,13 +220,13 @@ Here, we solve both a quadratic equation with complex solutions and a simpler po
 
 Computes prime factors of a number and presents them in LaTeX format.
 
-- **Parameters:**
+• Parameters:
   - `n` (int): The integer to factorize.
 
-- **Returns:**
+• Returns:
   - `str`: Prime factorization in LaTeX.
 
-- **Example:**
+• Example:
 
     from rgwfuncs import get_prime_factors_latex
     factors1 = get_prime_factors_latex(100)
@@ -244,13 +244,13 @@ Computes prime factors of a number and presents them in LaTeX format.
 
 Computes the results of 1D or 2D matrix operations and formats them as LaTeX strings.
 
-- **Parameters:**
+• Parameters:
   - `expression` (str): A string representing a sequence of matrix operations involving either 1D or 2D lists. Supported operations include addition (`+`), subtraction (`-`), multiplication (`*`), and division (`/`).
 
-- **Returns:**
+• Returns:
   - `str`: The LaTeX-formatted string representation of the computed matrix, or an error message if the operations cannot be performed due to dimensional mismatches.
 
-- **Example:**
+• Example:
 
     from rgwfuncs import compute_matrix_operation
     
@@ -274,13 +274,13 @@ This function performs elementwise operations on both 1D and 2D matrices represe
 
 Computes the result of operations on ordered series expressed as 1D lists, including the discrete difference operator `ddd`.
 
-- **Parameters:**
+• Parameters:
   - `expression` (str): A series operation expression. Supports operations such as "+", "-", "*", "/", and `ddd` for discrete differences.
 
-- **Returns:**
+• Returns:
   - `str`: The string representation of the resultant series after performing operations, or an error message if series lengths do not match.
 
-- **Example:**
+• Example:
 
     from rgwfuncs import compute_ordered_series_operations
 
