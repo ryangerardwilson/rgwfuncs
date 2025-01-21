@@ -185,7 +185,7 @@ Simplifies expressions and returns them in LaTeX format. Optionally applies subs
 
     # Example 4: Simplifying with partial substitution
     simplified_expr4 = simplify_algebraic_expression("a*b + b", subs={"b": 2})
-    print(simplified_expr4)  # Output: "a \cdot 2 + 2"
+    print(simplified_expr4)  # Output: "2 a + 2"
 
 These examples demonstrate the simplification of polynomial expressions, handling complex ratios involving derivatives, and applying variable substitutions before simplifying. The function handles expressions both with and without substitutions, providing flexibility in its usage.
 
