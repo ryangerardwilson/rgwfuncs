@@ -30,14 +30,23 @@ def test_compute_algebraic_expression():
         result = compute_algebraic_expression(input_data)
         assert math.isclose(result, expected_output, rel_tol=1e-9), f"Failed for {input_data}, got {result}"
 
-
 def test_simplify_algebraic_expression():
     test_cases = [
-        ("(np.diff(3*x**8)) / (np.diff(8*x**30) * 11*y**3)", r"\frac{1}{110 x^{22} y^{3}}"),
+        # Without substitutions
+        (("(np.diff(3*x**8)) / (np.diff(8*x**30) * 11*y**3)", None), r"\frac{1}{110 x^{22} y^{3}}"),
+
+        # With substitutions
+        (("x**2 + y**2", {"x": 3, "y": 4}), "25"),
+        (("a*b + b", {"b": 2}), r"2 a + 2"),  # Assumes no simplification of `a*b`
+        (("(x**2 + y**2 + z**2)", {"x": 1, "y": 0, "z": 0}), "1")
     ]
 
-    for input_data, expected_output in test_cases:
-        assert simplify_algebraic_expression(input_data) == expected_output
+    for (expression, subs), expected_output in test_cases:
+        output = simplify_algebraic_expression(expression, subs)
+        assert output == expected_output, (
+            f"Test failed for expression: {expression} with substitutions: {subs}. "
+            f"Expected {expected_output}, got {output}"
+        )
 
 
 def test_solve_algebraic_expression():

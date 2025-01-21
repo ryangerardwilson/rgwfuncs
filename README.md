@@ -156,24 +156,38 @@ These examples illustrate the ability to handle basic arithmetic, the modulo ope
 
 ### 2. `simplify_algebraic_expression`
 
-Simplifies expressions and returns them in LaTeX format.
+Simplifies expressions and returns them in LaTeX format. Optionally applies substitutions to variables within the expression before simplifying.
 
 - **Parameters:**
-  - `expression` (str): A string of the expression to simplify.
+  - `expression` (str): A string representing the algebraic expression to simplify.
+  - `subs` (Optional[Dict[str, float]]): An optional dictionary of substitutions where keys are variable names and values are the numbers to substitute them with.
 
 - **Returns:**
-  - `str`: Simplified expression in LaTeX.
+  - `str`: The simplified expression formatted as a LaTeX string.
 
-- **Example:**
+- **Example Usage:**
 
     from rgwfuncs import simplify_algebraic_expression
+
+    # Example 1: Simplifying a polynomial expression without substitutions
     simplified_expr1 = simplify_algebraic_expression("2*x + 3*x")
     print(simplified_expr1)  # Output: "5 x"
 
-    simplified_expr2 = simplify_algebraic_expression("(np.diff(3*x**8)) / (np.diff(8*x**30) * 11*y**3)")
-    print(simplified_expr2)  # Output: "\frac{1}{110 x^{22} y^{3}}"
+    # Example 2: Simplifying a complex expression involving derivatives
+    simplified_expr2 = simplify_algebraic_expression(
+        "(np.diff(3*x**8)) / (np.diff(8*x**30) * 11*y**3)"
+    )
+    print(simplified_expr2)  # Output: r"\frac{1}{110 x^{22} y^{3}}"
 
-These examples demonstrate simplification of polynomial expressions and more complex ratios involving derivatives.
+    # Example 3: Simplifying with substitutions
+    simplified_expr3 = simplify_algebraic_expression("x**2 + y**2", subs={"x": 3, "y": 4})
+    print(simplified_expr3)  # Output: "25"
+
+    # Example 4: Simplifying with partial substitution
+    simplified_expr4 = simplify_algebraic_expression("a*b + b", subs={"b": 2})
+    print(simplified_expr4)  # Output: "a \cdot 2 + 2"
+
+These examples demonstrate the simplification of polynomial expressions, handling complex ratios involving derivatives, and applying variable substitutions before simplifying. The function handles expressions both with and without substitutions, providing flexibility in its usage.
 
 --------------------------------------------------------------------------------
 

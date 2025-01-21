@@ -36,7 +36,10 @@ def compute_algebraic_expression(expression: str) -> float:
         raise ValueError(f"Error computing expression: {e}")
 
 
-def simplify_algebraic_expression(expression: str) -> str:
+def simplify_algebraic_expression(
+    expression: str,
+    subs: Optional[Dict[str, float]] = None
+) -> str:
     """
     Simplifies an algebraic expression and returns it in LaTeX format.
 
@@ -45,10 +48,16 @@ def simplify_algebraic_expression(expression: str) -> str:
 
     Parameters:
     expression (str): The algebraic expression to simplify.
+    subs (Optional[Dict[str, float]]): An optional dictionary of substitutions for variables
+                                       in the expression.
 
     Returns:
     str: The simplified expression represented as a LaTeX string.
+
+    Raises:
+    ValueError: If the expression cannot be simplified due to errors in expression or parameters.
     """
+
 
     def recursive_parse_function_call(
             func_call: str, prefix: str, sym_vars: Dict[str, Expr]) -> Tuple[str, List[Expr]]:
@@ -178,13 +187,18 @@ def simplify_algebraic_expression(expression: str) -> str:
     # print("Level 2 processed_expression:", processed_expression)
 
     try:
-        if processed_expression.startswith(
-                '[') and processed_expression.endswith(']'):
-            return processed_expression
-
+        # Parse the expression
         expr = parse_expr(processed_expression, local_dict=sym_vars)
+
+        # Apply substitutions if provided
+        if subs:
+            subs_symbols = {symbols(k): v for k, v in subs.items()}
+            expr = expr.subs(subs_symbols)
+
+        # Simplify the expression
         final_result = simplify(expr)
 
+        # Convert the result to LaTeX format
         if final_result.free_symbols:
             latex_result = latex(final_result)
             return latex_result
@@ -196,7 +210,10 @@ def simplify_algebraic_expression(expression: str) -> str:
 
 
 def solve_algebraic_expression(
-        expression: str, variable: str, subs: Optional[Dict[str, float]] = None) -> str:
+        expression: str, 
+        variable: str, 
+        subs: Optional[Dict[str, float]] = None
+    ) -> str:
     """
     Solves an algebraic equation for a specified variable and returns solutions in LaTeX format.
 
