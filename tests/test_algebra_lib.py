@@ -30,6 +30,7 @@ def test_compute_algebraic_expression():
         result = compute_algebraic_expression(input_data)
         assert math.isclose(result, expected_output, rel_tol=1e-9), f"Failed for {input_data}, got {result}"
 
+
 def test_simplify_algebraic_expression():
     test_cases = [
         # Without substitutions

@@ -58,7 +58,6 @@ def simplify_algebraic_expression(
     ValueError: If the expression cannot be simplified due to errors in expression or parameters.
     """
 
-
     def recursive_parse_function_call(
             func_call: str, prefix: str, sym_vars: Dict[str, Expr]) -> Tuple[str, List[Expr]]:
         # print(f"Parsing function call: {func_call}")
@@ -210,10 +209,10 @@ def simplify_algebraic_expression(
 
 
 def solve_algebraic_expression(
-        expression: str, 
-        variable: str, 
-        subs: Optional[Dict[str, float]] = None
-    ) -> str:
+    expression: str,
+    variable: str,
+    subs: Optional[Dict[str, float]] = None
+) -> str:
     """
     Solves an algebraic equation for a specified variable and returns solutions in LaTeX format.
 
