@@ -128,38 +128,36 @@ Print a list of available function names in alphabetical order. If a filter is p
 
 This section provides comprehensive functions for handling algebraic expressions, performing tasks such as computation, simplification, solving equations, and prime factorization, all outputted in LaTeX format.
 
-### 1. `compute_algebraic_expression`
+### 1. `compute_constant_expression`
 
-Evaluates complex algebraic expressions and provides numerical results.
+Computes the numerical result of a given expression, which can evaluate to a constant, represented as a float. Evaluates an constant expression provided as a string and returns the computed result. Supports various arithmetic operations, including addition, subtraction, multiplication, division, and modulo, as well as mathematical functions from the math module.
 
 • Parameters:
-  - `expression` (str): A string representing an arithmetic operation.
+  - `expression` (str): The constant expression to compute. This should be a string consisting of arithmetic operations and Python's math module functions.
 
 • Returns:
   - `float`: The computed numerical result.
 
 • Example:
 
-    from rgwfuncs import compute_algebraic_expression
-    result1 = compute_algebraic_expression("2 + 2")
+    from rgwfuncs import compute_constant_expression
+    result1 = compute_constant_expression("2 + 2")
     print(result1)  # Output: 4.0
 
-    result2 = compute_algebraic_expression("10 % 3")
+    result2 = compute_constant_expression("10 % 3")
     print(result2)  # Output: 1.0
 
-    result3 = compute_algebraic_expression("math.gcd(36, 60) * math.sin(math.radians(45)) * 10000")
+    result3 = compute_constant_expression("math.gcd(36, 60) * math.sin(math.radians(45)) * 10000")
     print(result3)  # Output: 84852.8137423857
-
-These examples illustrate the ability to handle basic arithmetic, the modulo operator, and functions utilizing the Python math module.
 
 --------------------------------------------------------------------------------
 
-### 2. `simplify_algebraic_expression`
+### 2. `simplify_polynomial_expression`
 
-Simplifies expressions and returns them in LaTeX format. Optionally applies substitutions to variables within the expression before simplifying.
+Simplifies an algebraic expression in polynomial form and returns it in LaTeX format. Takes an algebraic expression, in polynomial form, written in Python syntax and simplifies it. The result is returned as a LaTeX formatted string, suitable for academic or professional documentation.
 
 • Parameters:
-  - `expression` (str): A string representing the algebraic expression to simplify.
+  - `expression` (str): The algebraic expression, in polynomial form, to simplify. For instance, the expression 'np.diff(8*x**30) where as 'np.diff([2,5,9,11)' is not a polynomial.
   - `subs` (Optional[Dict[str, float]]): An optional dictionary of substitutions where keys are variable names and values are the numbers to substitute them with.
 
 • Returns:
@@ -167,36 +165,32 @@ Simplifies expressions and returns them in LaTeX format. Optionally applies subs
 
 • Example Usage:
 
-    from rgwfuncs import simplify_algebraic_expression
+    from rgwfuncs import simplify_polynomial_expression
 
     # Example 1: Simplifying a polynomial expression without substitutions
-    simplified_expr1 = simplify_algebraic_expression("2*x + 3*x")
+    simplified_expr1 = simplify_polynomial_expression("2*x + 3*x")
     print(simplified_expr1)  # Output: "5 x"
 
     # Example 2: Simplifying a complex expression involving derivatives
-    simplified_expr2 = simplify_algebraic_expression(
-        "(np.diff(3*x**8)) / (np.diff(8*x**30) * 11*y**3)"
-    )
+    simplified_expr2 = simplify_polynomial_expression("(np.diff(3*x**8)) / (np.diff(8*x**30) * 11*y**3)")
     print(simplified_expr2)  # Output: r"\frac{1}{110 x^{22} y^{3}}"
 
     # Example 3: Simplifying with substitutions
-    simplified_expr3 = simplify_algebraic_expression("x**2 + y**2", subs={"x": 3, "y": 4})
+    simplified_expr3 = simplify_polynomial_expression("x**2 + y**2", subs={"x": 3, "y": 4})
     print(simplified_expr3)  # Output: "25"
 
     # Example 4: Simplifying with partial substitution
-    simplified_expr4 = simplify_algebraic_expression("a*b + b", subs={"b": 2})
+    simplified_expr4 = simplify_polynomial_expression("a*b + b", subs={"b": 2})
     print(simplified_expr4)  # Output: "2 a + 2"
-
-These examples demonstrate the simplification of polynomial expressions, handling complex ratios involving derivatives, and applying variable substitutions before simplifying. The function handles expressions both with and without substitutions, providing flexibility in its usage.
 
 --------------------------------------------------------------------------------
 
-### 3. `solve_algebraic_expression`
+### 3. `solve_homogeneous_polynomial_expression`
 
-Solves equations for specified variables, with optional substitutions, returning LaTeX-formatted solutions.
+Solves a homogeneous polynomial expression for a specified variable and returns solutions in LaTeX format. Assumes that the expression is homoegeneous (i.e. equal to zero), and solves for a designated variable. May optionally include substitutions for other variables in the equation. The solutions are provided as a LaTeX formatted string. The method solves equations for specified variables, with optional substitutions, returning LaTeX-formatted solutions.
 
 • Parameters:
-  - `expression` (str): A string of the equation to solve.
+  - `expression` (str): A string of the homogeneous polynomial expression to solve.
   - `variable` (str): The variable to solve for.
   - `subs` (Optional[Dict[str, float]]): Substitutions for variables.
 
@@ -205,15 +199,13 @@ Solves equations for specified variables, with optional substitutions, returning
 
 • Example:
 
-    from rgwfuncs import solve_algebraic_expression
-    solutions1 = solve_algebraic_expression("a*x**2 + b*x + c", "x", {"a": 3, "b": 7, "c": 5})
+    from rgwfuncs import solve_homogeneous_polynomial_expression
+    solutions1 = solve_homogeneous_polynomial_expression("a*x**2 + b*x + c", "x", {"a": 3, "b": 7, "c": 5})
     print(solutions1)  # Output: "\left[-7/6 - sqrt(11)*I/6, -7/6 + sqrt(11)*I/6\right]"
 
-    solutions2 = solve_algebraic_expression("x**2 - 4", "x")
+    solutions2 = solve_homogeneous_polynomial_expression("x**2 - 4", "x")
     print(solutions2)  # Output: "\left[-2, 2\right]"
     
-Here, we solve both a quadratic equation with complex solutions and a simpler polynomial equation.
-
 --------------------------------------------------------------------------------
 
 ### 4. `get_prime_factors_latex`
@@ -240,9 +232,9 @@ Computes prime factors of a number and presents them in LaTeX format.
  
 --------------------------------------------------------------------------------
 
-### 5. `compute_matrix_operation`
+### 5. `compute_matrix_expression`
 
-Computes the results of 1D or 2D matrix operations and formats them as LaTeX strings.
+Computes the results of expressions containing 1D or 2D matrix operations and formats them as LaTeX strings.
 
 • Parameters:
   - `expression` (str): A string representing a sequence of matrix operations involving either 1D or 2D lists. Supported operations include addition (`+`), subtraction (`-`), multiplication (`*`), and division (`/`).
@@ -252,51 +244,47 @@ Computes the results of 1D or 2D matrix operations and formats them as LaTeX str
 
 • Example:
 
-    from rgwfuncs import compute_matrix_operation
+    from rgwfuncs import compute_matrix_expression
     
     # Example with addition of 2D matrices
-    result = compute_matrix_operation("[[2, 6, 9], [1, 3, 5]] + [[1, 2, 3], [4, 5, 6]]")
+    result = compute_matrix_expression("[[2, 6, 9], [1, 3, 5]] + [[1, 2, 3], [4, 5, 6]]")
     print(result)  # Output: \begin{bmatrix}3 & 8 & 12\\5 & 8 & 11\end{bmatrix}
     
     # Example of mixed operations with 1D matrices treated as 2D
-    result = compute_matrix_operation("[3, 6, 9] + [1, 2, 3] - [2, 2, 2]")
+    result = compute_matrix_expression("[3, 6, 9] + [1, 2, 3] - [2, 2, 2]")
     print(result)  # Output: \begin{bmatrix}2 & 6 & 10\end{bmatrix}
 
     # Example with dimension mismatch
-    result = compute_matrix_operation("[[4, 3, 51]] + [[1, 1]]")
+    result = compute_matrix_expression("[[4, 3, 51]] + [[1, 1]]")
     print(result)  # Output: Operations between matrices must involve matrices of the same dimension
-
-This function performs elementwise operations on both 1D and 2D matrices represented as Python lists and formats the result as a LaTeX string. It handles operations sequentially from left to right and gracefully handles dimension mismatches by returning a meaningful message. It utilizes Python's `ast.literal_eval` for safe and robust parsing.
 
 --------------------------------------------------------------------------------
 
-### 6. `compute_ordered_series_operations`
+### 6. `compute_ordered_series_expression`
 
-Computes the result of operations on ordered series expressed as 1D lists, including the discrete difference operator `ddd`.
+Computes the result of expressions containing operations on ordered series expressed as 1D lists. The syntax of the expression supports the discrete difference operator via the `ddd()` method.
 
 • Parameters:
-  - `expression` (str): A series operation expression. Supports operations such as "+", "-", "*", "/", and `ddd` for discrete differences.
+  - `expression` (str): A series operation expression. Supports operations such as "+", "-", "*", "/", and `ddd()` for discrete differences.
 
 • Returns:
   - `str`: The string representation of the resultant series after performing operations, or an error message if series lengths do not match.
 
 • Example:
 
-    from rgwfuncs import compute_ordered_series_operations
+    from rgwfuncs import compute_ordered_series_expression
 
     # Example with addition and discrete differences
-    result = compute_ordered_series_operations("ddd([2, 6, 9, 60]) + ddd([78, 79, 80])")
+    result = compute_ordered_series_expression("ddd([2, 6, 9, 60]) + ddd([78, 79, 80])")
     print(result)  # Output: [4, 3, 51] + [1, 1]
     
     # Example with elementwise subtraction
-    result = compute_ordered_series_operations("[10, 15, 21] - [5, 5, 5]")
+    result = compute_ordered_series_expression("[10, 15, 21] - [5, 5, 5]")
     print(result)  # Output: [5, 10, 16]
 
     # Example with length mismatch
-    result = compute_ordered_series_operations("[4, 3, 51] + [1, 1]")
+    result = compute_ordered_series_expression("[4, 3, 51] + [1, 1]")
     print(result)  # Output: Operations between ordered series must involve series of equal length
-
-This function first applies the discrete difference operator to any series where applicable, then evaluates arithmetic operations between series. It returns a string representation of the result or an error message if the series lengths do not match. The function is robust, directly parsing and evaluating given series expressions with safety checks in place.
 
 --------------------------------------------------------------------------------
 

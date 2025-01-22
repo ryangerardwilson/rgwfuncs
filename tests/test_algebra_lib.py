@@ -7,15 +7,15 @@ import math
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from src.rgwfuncs.algebra_lib import (
-    compute_algebraic_expression,
-    simplify_algebraic_expression,
-    solve_algebraic_expression,
-    compute_matrix_operation,
-    compute_ordered_series_operation,
+    compute_constant_expression,
+    simplify_polynomial_expression,
+    solve_homogeneous_polynomial_expression,
+    compute_matrix_expression,
+    compute_ordered_series_expression,
     get_prime_factors_latex)
 
 
-def test_compute_algebraic_expression():
+def test_compute_constant_expression():
     test_cases = [
         ("2 + 2", 4.0),
         ("5 - 3", 2.0),
@@ -27,11 +27,11 @@ def test_compute_algebraic_expression():
     ]
 
     for input_data, expected_output in test_cases:
-        result = compute_algebraic_expression(input_data)
+        result = compute_constant_expression(input_data)
         assert math.isclose(result, expected_output, rel_tol=1e-9), f"Failed for {input_data}, got {result}"
 
 
-def test_simplify_algebraic_expression():
+def test_simplify_polynomial_expression():
     test_cases = [
         # Without substitutions
         (("(np.diff(3*x**8)) / (np.diff(8*x**30) * 11*y**3)", None), r"\frac{1}{110 x^{22} y^{3}}"),
@@ -43,27 +43,21 @@ def test_simplify_algebraic_expression():
     ]
 
     for (expression, subs), expected_output in test_cases:
-        output = simplify_algebraic_expression(expression, subs)
-        assert output == expected_output, (
-            f"Test failed for expression: {expression} with substitutions: {subs}. "
-            f"Expected {expected_output}, got {output}"
-        )
+        output = simplify_polynomial_expression(expression, subs)
+        assert output == expected_output, (f"Test failed for expression: {expression} with substitutions: {subs}. Expected {expected_output}, got {output}")
 
 
-def test_solve_algebraic_expression():
+def test_solve_homogeneous_polynomial_expression():
     test_cases = [
         # Test case with substitutions
-        (
-            ("a*x**2 + b*x + c", "x", {"a": 3, "b": 7, "c": 5}),
-            r"\left[-7/6 - sqrt(11)*I/6, -7/6 + sqrt(11)*I/6\right]"
-        ),
+        (("a*x**2 + b*x + c", "x", {"a": 3, "b": 7, "c": 5}), r"\left[-7/6 - sqrt(11)*I/6, -7/6 + sqrt(11)*I/6\right]"),
     ]
 
     for (expression, variable, subs), expected_output in test_cases:
-        assert solve_algebraic_expression(expression, variable, subs) == expected_output
+        assert solve_homogeneous_polynomial_expression(expression, variable, subs) == expected_output
 
 
-def test_compute_matrix_operation():
+def test_compute_matrix_expression():
     test_cases = [
         ("[[2, 6, 9],[1, 3, 5]] + [[1, 2, 3],[4, 5, 6]]", r"\begin{bmatrix}3 & 8 & 12\\5 & 8 & 11\end{bmatrix}"),
         ("[[10, 10, 10],[2, 4, 6]] - [[5, 3, 2],[1, 2, 1]]", r"\begin{bmatrix}5 & 7 & 8\\1 & 2 & 5\end{bmatrix}"),
@@ -81,13 +75,13 @@ def test_compute_matrix_operation():
     ]
 
     for input_data, expected_output in test_cases:
-        result = compute_matrix_operation(input_data)
+        result = compute_matrix_expression(input_data)
         assert result == expected_output, f"Failed for {input_data}, got {result}"
 
 # Example test function
 
 
-def test_compute_ordered_series_operations():
+def test_compute_ordered_series_expression():
     test_cases = [
         ("[2, 6, 9] + [1, 2, 3]", "[3, 8, 12]"),
         ("[10, 15, 21] - [5, 5, 5]", "[5, 10, 16]"),
@@ -105,7 +99,7 @@ def test_compute_ordered_series_operations():
     ]
 
     for input_data, expected_output in test_cases:
-        result = compute_ordered_series_operation(input_data)
+        result = compute_ordered_series_expression(input_data)
         assert result == expected_output, f"Failed for {input_data}, got {result}"
 
 

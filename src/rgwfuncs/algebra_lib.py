@@ -7,17 +7,18 @@ from sympy.parsing.sympy_parser import parse_expr
 from typing import Tuple, List, Dict, Optional
 
 
-def compute_algebraic_expression(expression: str) -> float:
+def compute_constant_expression(expression: str) -> float:
     """
-    Computes the numerical result of a given algebraic expression.
+    Computes the numerical result of a given expression, which can evaluate to a constant,
+    represented as a float.
 
-    Evaluates an algebraic expression provided as a string and returns the computed result.
+    Evaluates an constant expression provided as a string and returns the computed result.
     Supports various arithmetic operations, including addition, subtraction, multiplication,
     division, and modulo, as well as mathematical functions from the math module.
 
     Parameters:
-    expression (str): The algebraic expression to compute. This should be a string consisting
-                      of arithmetic operations and supported math module functions.
+    expression (str): The constant expression to compute. This should be a string consisting
+                      of arithmetic operations and Python's math module functions.
 
     Returns:
     float: The evaluated numerical result of the expression.
@@ -36,18 +37,21 @@ def compute_algebraic_expression(expression: str) -> float:
         raise ValueError(f"Error computing expression: {e}")
 
 
-def simplify_algebraic_expression(
+def simplify_polynomial_expression(
     expression: str,
     subs: Optional[Dict[str, float]] = None
 ) -> str:
     """
-    Simplifies an algebraic expression and returns it in LaTeX format.
+    Simplifies an algebraic expression in polynomial form and returns it in LaTeX format.
 
-    Takes an algebraic expression written in Python syntax and simplifies it. The result is
-    returned as a LaTeX formatted string, suitable for academic or professional documentation.
+    Takes an algebraic expression, in polynomial form, written in Python syntax and simplifies it.
+    The result is returned as a LaTeX formatted string, suitable for academic or professional 
+    documentation.
 
     Parameters:
-    expression (str): The algebraic expression to simplify.
+    expression (str): The algebraic expression, in polynomial form, to simplify. For instance,
+                      the expression `np.diff(8*x**30)` is a polynomial, whereas np.diff([2,5,9,11)
+                      is not a polynomial.
     subs (Optional[Dict[str, float]]): An optional dictionary of substitutions for variables
                                        in the expression.
 
@@ -208,19 +212,21 @@ def simplify_algebraic_expression(
         raise ValueError(f"Error simplifying expression: {e}")
 
 
-def solve_algebraic_expression(
+def solve_homogeneous_polynomial_expression(
     expression: str,
     variable: str,
     subs: Optional[Dict[str, float]] = None
 ) -> str:
     """
-    Solves an algebraic equation for a specified variable and returns solutions in LaTeX format.
+    Solves a homogeneous polynomial expression for a specified variable and returns solutions 
+    in LaTeX format.
 
-    Solves the given equation for a designated variable. May optionally include substitutions
-    for other variables in the equation. The solutions are provided as a LaTeX formatted string.
+    Assumes that the expression is homoegeneous (i.e. equal to zero), and solves for a 
+    designated variable. May optionally include substitutions for other variables in the 
+    equation. The solutions are provided as a LaTeX formatted string.
 
     Parameters:
-    expression (str): The algebraic equation to solve.
+    expression (str): The homogeneous polynomial expression to solve.
     variable (str): The variable to solve the equation for.
     subs (Optional[Dict[str, float]]): An optional dictionary of substitutions for variables
                                        in the equation.
@@ -259,7 +265,7 @@ def solve_algebraic_expression(
         raise ValueError(f"Error solving the expression: {e}")
 
 
-def compute_matrix_operation(expression: str) -> str:
+def compute_matrix_expression(expression: str) -> str:
     """
     Computes the result of a matrix-like operation on 1D or 2D list inputs and returns it as a LaTeX string.
 
@@ -349,7 +355,7 @@ def compute_matrix_operation(expression: str) -> str:
         return f"Error computing matrix operation: {e}"
 
 
-def compute_ordered_series_operation(expression: str) -> str:
+def compute_ordered_series_expression(expression: str) -> str:
     """
     Computes the result of operations on ordered series expressed as 1D lists, including discrete difference (ddd),
     and returns it as a string.
