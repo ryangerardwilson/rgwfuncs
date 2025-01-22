@@ -20,9 +20,10 @@ def test_python_polynomial_expression_to_latex():
         # Without substitutions
         ("x**2 + y**2", None, r"x^{2} + y^{2}"),
         ("3*a + 4*b", None, r"3 a + 4 b"),
+        ("3*x**3 / (7*y*m**(n+2) + 103)", None, r"\frac{3 x^{3}}{7 m^{n + 2} y + 103}"),
 
         # With substitutions
-        ("x**2 + y**2", {"x": 3, "y": 4}, r"25"),  # Shows substitution but not simplification
+        ("x**2 + y**2", {"x": 3, "y": 4}, r"25"),
         ("x**2 + y**2", {"x": 3}, r"y^{2} + 9"),
         ("a*b + b", {"b": 2}, r"2 a + 2"),
         ("sin(x+z**2) + cos(y)", {"x": 55}, r"cos y + sin \left(z^{2} + 55\right)"),
