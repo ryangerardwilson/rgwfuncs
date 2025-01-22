@@ -128,7 +128,47 @@ Print a list of available function names in alphabetical order. If a filter is p
 
 This section provides comprehensive functions for handling algebraic expressions, performing tasks such as computation, simplification, solving equations, and prime factorization, all outputted in LaTeX format.
 
-### 1. `compute_constant_expression`
+### 1. `python_polynomial_expression_to_latex`
+
+Converts a polynomial expression written in Python syntax to a LaTeX formatted string. This function parses algebraic expressions provided as strings using Python’s syntax and translates them into equivalent LaTeX representations, making them suitable for academic or professional documentation. The function supports inclusion of named variables, with an option to substitute specific values into the expression.
+
+• Parameters:
+  - `expression` (str): The algebraic expression to convert to LaTeX. This should be a string formatted with Python syntax acceptable by SymPy.
+  - `subs` (Optional[Dict[str, float]]): An optional dictionary of substitutions where the keys are variable names in the expression, and the values are the numbers with which to substitute those variables.
+
+• Returns:
+  - `str`: The LaTeX formatted string equivalent to the provided expression.
+
+• Raises:
+  - `ValueError`: If the expression cannot be parsed due to syntax errors.
+
+• Example:
+
+    from rgwfuncs import python_polynomial_expression_to_latex
+    
+    # Convert a simple polynomial expression to LaTeX format
+    latex_result1 = python_polynomial_expression_to_latex("x**2 + y**2")
+    print(latex_result1)  # Output: "x^{2} + y^{2}"
+    
+    # Convert polynomial expression with substituted values
+    latex_result2 = python_polynomial_expression_to_latex("x**2 + y**2", {"x": 3, "y": 4})
+    print(latex_result2)  # Output: "25"
+    
+    # Another example with partial substitution
+    latex_result3 = python_polynomial_expression_to_latex("x**2 + y**2", {"x": 3})
+    print(latex_result3)  # Output: "y^{2} + 9"
+    
+    # Trigonometric functions included with symbolic variables
+    latex_result4 = python_polynomial_expression_to_latex("sin(x+z**2) + cos(y)", {"x": 55})
+    print(latex_result4)  # Output: "cos y + sin \\left(z^{2} + 55\\right)"
+    
+    # Simplified trigonometric functions example with substitution
+    latex_result5 = python_polynomial_expression_to_latex("sin(x) + cos(y)", {"x": 0})
+    print(latex_result5)  # Output: "cos y"
+
+--------------------------------------------------------------------------------
+
+### 2. `compute_constant_expression`
 
 Computes the numerical result of a given expression, which can evaluate to a constant, represented as a float. Evaluates an constant expression provided as a string and returns the computed result. Supports various arithmetic operations, including addition, subtraction, multiplication, division, and modulo, as well as mathematical functions from the math module.
 
@@ -152,7 +192,7 @@ Computes the numerical result of a given expression, which can evaluate to a con
 
 --------------------------------------------------------------------------------
 
-### 2. `simplify_polynomial_expression`
+### 3. `simplify_polynomial_expression`
 
 Simplifies an algebraic expression in polynomial form and returns it in LaTeX format. Takes an algebraic expression, in polynomial form, written in Python syntax and simplifies it. The result is returned as a LaTeX formatted string, suitable for academic or professional documentation.
 
@@ -185,7 +225,7 @@ Simplifies an algebraic expression in polynomial form and returns it in LaTeX fo
 
 --------------------------------------------------------------------------------
 
-### 3. `solve_homogeneous_polynomial_expression`
+### 4. `solve_homogeneous_polynomial_expression`
 
 Solves a homogeneous polynomial expression for a specified variable and returns solutions in LaTeX format. Assumes that the expression is homoegeneous (i.e. equal to zero), and solves for a designated variable. May optionally include substitutions for other variables in the equation. The solutions are provided as a LaTeX formatted string. The method solves equations for specified variables, with optional substitutions, returning LaTeX-formatted solutions.
 
@@ -208,7 +248,7 @@ Solves a homogeneous polynomial expression for a specified variable and returns 
     
 --------------------------------------------------------------------------------
 
-### 4. `get_prime_factors_latex`
+### 5. `get_prime_factors_latex`
 
 Computes prime factors of a number and presents them in LaTeX format.
 
@@ -232,7 +272,7 @@ Computes prime factors of a number and presents them in LaTeX format.
  
 --------------------------------------------------------------------------------
 
-### 5. `compute_matrix_expression`
+### 6. `compute_matrix_expression`
 
 Computes the results of expressions containing 1D or 2D matrix operations and formats them as LaTeX strings.
 
@@ -260,7 +300,7 @@ Computes the results of expressions containing 1D or 2D matrix operations and fo
 
 --------------------------------------------------------------------------------
 
-### 6. `compute_ordered_series_expression`
+### 7. `compute_ordered_series_expression`
 
 Computes the result of expressions containing operations on ordered series expressed as 1D lists. The syntax of the expression supports the discrete difference operator via the `ddd()` method.
 

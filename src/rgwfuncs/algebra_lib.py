@@ -4,6 +4,9 @@ import ast
 # import numpy as np
 from sympy import symbols, latex, simplify, solve, diff, Expr
 from sympy.parsing.sympy_parser import parse_expr
+from sympy import __all__ as sympy_functions
+from sympy.parsing.sympy_parser import (standard_transformations, implicit_multiplication_application)
+
 from typing import Tuple, List, Dict, Optional
 
 
@@ -35,6 +38,67 @@ def compute_constant_expression(expression: str) -> float:
         return float(numeric_result)
     except Exception as e:
         raise ValueError(f"Error computing expression: {e}")
+
+
+def python_polynomial_expression_to_latex(
+    expression: str,
+    subs: Optional[Dict[str, float]] = None
+) -> str:
+    """
+    Converts a polynomial expression written in Python syntax to LaTeX format.
+
+    This function takes an algebraic expression written in Python syntax and converts it
+    to a LaTeX formatted string. The expression is assumed to be in terms acceptable by
+    sympy, with named variables, and optionally includes substitutions for variables.
+
+    Parameters:
+    expression (str): The algebraic expression to convert to LaTeX. The expression should
+                      be written using Python syntax.
+    subs (Optional[Dict[str, float]]): An optional dictionary of substitutions for variables
+                                       in the expression.
+
+    Returns:
+    str: The expression represented as a LaTeX string.
+
+    Raises:
+    ValueError: If the expression cannot be parsed due to syntax errors.
+    """
+
+    transformations = standard_transformations + (implicit_multiplication_application,)
+
+    def parse_and_convert_expression(expr_str: str, sym_vars: Dict[str, Expr]) -> Expr:
+        try:
+            # Parse with transformations to handle implicit multiplication
+            expr = parse_expr(expr_str, local_dict=sym_vars, transformations=transformations)
+            if subs:
+                subs_symbols = {symbols(k): v for k, v in subs.items()}
+                expr = expr.subs(subs_symbols)
+            return expr
+        except (SyntaxError, ValueError, TypeError) as e:
+            raise ValueError(f"Error parsing expression: {expr_str}. Error: {e}")
+
+    # Extract variable names used in the expression
+    variable_names = set(re.findall(r'\b[a-zA-Z]\w*\b', expression))
+    sym_vars = {var: symbols(var) for var in variable_names}
+
+    # Import all general function names from SymPy into local scope
+
+    # Dynamically add SymPy functions to the symbol dictionary
+    for func_name in sympy_functions:
+        try:
+            candidate = globals().get(func_name) or locals().get(func_name)
+            if callable(candidate):  # Ensure it's actually a callable
+                sym_vars[func_name] = candidate
+        except KeyError:
+            continue  # Skip any non-callable or unavailable items
+
+    # Attempt to parse the expression
+    expr = parse_and_convert_expression(expression, sym_vars)
+
+    # Convert the expression to LaTeX format
+    latex_result = latex(expr)
+    return latex_result
+
 
 
 def simplify_polynomial_expression(

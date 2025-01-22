@@ -7,12 +7,34 @@ import math
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from src.rgwfuncs.algebra_lib import (
+    python_polynomial_expression_to_latex,
     compute_constant_expression,
     simplify_polynomial_expression,
     solve_homogeneous_polynomial_expression,
     compute_matrix_expression,
     compute_ordered_series_expression,
     get_prime_factors_latex)
+
+def test_python_polynomial_expression_to_latex():
+    test_cases = [
+        # Without substitutions
+        ("x**2 + y**2", None, r"x^{2} + y^{2}"),
+        ("3*a + 4*b", None, r"3 a + 4 b"),
+
+        # With substitutions
+        ("x**2 + y**2", {"x": 3, "y": 4}, r"25"),  # Shows substitution but not simplification
+        ("x**2 + y**2", {"x": 3}, r"y^{2} + 9"),
+        ("a*b + b", {"b": 2}, r"2 a + 2"),
+        ("sin(x+z**2) + cos(y)", {"x": 55}, r"cos y + sin \left(z^{2} + 55\right)"),
+        ("sin(x) + cos(y)", {"x": 0}, r"cos y")
+    ]
+
+    for expression, subs, expected_output in test_cases:
+        output = python_polynomial_expression_to_latex(expression, subs)
+        assert output == expected_output, (
+            f"Test failed for expression: {expression} with substitutions: {subs}. "
+            f"Expected {expected_output}, got {output}"
+        )
 
 
 def test_compute_constant_expression():
