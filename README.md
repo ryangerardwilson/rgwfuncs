@@ -155,7 +155,7 @@ Launches an interactive prompt for inspecting and modifying local variables, mak
     # Launch the interactive shell with local variables
     interactive_shell(locals())
 
-Subsequently, in the interactive shell you can use any library in your python file, as well as all rgwfuncs methods (even if they are not imported). Notice the while pandas and numpy are available in the shell as a result of importing them in the above scripy, the rgwfuncs method `first_n_rows` was not imported - yet is available for use.
+Subsequently, in the interactive shell you can use any library in your python file, as well as all rgwfuncs methods (even if they are not imported). Notice, that while pandas and numpy are available in the shell as a result of importing them in the above script, the rgwfuncs method `first_n_rows` was not imported - yet is available for use.
 
     Welcome to the rgwfuncs interactive shell.
     >>> pirst_n_rows(df, 2)
