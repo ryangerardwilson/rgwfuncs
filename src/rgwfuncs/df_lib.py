@@ -434,7 +434,7 @@ def load_data_from_query(db_preset_name: str, query: str) -> pd.DataFrame:
             return pd.DataFrame(data, columns=columns)
 
 
-        aws_region = db_preset['region']
+        aws_region = db_preset['aws_region']
         database = db_preset['database']
         output_bucket = db_preset['output_bucket']
         
