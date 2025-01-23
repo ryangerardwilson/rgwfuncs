@@ -109,7 +109,7 @@ To display all docstrings, use:
 
 --------------------------------------------------------------------------------
 
-## Documentation Access Functions
+## Documentation Access
 
 ### 1. docs
 Print a list of available function names in alphabetical order. If a filter is provided, print the docstrings of functions containing the term.
@@ -124,7 +124,7 @@ Print a list of available function names in alphabetical order. If a filter is p
 
 --------------------------------------------------------------------------------
 
-## Interactive Shell Function
+## Interactive Shell
 
 This section includes functions that facilitate launching an interactive Python shell to inspect and modify local variables within the user's environment.
 
