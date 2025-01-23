@@ -21,6 +21,7 @@ from email.mime.base import MIMEBase
 from email import encoders
 from googleapiclient.discovery import build
 import base64
+import boto3
 # import inspect
 from typing import Optional, Dict, List, Tuple, Any
 import warnings
