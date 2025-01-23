@@ -4,7 +4,7 @@ import math
 
 # flake8: noqa: E402
 # Allow the following import statement to be AFTER sys.path modifications
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
 from src.rgwfuncs.algebra_lib import (
     compute_prime_factors,
@@ -44,6 +44,7 @@ def test_compute_constant_expression():
     for input_data, expected_output in test_cases:
         result = compute_constant_expression(input_data)
         assert math.isclose(result, expected_output, rel_tol=1e-9), f"Failed for {input_data}, got {result}"
+
 
 def test_compute_constant_expression_involving_matrices():
     test_cases = [
@@ -114,7 +115,6 @@ def test_python_polynomial_expression_to_latex():
         )
 
 
-
 def test_simplify_polynomial_expression():
     test_cases = [
         # Without substitutions
@@ -139,6 +139,3 @@ def test_solve_homogeneous_polynomial_expression():
 
     for (expression, variable, subs), expected_output in test_cases:
         assert solve_homogeneous_polynomial_expression(expression, variable, subs) == expected_output
-
-
-

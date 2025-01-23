@@ -124,6 +124,83 @@ Print a list of available function names in alphabetical order. If a filter is p
 
 --------------------------------------------------------------------------------
 
+## Interactive Shell Function
+
+This section includes functions that facilitate launching an interactive Python shell to inspect and modify local variables within the user's environment.
+
+### 1. `interactive_shell`
+
+#### Usage
+
+Launches an interactive prompt for inspecting and modifying local variables, making all methods in the rgwfuncs library available by default. This REPL (Read-Eval-Print Loop) environment supports command history and autocompletion, making it easier to interact with your Python code.
+
+• Parameters:
+  - `local_vars` (dict, optional): A dictionary of local variables to be accessible within the interactive shell. If not provided, defaults to an empty dictionary.
+
+• Usage:
+  - You can call this function to enter an interactive shell where you can view and modify the variables in the given local scope.
+
+• Example:
+
+    from rgwfuncs import interactive_shell
+    import pandas as pd
+    import numpy as np
+
+    # Example DataFrame
+    df = pd.DataFrame({
+        'id': [1, 2, 3, 4, 5],
+        'name': ['Alice', 'Bob', 'Charlie', 'David', 'Eva'],
+        'age': [30, 25, 35, 28, 22],
+        'city': ['New York', 'Los Angeles', 'Chicago', 'San Francisco', 'Boston']
+    })
+
+    # Function to retrieve the first n rows of a DataFrame
+    def first_n_rows(df, n):
+        return df.head(n).to_dict('records')
+
+    # Launch the interactive shell with local variables
+    interactive_shell(locals())
+
+- Once in the interactive shell, you are greeted with a welcome message. You can access the variables defined in the local scope where `interactive_shell(locals())` was called, including any imported modules such as `pandas` (accessed as `pd`) and `numpy` (accessed as `np`). This means you can directly use these modules in the interactive session. Type `exit()` to quit the shell.
+
+#### Interactive Shell Example Sessions
+
+1. DataFrame Inspection with Pandas:
+
+    Welcome to the rgwfuncs interactive shell.
+    >>> pirst_n_rows(df, 2)
+    Traceback (most recent call last):
+      File "<console>", line 1, in <module>
+    NameError: name 'pirst_n_rows' is not defined. Did you mean: 'first_n_rows'?
+    >>> first_n_rows(df, 2)
+    {'age': '30', 'city': 'New York', 'id': '1', 'name': 'Alice'}
+    {'age': '25', 'city': 'Los Angeles', 'id': '2', 'name': 'Bob'}
+    >>> print(df)
+      id     name age           city
+    0  1    Alice  30       New York
+    1  2      Bob  25    Los Angeles
+    2  3  Charlie  35        Chicago
+    3  4    David  28  San Francisco
+    4  5      Eva  22         Boston
+
+2. Array Operations with NumPy:
+
+    Welcome to the rgwfuncs interactive shell.
+    >>> arr = np.array([1, 2, 3, 4, 5])
+    >>> arr
+    array([1, 2, 3, 4, 5])
+
+These examples illustrate how you can use functions and variables within the interactive shell, handle errors with meaningful suggestions, and perform operations using external libraries like pandas and numpy.
+
+#### Key Features
+
+- Autocompletion: Uses the `rlcompleter` library to provide tab-completion of variables and functions names, enhancing ease of use.
+- History Support: Utilizes `readline` for command-line history, allowing you to navigate through previous commands using the arrow keys.
+
+This function is particularly useful for debugging purposes when you want real-time interaction with your program's execution environment.
+
+--------------------------------------------------------------------------------
+
 ## Algebra Based Functions
 
 This section provides comprehensive functions for handling algebraic expressions, performing tasks such as computation, simplification, solving equations, and prime factorization, all outputted in LaTeX format.

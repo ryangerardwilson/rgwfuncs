@@ -76,7 +76,7 @@ def compute_constant_expression_involving_matrices(expression: str) -> str:
     Computes the result of a constant expression involving matrices and returns it as a LaTeX string.
 
     Parameters:
-    expression (str): The constant expression involving matrices. Example format includes operations such as "+", 
+    expression (str): The constant expression involving matrices. Example format includes operations such as "+",
     "-", "*", "/".
 
     Returns:
@@ -161,9 +161,9 @@ def compute_constant_expression_involving_matrices(expression: str) -> str:
 
 def compute_constant_expression_involving_ordered_series(expression: str) -> str:
     """
-    Computes the result of a constant expression involving ordered series, and returns it as a Latex string. 
+    Computes the result of a constant expression involving ordered series, and returns it as a Latex string.
     Supports operations lile "+", "-", "*", "/", as well as "dd()" (the discrete difference operator).
-  
+
     The function first applies the discrete difference operator to any series where applicable, then evaluates
     arithmetic operations between series.
 
@@ -259,8 +259,6 @@ def compute_constant_expression_involving_ordered_series(expression: str) -> str
 
     except Exception as e:
         return f"Error computing ordered series operation: {e}"
-
-
 
 
 def python_polynomial_expression_to_latex(
@@ -549,5 +547,3 @@ def solve_homogeneous_polynomial_expression(
 
     except Exception as e:
         raise ValueError(f"Error solving the expression: {e}")
-
-
