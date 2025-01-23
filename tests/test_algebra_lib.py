@@ -7,13 +7,27 @@ import math
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from src.rgwfuncs.algebra_lib import (
+    compute_prime_factors_latex,
     compute_constant_expression,
     compute_constant_expression_involving_matrices,
     compute_constant_expression_involving_ordered_series,
     python_polynomial_expression_to_latex,
     simplify_polynomial_expression,
-    solve_homogeneous_polynomial_expression,
-    get_prime_factors_latex)
+    solve_homogeneous_polynomial_expression)
+
+
+def test_compute_prime_factors_latex():
+    test_cases = [
+        (100, "2^{2} \\cdot 5^{2}"),
+        (60, "2^{2} \\cdot 3 \\cdot 5"),
+        (45, "3^{2} \\cdot 5"),
+        (1, ""),  # Handle case with 1, which has no prime factors
+        (17, "17")  # Prime number itself
+    ]
+
+    for n, expected_output in test_cases:
+        result = compute_prime_factors_latex(n)
+        assert result == expected_output, f"Failed for {n}, got {result}"
 
 
 def test_compute_constant_expression():
@@ -127,15 +141,4 @@ def test_solve_homogeneous_polynomial_expression():
         assert solve_homogeneous_polynomial_expression(expression, variable, subs) == expected_output
 
 
-def test_get_prime_factors_latex():
-    test_cases = [
-        (100, "2^{2} \\cdot 5^{2}"),
-        (60, "2^{2} \\cdot 3 \\cdot 5"),
-        (45, "3^{2} \\cdot 5"),
-        (1, ""),  # Handle case with 1, which has no prime factors
-        (17, "17")  # Prime number itself
-    ]
 
-    for n, expected_output in test_cases:
-        result = get_prime_factors_latex(n)
-        assert result == expected_output, f"Failed for {n}, got {result}"

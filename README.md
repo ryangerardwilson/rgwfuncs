@@ -128,7 +128,31 @@ Print a list of available function names in alphabetical order. If a filter is p
 
 This section provides comprehensive functions for handling algebraic expressions, performing tasks such as computation, simplification, solving equations, and prime factorization, all outputted in LaTeX format.
 
-### 1. `compute_constant_expression`
+### 1. `compute_prime_factors_latex`
+
+Computes prime factors of a number and presents them in LaTeX format.
+
+• Parameters:
+  - `n` (int): The integer to factorize.
+
+• Returns:
+  - `str`: Prime factorization in LaTeX.
+
+• Example:
+
+    from rgwfuncs import compute_prime_factors_latex
+    factors_1 = compute_prime_factors_latex(100)
+    print(factors_1)  # Output: "2^{2} \cdot 5^{2}"
+
+    factors_2 = compute_prime_factors_latex(60)
+    print(factors_2)  # Output: "2^{2} \cdot 3 \cdot 5"
+
+    factors_3 = compute_prime_factors_latex(17)
+    print(factors_3)  # Output: "17"
+
+--------------------------------------------------------------------------------
+
+### 2. `compute_constant_expression`
 
 Computes the numerical result of a given expression, which can evaluate to a constant, represented as a float. Evaluates an constant expression provided as a string and returns the computed result. Supports various arithmetic operations, including addition, subtraction, multiplication, division, and modulo, as well as mathematical functions from the math module.
 
@@ -152,7 +176,7 @@ Computes the numerical result of a given expression, which can evaluate to a con
 
 --------------------------------------------------------------------------------
 
-### 2. `compute_constant_expression_involving_matrices`
+### 3. `compute_constant_expression_involving_matrices`
 
 Computes the result of a constant expression involving matrices and returns it as a LaTeX string.
 
@@ -180,7 +204,7 @@ Computes the result of a constant expression involving matrices and returns it a
 
 --------------------------------------------------------------------------------
 
-### 3. `compute_constant_expression_involving_ordered_series`
+### 4. `compute_constant_expression_involving_ordered_series`
 
 Computes the result of a constant expression involving ordered series, and returns it as a Latex string. 
 
@@ -209,7 +233,7 @@ Computes the result of a constant expression involving ordered series, and retur
 
 --------------------------------------------------------------------------------
 
-### 4. `python_polynomial_expression_to_latex`
+### 5. `python_polynomial_expression_to_latex`
 
 Converts a polynomial expression written in Python syntax to a LaTeX formatted string. This function parses algebraic expressions provided as strings using Python’s syntax and translates them into equivalent LaTeX representations, making them suitable for academic or professional documentation. The function supports inclusion of named variables, with an option to substitute specific values into the expression.
 
@@ -249,7 +273,7 @@ Converts a polynomial expression written in Python syntax to a LaTeX formatted s
 
 --------------------------------------------------------------------------------
 
-### 5. `simplify_polynomial_expression`
+### 6. `simplify_polynomial_expression`
 
 Simplifies an algebraic expression in polynomial form and returns it in LaTeX format. Takes an algebraic expression, in polynomial form, written in Python syntax and simplifies it. The result is returned as a LaTeX formatted string, suitable for academic or professional documentation.
 
@@ -282,7 +306,7 @@ Simplifies an algebraic expression in polynomial form and returns it in LaTeX fo
 
 --------------------------------------------------------------------------------
 
-### 6. `solve_homogeneous_polynomial_expression`
+### 7. `solve_homogeneous_polynomial_expression`
 
 Solves a homogeneous polynomial expression for a specified variable and returns solutions in LaTeX format. Assumes that the expression is homoegeneous (i.e. equal to zero), and solves for a designated variable. May optionally include substitutions for other variables in the equation. The solutions are provided as a LaTeX formatted string. The method solves equations for specified variables, with optional substitutions, returning LaTeX-formatted solutions.
 
@@ -303,30 +327,6 @@ Solves a homogeneous polynomial expression for a specified variable and returns 
     solutions2 = solve_homogeneous_polynomial_expression("x**2 - 4", "x")
     print(solutions2)  # Output: "\left[-2, 2\right]"
     
---------------------------------------------------------------------------------
-
-### 7. `get_prime_factors_latex`
-
-Computes prime factors of a number and presents them in LaTeX format.
-
-• Parameters:
-  - `n` (int): The integer to factorize.
-
-• Returns:
-  - `str`: Prime factorization in LaTeX.
-
-• Example:
-
-    from rgwfuncs import get_prime_factors_latex
-    factors1 = get_prime_factors_latex(100)
-    print(factors1)  # Output: "2^{2} \cdot 5^{2}"
-
-    factors2 = get_prime_factors_latex(60)
-    print(factors2)  # Output: "2^{2} \cdot 3 \cdot 5"
-
-    factors3 = get_prime_factors_latex(17)
-    print(factors3)  # Output: "17"    
- 
 --------------------------------------------------------------------------------
 
 ## String Based Functions

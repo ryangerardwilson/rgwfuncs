@@ -10,6 +10,37 @@ from sympy.parsing.sympy_parser import (standard_transformations, implicit_multi
 from typing import Tuple, List, Dict, Optional
 
 
+def compute_prime_factors_latex(n: int) -> str:
+    """
+    Computes the prime factors of a number and returns the factorization as a LaTeX string.
+
+    Determines the prime factorization of the given integer. The result is formatted as a LaTeX
+    string, enabling easy integration into documents or presentations that require mathematical notation.
+
+    Parameters:
+    n (int): The number for which to compute prime factors.
+
+    Returns:
+    str: The LaTeX representation of the prime factorization.
+    """
+
+    factors = []
+    while n % 2 == 0:
+        factors.append(2)
+        n //= 2
+    for i in range(3, int(math.sqrt(n)) + 1, 2):
+        while n % i == 0:
+            factors.append(i)
+            n //= i
+    if n > 2:
+        factors.append(n)
+
+    factor_counts = {factor: factors.count(factor) for factor in set(factors)}
+    latex_factors = [f"{factor}^{{{count}}}" if count > 1 else str(
+        factor) for factor, count in factor_counts.items()]
+    return " \\cdot ".join(latex_factors)
+
+
 def compute_constant_expression(expression: str) -> float:
     """
     Computes the numerical result of a given expression, which can evaluate to a constant,
@@ -520,34 +551,3 @@ def solve_homogeneous_polynomial_expression(
         raise ValueError(f"Error solving the expression: {e}")
 
 
-
-
-def get_prime_factors_latex(n: int) -> str:
-    """
-    Computes the prime factors of a number and returns the factorization as a LaTeX string.
-
-    Determines the prime factorization of the given integer. The result is formatted as a LaTeX
-    string, enabling easy integration into documents or presentations that require mathematical notation.
-
-    Parameters:
-    n (int): The number for which to compute prime factors.
-
-    Returns:
-    str: The LaTeX representation of the prime factorization.
-    """
-
-    factors = []
-    while n % 2 == 0:
-        factors.append(2)
-        n //= 2
-    for i in range(3, int(math.sqrt(n)) + 1, 2):
-        while n % i == 0:
-            factors.append(i)
-            n //= i
-    if n > 2:
-        factors.append(n)
-
-    factor_counts = {factor: factors.count(factor) for factor in set(factors)}
-    latex_factors = [f"{factor}^{{{count}}}" if count > 1 else str(
-        factor) for factor, count in factor_counts.items()]
-    return " \\cdot ".join(latex_factors)
