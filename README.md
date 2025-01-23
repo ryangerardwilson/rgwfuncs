@@ -165,7 +165,7 @@ Launches an interactive prompt for inspecting and modifying local variables, mak
 
 #### Interactive Shell Example Sessions
 
-1. DataFrame Inspection with Pandas:
+##### DataFrame Inspection with Pandas:
 
     Welcome to the rgwfuncs interactive shell.
     >>> pirst_n_rows(df, 2)
@@ -183,7 +183,7 @@ Launches an interactive prompt for inspecting and modifying local variables, mak
     3  4    David  28  San Francisco
     4  5      Eva  22         Boston
 
-2. Array Operations with NumPy:
+##### Array Operations with NumPy:
 
     Welcome to the rgwfuncs interactive shell.
     >>> arr = np.array([1, 2, 3, 4, 5])
