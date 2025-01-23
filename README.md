@@ -128,7 +128,88 @@ Print a list of available function names in alphabetical order. If a filter is p
 
 This section provides comprehensive functions for handling algebraic expressions, performing tasks such as computation, simplification, solving equations, and prime factorization, all outputted in LaTeX format.
 
-### 1. `python_polynomial_expression_to_latex`
+### 1. `compute_constant_expression`
+
+Computes the numerical result of a given expression, which can evaluate to a constant, represented as a float. Evaluates an constant expression provided as a string and returns the computed result. Supports various arithmetic operations, including addition, subtraction, multiplication, division, and modulo, as well as mathematical functions from the math module.
+
+• Parameters:
+  - `expression` (str): The constant expression to compute. This should be a string consisting of arithmetic operations and Python's math module functions.
+
+• Returns:
+  - `float`: The computed numerical result.
+
+• Example:
+
+    from rgwfuncs import compute_constant_expression
+    result1 = compute_constant_expression("2 + 2")
+    print(result1)  # Output: 4.0
+
+    result2 = compute_constant_expression("10 % 3")
+    print(result2)  # Output: 1.0
+
+    result3 = compute_constant_expression("math.gcd(36, 60) * math.sin(math.radians(45)) * 10000")
+    print(result3)  # Output: 84852.8137423857
+
+--------------------------------------------------------------------------------
+
+### 2. `compute_constant_expression_involving_matrices`
+
+Computes the result of a constant expression involving matrices and returns it as a LaTeX string.
+
+• Parameters:
+  - `expression` (str): The constant expression involving matrices. Example format includes operations such as "+", "-", "*", "/".
+
+• Returns:
+  - `str`: The LaTeX-formatted string representation of the computed matrix, or an error message if the operations cannot be performed due to dimensional mismatches.
+
+• Example:
+
+    from rgwfuncs import compute_constant_expression_involving_matrices
+
+    # Example with addition of 2D matrices
+    result = compute_constant_expression_involving_matrices("[[2, 6, 9], [1, 3, 5]] + [[1, 2, 3], [4, 5, 6]]")
+    print(result)  # Output: \begin{bmatrix}3 & 8 & 12\\5 & 8 & 11\end{bmatrix}
+
+    # Example of mixed operations with 1D matrices treated as 2D
+    result = compute_constant_expression_involving_matrices("[3, 6, 9] + [1, 2, 3] - [2, 2, 2]")
+    print(result)  # Output: \begin{bmatrix}2 & 6 & 10\end{bmatrix}
+
+    # Example with dimension mismatch
+    result = compute_constant_expression_involving_matrices("[[4, 3, 51]] + [[1, 1]]")
+    print(result)  # Output: Operations between matrices must involve matrices of the same dimension
+
+--------------------------------------------------------------------------------
+
+### 3. `compute_constant_expression_involving_ordered_series`
+
+Computes the result of a constant expression involving ordered series, and returns it as a Latex string. 
+
+
+• Parameters:
+  - `expression` (str): A series operation expression. Supports operations such as "+", "-", "*", "/", and `dd()` for discrete differences.
+
+• Returns:
+  - `str`: The string representation of the resultant series after performing operations, or an error message if series lengths do not match.
+
+• Example:
+
+    from rgwfuncs import compute_constant_expression_involving_ordered_series
+
+    # Example with addition and discrete differences
+    result = compute_constant_expression_involving_ordered_series("dd([2, 6, 9, 60]) + dd([78, 79, 80])")
+    print(result)  # Output: [4, 3, 51] + [1, 1]
+
+    # Example with elementwise subtraction
+    result = compute_constant_expression_involving_ordered_series("[10, 15, 21] - [5, 5, 5]")
+    print(result)  # Output: [5, 10, 16]
+
+    # Example with length mismatch
+    result = compute_constant_expression_involving_ordered_series("[4, 3, 51] + [1, 1]")
+    print(result)  # Output: Operations between ordered series must involve series of equal length
+
+--------------------------------------------------------------------------------
+
+### 4. `python_polynomial_expression_to_latex`
 
 Converts a polynomial expression written in Python syntax to a LaTeX formatted string. This function parses algebraic expressions provided as strings using Python’s syntax and translates them into equivalent LaTeX representations, making them suitable for academic or professional documentation. The function supports inclusion of named variables, with an option to substitute specific values into the expression.
 
@@ -168,31 +249,7 @@ Converts a polynomial expression written in Python syntax to a LaTeX formatted s
 
 --------------------------------------------------------------------------------
 
-### 2. `compute_constant_expression`
-
-Computes the numerical result of a given expression, which can evaluate to a constant, represented as a float. Evaluates an constant expression provided as a string and returns the computed result. Supports various arithmetic operations, including addition, subtraction, multiplication, division, and modulo, as well as mathematical functions from the math module.
-
-• Parameters:
-  - `expression` (str): The constant expression to compute. This should be a string consisting of arithmetic operations and Python's math module functions.
-
-• Returns:
-  - `float`: The computed numerical result.
-
-• Example:
-
-    from rgwfuncs import compute_constant_expression
-    result1 = compute_constant_expression("2 + 2")
-    print(result1)  # Output: 4.0
-
-    result2 = compute_constant_expression("10 % 3")
-    print(result2)  # Output: 1.0
-
-    result3 = compute_constant_expression("math.gcd(36, 60) * math.sin(math.radians(45)) * 10000")
-    print(result3)  # Output: 84852.8137423857
-
---------------------------------------------------------------------------------
-
-### 3. `simplify_polynomial_expression`
+### 5. `simplify_polynomial_expression`
 
 Simplifies an algebraic expression in polynomial form and returns it in LaTeX format. Takes an algebraic expression, in polynomial form, written in Python syntax and simplifies it. The result is returned as a LaTeX formatted string, suitable for academic or professional documentation.
 
@@ -225,7 +282,7 @@ Simplifies an algebraic expression in polynomial form and returns it in LaTeX fo
 
 --------------------------------------------------------------------------------
 
-### 4. `solve_homogeneous_polynomial_expression`
+### 6. `solve_homogeneous_polynomial_expression`
 
 Solves a homogeneous polynomial expression for a specified variable and returns solutions in LaTeX format. Assumes that the expression is homoegeneous (i.e. equal to zero), and solves for a designated variable. May optionally include substitutions for other variables in the equation. The solutions are provided as a LaTeX formatted string. The method solves equations for specified variables, with optional substitutions, returning LaTeX-formatted solutions.
 
@@ -248,7 +305,7 @@ Solves a homogeneous polynomial expression for a specified variable and returns 
     
 --------------------------------------------------------------------------------
 
-### 5. `get_prime_factors_latex`
+### 7. `get_prime_factors_latex`
 
 Computes prime factors of a number and presents them in LaTeX format.
 
@@ -270,62 +327,6 @@ Computes prime factors of a number and presents them in LaTeX format.
     factors3 = get_prime_factors_latex(17)
     print(factors3)  # Output: "17"    
  
---------------------------------------------------------------------------------
-
-### 6. `compute_matrix_expression`
-
-Computes the results of expressions containing 1D or 2D matrix operations and formats them as LaTeX strings.
-
-• Parameters:
-  - `expression` (str): A string representing a sequence of matrix operations involving either 1D or 2D lists. Supported operations include addition (`+`), subtraction (`-`), multiplication (`*`), and division (`/`).
-
-• Returns:
-  - `str`: The LaTeX-formatted string representation of the computed matrix, or an error message if the operations cannot be performed due to dimensional mismatches.
-
-• Example:
-
-    from rgwfuncs import compute_matrix_expression
-    
-    # Example with addition of 2D matrices
-    result = compute_matrix_expression("[[2, 6, 9], [1, 3, 5]] + [[1, 2, 3], [4, 5, 6]]")
-    print(result)  # Output: \begin{bmatrix}3 & 8 & 12\\5 & 8 & 11\end{bmatrix}
-    
-    # Example of mixed operations with 1D matrices treated as 2D
-    result = compute_matrix_expression("[3, 6, 9] + [1, 2, 3] - [2, 2, 2]")
-    print(result)  # Output: \begin{bmatrix}2 & 6 & 10\end{bmatrix}
-
-    # Example with dimension mismatch
-    result = compute_matrix_expression("[[4, 3, 51]] + [[1, 1]]")
-    print(result)  # Output: Operations between matrices must involve matrices of the same dimension
-
---------------------------------------------------------------------------------
-
-### 7. `compute_ordered_series_expression`
-
-Computes the result of expressions containing operations on ordered series expressed as 1D lists. The syntax of the expression supports the discrete difference operator via the `ddd()` method.
-
-• Parameters:
-  - `expression` (str): A series operation expression. Supports operations such as "+", "-", "*", "/", and `ddd()` for discrete differences.
-
-• Returns:
-  - `str`: The string representation of the resultant series after performing operations, or an error message if series lengths do not match.
-
-• Example:
-
-    from rgwfuncs import compute_ordered_series_expression
-
-    # Example with addition and discrete differences
-    result = compute_ordered_series_expression("ddd([2, 6, 9, 60]) + ddd([78, 79, 80])")
-    print(result)  # Output: [4, 3, 51] + [1, 1]
-    
-    # Example with elementwise subtraction
-    result = compute_ordered_series_expression("[10, 15, 21] - [5, 5, 5]")
-    print(result)  # Output: [5, 10, 16]
-
-    # Example with length mismatch
-    result = compute_ordered_series_expression("[4, 3, 51] + [1, 1]")
-    print(result)  # Output: Operations between ordered series must involve series of equal length
-
 --------------------------------------------------------------------------------
 
 ## String Based Functions
