@@ -7,7 +7,7 @@ import math
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from src.rgwfuncs.algebra_lib import (
-    compute_prime_factors_latex,
+    compute_prime_factors,
     compute_constant_expression,
     compute_constant_expression_involving_matrices,
     compute_constant_expression_involving_ordered_series,
@@ -16,7 +16,7 @@ from src.rgwfuncs.algebra_lib import (
     solve_homogeneous_polynomial_expression)
 
 
-def test_compute_prime_factors_latex():
+def test_compute_prime_factors():
     test_cases = [
         (100, "2^{2} \\cdot 5^{2}"),
         (60, "2^{2} \\cdot 3 \\cdot 5"),
@@ -26,7 +26,7 @@ def test_compute_prime_factors_latex():
     ]
 
     for n, expected_output in test_cases:
-        result = compute_prime_factors_latex(n)
+        result = compute_prime_factors(n)
         assert result == expected_output, f"Failed for {n}, got {result}"
 
 

@@ -128,7 +128,7 @@ Print a list of available function names in alphabetical order. If a filter is p
 
 This section provides comprehensive functions for handling algebraic expressions, performing tasks such as computation, simplification, solving equations, and prime factorization, all outputted in LaTeX format.
 
-### 1. `compute_prime_factors_latex`
+### 1. `compute_prime_factors`
 
 Computes prime factors of a number and presents them in LaTeX format.
 
@@ -140,14 +140,14 @@ Computes prime factors of a number and presents them in LaTeX format.
 
 • Example:
 
-    from rgwfuncs import compute_prime_factors_latex
-    factors_1 = compute_prime_factors_latex(100)
+    from rgwfuncs import compute_prime_factors
+    factors_1 = compute_prime_factors(100)
     print(factors_1)  # Output: "2^{2} \cdot 5^{2}"
 
-    factors_2 = compute_prime_factors_latex(60)
+    factors_2 = compute_prime_factors(60)
     print(factors_2)  # Output: "2^{2} \cdot 3 \cdot 5"
 
-    factors_3 = compute_prime_factors_latex(17)
+    factors_3 = compute_prime_factors(17)
     print(factors_3)  # Output: "17"
 
 --------------------------------------------------------------------------------

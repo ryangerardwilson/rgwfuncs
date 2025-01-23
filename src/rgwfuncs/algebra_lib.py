@@ -10,7 +10,7 @@ from sympy.parsing.sympy_parser import (standard_transformations, implicit_multi
 from typing import Tuple, List, Dict, Optional
 
 
-def compute_prime_factors_latex(n: int) -> str:
+def compute_prime_factors(n: int) -> str:
     """
     Computes the prime factors of a number and returns the factorization as a LaTeX string.
 
