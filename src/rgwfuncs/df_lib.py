@@ -471,7 +471,7 @@ def load_data_from_query(db_preset_name: str, query: str) -> pd.DataFrame:
         return query_clickhouse(db_preset, query)
     elif db_type == 'google_big_query':
         return query_google_big_query(db_preset, query)
-    elif db_type == 'athena':
+    elif db_type == 'aws_athena':
         return query_athena(db_preset, query)
     else:
         raise ValueError(f"Unsupported db_type: {db_type}")
