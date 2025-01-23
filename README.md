@@ -49,6 +49,15 @@ A `.rgwfuncsrc` file (located at `vi ~/.rgwfuncsrc) is required for MSSQL, CLICK
           "db_type": "google_big_query",
           "json_file_path": "",
           "project_id": ""
+        },
+        {
+          "name": "athena_db1",
+          "db_type": "aws_athena",
+          "aws_access_key": "",
+          "aws_secret_key": "",
+          "aws_region: "",
+          "database": "logs",
+          "output_bucket": "s3://bucket-name"
         }
       ],
       "vm_presets": [
@@ -641,28 +650,49 @@ Drop duplicate rows based on specified columns, retaining the last occurrence.
 
 ### 11. `load_data_from_query`
 
-Load data from a database query into a DataFrame based on a configuration preset.
+Load data from a specified database using a SQL query and return the results in a Pandas DataFrame. The database connection configurations are determined by a preset name specified in a configuration file.
 
-- **Parameters:**
-  - `db_preset_name` (str): Name of the database preset in the configuration file.
-  - `query` (str): The SQL query to execute.
+#### Features
 
-- **Returns:**
-  - `pd.DataFrame`: A DataFrame containing the query result.
+- Multi-Database Support: This function supports different database types, including MSSQL, MySQL, ClickHouse, Google BigQuery, and AWS Athena, based on the configuration preset selected.
+- Configuration-Based: It utilizes a configuration file to store database connection details securely, avoiding hardcoding sensitive information directly into the script.
+- Dynamic Query Execution: Capable of executing custom user-defined SQL queries against the specified database.
+- Automatic Result Loading: Fetches query results and loads them directly into a Pandas DataFrame for further manipulation and analysis.
 
-- **Notes:**
-  - The configuration file is assumed to be located at `~/.rgwfuncsrc`.
+#### Parameters
 
-- **Example:**
+- `db_preset_name` (str): The name of the database preset found in the configuration file. This preset determines which database connection details to use.
+- `query` (str): The SQL query string to be executed on the database.
 
-  from rgwfuncs import load_data_from_query
+#### Returns
 
-  df = load_data_from_query(
-      db_preset_name="MyDBPreset",
-      query="SELECT * FROM my_table"
-  )
-  print(df)
+- `pd.DataFrame`: Returns a DataFrame that contains the results from the executed SQL query.
 
+#### Configuration Details
+
+- The configuration file is expected to be in JSON format and located at `~/.rgwfuncsrc`.
+- Each preset within the configuration file must include:
+  - `name`: Name of the database preset.
+  - `db_type`: Type of the database (`mssql`, `mysql`, `clickhouse`, `google_big_query`, `aws_athena`).
+  - `credentials`: Necessary credentials such as host, username, password, and potentially others depending on the database type.
+
+#### Example
+
+    from rgwfuncs import load_data_from_query
+
+    # Load data using a preset configuration
+    df = load_data_from_query(
+        db_preset_name="MyDBPreset",
+        query="SELECT * FROM my_table"
+    )
+    print(df)
+
+#### Notes
+
+- Security: Ensure that the configuration file (`~/.rgwfuncsrc`) is secure and accessible only to authorized users, as it contains sensitive information.
+- Pre-requisites: Ensure the necessary Python packages are installed for each database type you wish to query. For example, `pymssql` for MSSQL, `mysql-connector-python` for MySQL, and so on.
+- Error Handling: The function raises a `ValueError` if the specified preset name does not exist or if the database type is unsupported. Additional exceptions may arise from network issues or database errors.
+- Environment: For AWS Athena, ensure that AWS credentials are configured properly for the boto3 library to authenticate successfully. Consider using AWS IAM roles or AWS Secrets Manager for better security management.
     
 --------------------------------------------------------------------------------
 

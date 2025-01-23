@@ -384,8 +384,7 @@ def load_data_from_query(db_preset_name: str, query: str) -> pd.DataFrame:
                     raise ConnectionError(
                         "All attempts to connect to ClickHouse failed.")
 
-    def query_google_big_query(
-            db_preset: Dict[str, Any], query: str) -> pd.DataFrame:
+    def query_google_big_query(db_preset: Dict[str, Any], query: str) -> pd.DataFrame:
         json_file_path = db_preset['json_file_path']
         project_id = db_preset['project_id']
 
@@ -399,6 +398,56 @@ def load_data_from_query(db_preset_name: str, query: str) -> pd.DataFrame:
         columns = [field.name for field in results.schema]
 
         return pd.DataFrame(rows, columns=columns)
+
+
+    def query_athena(db_preset: Dict[str, Any], query: str) -> pd.DataFrame:
+
+        def execute_athena_query(athena_client, query: str, database: str, output_bucket: str) -> str:
+            response = athena_client.start_query_execution(
+                QueryString=query,
+                QueryExecutionContext={"Database": database},
+                ResultConfiguration={"OutputLocation": output_bucket}
+            )
+            return response["QueryExecutionId"]
+
+        def wait_for_athena_query_to_complete(athena_client, query_execution_id: str):
+            while True:
+                response = athena_client.get_query_execution(QueryExecutionId=query_execution_id)
+                state = response["QueryExecution"]["Status"]["State"]
+                if state == "SUCCEEDED":
+                    break
+                elif state in ("FAILED", "CANCELLED"):
+                    raise Exception(f"Query failed with state: {state}")
+                time.sleep(1)
+
+        def download_athena_query_results(athena_client, query_execution_id: str) -> pd.DataFrame:
+            paginator = athena_client.get_paginator("get_query_results")
+            result_pages = paginator.paginate(QueryExecutionId=query_execution_id)
+            rows = []
+            columns = []
+            for page in result_pages:
+                if not columns:
+                    columns = [col["Name"] for col in page["ResultSet"]["ResultSetMetadata"]["ColumnInfo"]]
+                rows.extend(page["ResultSet"]["Rows"])
+
+            data = [[col.get("VarCharValue", None) for col in row["Data"]] for row in rows[1:]]
+            return pd.DataFrame(data, columns=columns)
+
+
+        aws_region = db_preset['region']
+        database = db_preset['database']
+        output_bucket = db_preset['output_bucket']
+        
+        athena_client = boto3.client(
+            'athena',
+            region_name=aws_region,
+            aws_access_key_id=db_preset['aws_access_key'],
+            aws_secret_access_key=db_preset['aws_secret_key']
+        )
+
+        query_execution_id = execute_athena_query(athena_client, query, database, output_bucket)
+        wait_for_athena_query_to_complete(athena_client, query_execution_id)
+        return download_athena_query_results(athena_client, query_execution_id)
 
     # Assume the configuration file is located at ~/.rgwfuncsrc
     config_path = os.path.expanduser('~/.rgwfuncsrc')
@@ -422,6 +471,8 @@ def load_data_from_query(db_preset_name: str, query: str) -> pd.DataFrame:
         return query_clickhouse(db_preset, query)
     elif db_type == 'google_big_query':
         return query_google_big_query(db_preset, query)
+    elif db_type == 'athena':
+        return query_athena(db_preset, query)
     else:
         raise ValueError(f"Unsupported db_type: {db_type}")
 
