@@ -1,7 +1,6 @@
 import re
 import math
 import ast
-# import numpy as np
 from sympy import symbols, latex, simplify, solve, diff, Expr, factor, cancel, Eq
 from sympy.core.sympify import SympifyError
 from sympy.core import S
@@ -677,21 +676,28 @@ def solve_homogeneous_polynomial_expression(
     """
 
     try:
+        # Handle symbols
         variable_symbols = set(re.findall(r'\b[a-zA-Z]\w*\b', expression))
         sym_vars = {var: symbols(var) for var in variable_symbols}
+
+        # Parse the expression
         expr = parse_expr(expression, local_dict=sym_vars)
+
+        # Apply substitutions
         if subs:
             expr = expr.subs({symbols(k): v for k, v in subs.items()})
+
+        # Solve the equation
         var_symbol = symbols(variable)
         eq = Eq(expr, 0)
         solutions = solve(eq, var_symbol)
-        if solutions:
-            latex_solutions = [latex(simplify(sol)) for sol in solutions]
-            result = r"\left[" + ", ".join(latex_solutions) + r"\right]"
-        else:
-            result = r"\left[\text{No solutions found}\right]"
+
+        # Convert solutions to LaTeX strings with handling for exact representations
+        latex_solutions = [latex(sol) for sol in solutions]
+
+        result = r"\left[" + ", ".join(latex_solutions) + r"\right]"
+        print("693", result)
         return result
 
     except Exception as e:
         raise ValueError(f"Error solving the expression: {e}")
-

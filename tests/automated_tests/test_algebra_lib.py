@@ -207,9 +207,25 @@ def test_solve_homogeneous_polynomial_expression():
     test_cases = [
         # Test case with substitutions
         (("a*x**2 + b*x + c", "x", {"a": 3, "b": 7, "c": 5}), r"\left[- \frac{7}{6} - \frac{\sqrt{11} i}{6}, - \frac{7}{6} + \frac{\sqrt{11} i}{6}\right]"),
-        (("3*q+4/q+3-5*q-1/q-1+a+b","q",{'a':2,'b':45000}), r"\left[11251 - \frac{\sqrt{506340010}}{2}, 11251 + \frac{\sqrt{506340010}}{2}\right]"),
+        (("3*q+4/q+3-5*q-1/q-1+a+b", "q", {'a': 2, 'b': 45000}), r"\left[11251 - \frac{\sqrt{506340010}}{2}, 11251 + \frac{\sqrt{506340010}}{2}\right]"),
+
+        # Simple polynomial equation (no substitutions)
+        (("x**2 - 5*x + 6", "x", None), r"\left[2, 3\right]"),
+
+        # No solutions (quadratic with no real roots)
+        (("x**2 + 1", "x", None), r"\left[- i, i\right]"),
+
+        # Single solution
+        (("x**2 - 4*x + 4", "x", None), r"\left[2\right]"),
+
+        # Complex numbers
+        (("x**2 + 4*x + 5", "x", None), r"\left[-2 - i, -2 + i\right]"),
+
+        # Edge case with zero coefficients
+        (("0*x + 0", "x", None), r"\left[\right]"),  # No variable, identity
 
     ]
 
     for (expression, variable, subs), expected_output in test_cases:
-        assert solve_homogeneous_polynomial_expression(expression, variable, subs) == expected_output
+        actual_output = solve_homogeneous_polynomial_expression(expression, variable, subs)
+        assert actual_output == expected_output, f"Failed: {actual_output} != {expected_output}"
