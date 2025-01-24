@@ -400,7 +400,6 @@ def load_data_from_query(db_preset_name: str, query: str) -> pd.DataFrame:
 
         return pd.DataFrame(rows, columns=columns)
 
-
     def query_athena(db_preset: Dict[str, Any], query: str) -> pd.DataFrame:
 
         def execute_athena_query(athena_client, query: str, database: str, output_bucket: str) -> str:
@@ -434,11 +433,10 @@ def load_data_from_query(db_preset_name: str, query: str) -> pd.DataFrame:
             data = [[col.get("VarCharValue", None) for col in row["Data"]] for row in rows[1:]]
             return pd.DataFrame(data, columns=columns)
 
-
         aws_region = db_preset['aws_region']
         database = db_preset['database']
         output_bucket = db_preset['output_bucket']
-        
+
         athena_client = boto3.client(
             'athena',
             region_name=aws_region,

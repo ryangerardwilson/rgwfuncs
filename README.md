@@ -375,7 +375,63 @@ Expands a polynomial expression written in Python syntax and converts it into a 
 
 --------------------------------------------------------------------------------
 
-### 6. `simplify_polynomial_expression`
+### 7. `factor_polynomial_expression`
+
+Factors a polynomial expression written in Python syntax and converts it into a LaTeX formatted string. This function parses an algebraic expression, performs polynomial factoring using SymPy, and converts the factored expression into a LaTeX representation, ideal for academic or professional use. Optional substitutions can be made before factoring.
+
+- Parameters:
+  - `expression` (str): The polynomial expression to factor and convert to LaTeX. This should be a valid expression formatted using Python syntax.
+  - `subs` (Optional[Dict[str, float]]): An optional dictionary of substitutions. The keys are variable names in the expression, and the values are numbers that replace these variables.
+
+- Returns:
+  - `str`: The LaTeX formatted string representing the factored expression.
+
+- Raises:
+  - `ValueError`: If the expression cannot be parsed due to syntax errors.
+
+- Example:
+
+    from rgwfuncs import factor_polynomial_expression
+
+    # Factor a polynomial expression and convert to LaTeX
+    latex_result1 = factor_polynomial_expression("x**2 - 4")
+    print(latex_result1)  # Output: "\left(x - 2\right) \left(x + 2\right)"
+
+    # Factor with substituted values
+    latex_result2 = factor_polynomial_expression("x**2 - y**2", {"y": 3})
+    print(latex_result2)  # Output: "\left(x - 3\right) \left(x + 3\right)"
+
+--------------------------------------------------------------------------------
+
+### 8. `cancel_polynomial_expression`
+
+Cancels common factors within a polynomial expression written in Python syntax and converts it to a LaTeX formatted string. This function parses an algebraic expression, cancels common factors using SymPy, and translates the reduced expression into a LaTeX representation. It can also accommodate optional substitutions to be made prior to simplification.
+
+- Parameters:
+  - `expression` (str): The algebraic expression to simplify and convert to LaTeX. This string should be formatted using Python syntax.
+  - `subs` (Optional[Dict[str, float]]): An optional dictionary of substitutions where the keys are variable names in the expression, and the values are the numbers to substitute.
+
+- Returns:
+  - `str`: The LaTeX formatted string of the simplified expression. If the expression involves indeterminate forms due to operations like division by zero, a descriptive error message is returned instead.
+
+- Raises:
+  - `ValueError`: If the expression cannot be parsed due to syntax errors or involves undefined operations, such as division by zero.
+
+- Example:
+
+    from rgwfuncs import cancel_polynomial_expression
+
+    # Cancel common factors within a polynomial expression
+    latex_result1 = cancel_polynomial_expression("(x**2 - 4) / (x - 2)")
+    print(latex_result1)  # Output: "x + 2"
+
+    # Cancel with substituted values
+    latex_result2 = cancel_polynomial_expression("(x**2 - 4) / (x - 2)", {"x": 2})
+    print(latex_result2)  # Output: "Undefined result. This could be a division by zero error."
+
+--------------------------------------------------------------------------------
+
+### 9. `simplify_polynomial_expression`
 
 Simplifies an algebraic expression in polynomial form and returns it in LaTeX format. Takes an algebraic expression, in polynomial form, written in Python syntax and simplifies it. The result is returned as a LaTeX formatted string, suitable for academic or professional documentation.
 
@@ -408,7 +464,7 @@ Simplifies an algebraic expression in polynomial form and returns it in LaTeX fo
 
 --------------------------------------------------------------------------------
 
-### 7. `solve_homogeneous_polynomial_expression`
+### 10. `solve_homogeneous_polynomial_expression`
 
 Solves a homogeneous polynomial expression for a specified variable and returns solutions in LaTeX format. Assumes that the expression is homoegeneous (i.e. equal to zero), and solves for a designated variable. May optionally include substitutions for other variables in the equation. The solutions are provided as a LaTeX formatted string. The method solves equations for specified variables, with optional substitutions, returning LaTeX-formatted solutions.
 

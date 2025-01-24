@@ -2,7 +2,9 @@ import re
 import math
 import ast
 # import numpy as np
-from sympy import symbols, latex, simplify, solve, diff, Expr
+from sympy import symbols, latex, simplify, solve, diff, Expr, factor, cancel
+from sympy.core.sympify import SympifyError
+from sympy.core import S
 from sympy.parsing.sympy_parser import parse_expr
 from sympy import __all__ as sympy_functions
 from sympy.parsing.sympy_parser import (standard_transformations, implicit_multiplication_application)
@@ -320,6 +322,7 @@ def python_polynomial_expression_to_latex(
     latex_result = latex(expr)
     return latex_result
 
+
 def expand_polynomial_expression(
     expression: str,
     subs: Optional[Dict[str, float]] = None
@@ -327,15 +330,15 @@ def expand_polynomial_expression(
     """
     Expands a polynomial expression written in Python syntax and converts it to LaTeX format.
 
-    This function takes an algebraic expression written in Python syntax, 
-    applies polynomial expansion, and converts the expanded expression 
+    This function takes an algebraic expression written in Python syntax,
+    applies polynomial expansion, and converts the expanded expression
     to a LaTeX formatted string. The expression should be compatible with sympy.
 
     Parameters:
-    expression (str): The algebraic expression to expand and convert to LaTeX. 
+    expression (str): The algebraic expression to expand and convert to LaTeX.
                       The expression should be written using Python syntax.
-    subs (Optional[Dict[str, float]]): An optional dictionary of substitutions 
-                                       to apply to variables in the expression 
+    subs (Optional[Dict[str, float]]): An optional dictionary of substitutions
+                                       to apply to variables in the expression
                                        before expansion.
 
     Returns:
@@ -345,15 +348,18 @@ def expand_polynomial_expression(
     ValueError: If the expression cannot be parsed due to syntax errors.
     """
     transformations = standard_transformations + (implicit_multiplication_application,)
-    
+
     def parse_and_expand_expression(expr_str: str, sym_vars: Dict[str, symbols]) -> symbols:
         try:
             expr = parse_expr(expr_str, local_dict=sym_vars, transformations=transformations)
             if subs:
+                # Ensure that subs is a dictionary
+                if not isinstance(subs, dict):
+                    raise ValueError(f"Substitutions must be a dictionary. Received: {subs}")
                 subs_symbols = {symbols(k): v for k, v in subs.items()}
                 expr = expr.subs(subs_symbols)
             return expr.expand()
-        except (SyntaxError, ValueError, TypeError) as e:
+        except (SyntaxError, ValueError, TypeError, AttributeError) as e:
             raise ValueError(f"Error parsing expression: {expr_str}. Error: {e}")
 
     variable_names = set(re.findall(r'\b[a-zA-Z]\w*\b', expression))
@@ -363,6 +369,110 @@ def expand_polynomial_expression(
     latex_result = latex(expr)
     return latex_result
 
+
+def factor_polynomial_expression(
+    expression: str,
+    subs: Optional[Dict[str, float]] = None
+) -> str:
+    """
+    Factors a polynomial expression written in Python syntax and converts it to LaTeX format.
+
+    This function accepts an algebraic expression in Python syntax, performs polynomial factoring,
+    and translates the factored expression into a LaTeX formatted string.
+
+    Parameters:
+    expression (str): The algebraic expression to factor and convert to LaTeX.
+    subs (Optional[Dict[str, float]]): An optional dictionary of substitutions to apply before factoring.
+
+    Returns:
+    str: The LaTeX formatted string of the factored expression.
+
+    Raises:
+    ValueError: If the expression cannot be parsed due to syntax errors.
+    """
+    transformations = standard_transformations + (implicit_multiplication_application,)
+
+    def parse_and_factor_expression(expr_str: str, sym_vars: Dict[str, symbols]) -> symbols:
+        try:
+            expr = parse_expr(expr_str, local_dict=sym_vars, transformations=transformations)
+            if subs:
+                if not isinstance(subs, dict):
+                    raise ValueError(f"Substitutions must be a dictionary. Received: {subs}")
+                subs_symbols = {symbols(k): v for k, v in subs.items()}
+                expr = expr.subs(subs_symbols)
+            return factor(expr)
+        except (SyntaxError, ValueError, TypeError, AttributeError) as e:
+            raise ValueError(f"Error parsing expression: {expr_str}. Error: {e}")
+
+    variable_names = set(re.findall(r'\b[a-zA-Z]\w*\b', expression))
+    sym_vars = {var: symbols(var) for var in variable_names}
+
+    expr = parse_and_factor_expression(expression, sym_vars)
+    latex_result = latex(expr)
+    return latex_result
+
+
+def cancel_polynomial_expression(
+    expression: str,
+    subs: Optional[Dict[str, float]] = None
+) -> str:
+    """
+    Cancels common factors within a polynomial expression and converts it to LaTeX format.
+
+    This function parses an algebraic expression given in Python syntax, cancels any common factors,
+    and converts the resulting simplified expression into a LaTeX formatted string. The function can
+    also handle optional substitutions of variables before performing the cancellation.
+
+    Parameters:
+    expression (str): The algebraic expression to simplify and convert to LaTeX.
+                      It should be a valid expression formatted using Python syntax.
+    subs (Optional[Dict[str, float]]): An optional dictionary where the keys are variable names in the
+                                       expression, and the values are the corresponding numbers to substitute
+                                       into the expression before simplification.
+
+    Returns:
+    str: The LaTeX formatted string of the simplified expression. If the expression involves
+         indeterminate forms due to operations like division by zero, a descriptive error message is returned instead.
+
+    Raises:
+    ValueError: If the expression cannot be parsed due to syntax errors or if operations result in
+                undefined behavior, such as division by zero.
+
+    """
+    transformations = standard_transformations + (implicit_multiplication_application,)
+
+    def parse_and_cancel_expression(expr_str: str, sym_vars: Dict[str, symbols]) -> symbols:
+        try:
+            expr = parse_expr(expr_str, local_dict=sym_vars, transformations=transformations)
+            if subs:
+                if not isinstance(subs, dict):
+                    raise ValueError(f"Substitutions must be a dictionary. Received: {subs}")
+                subs_symbols = {symbols(k): v for k, v in subs.items()}
+                expr = expr.subs(subs_symbols)
+
+            canceled_expr = cancel(expr)
+
+            # Check for NaN or indeterminate forms
+            if canceled_expr.has(S.NaN) or canceled_expr.has(S.Infinity) or canceled_expr.has(S.ComplexInfinity):
+                return "Undefined result. This could be a division by zero error."
+
+            return canceled_expr
+
+        except (SyntaxError, ValueError, TypeError, AttributeError, ZeroDivisionError, SympifyError) as e:
+            return f"Error: {str(e)}"
+
+    variable_names = set(re.findall(r'\b[a-zA-Z]\w*\b', expression))
+    sym_vars = {var: symbols(var) for var in variable_names}
+
+    expr = parse_and_cancel_expression(expression, sym_vars)
+
+    # If the expression is already a string (i.e., "Undefined" or error message), return it directly
+    if isinstance(expr, str):
+        return expr
+
+    # Otherwise, convert to LaTeX as usual
+    latex_result = latex(expr)
+    return latex_result
 
 
 def simplify_polynomial_expression(

@@ -13,6 +13,8 @@ from src.rgwfuncs.algebra_lib import (
     compute_constant_expression_involving_ordered_series,
     python_polynomial_expression_to_latex,
     expand_polynomial_expression,
+    factor_polynomial_expression,
+    cancel_polynomial_expression,
     simplify_polynomial_expression,
     solve_homogeneous_polynomial_expression)
 
@@ -115,6 +117,7 @@ def test_python_polynomial_expression_to_latex():
             f"Expected {expected_output}, got {output}"
         )
 
+
 def test_expand_polynomial_expression():
     test_cases = [
         # Without substitutions
@@ -132,6 +135,52 @@ def test_expand_polynomial_expression():
 
     for expression, subs, expected_output in test_cases:
         output = expand_polynomial_expression(expression, subs)
+        assert output == expected_output, (
+            f"Test failed for expression: {expression} with substitutions: {subs}. "
+            f"Expected {expected_output}, got {output}"
+        )
+
+
+def test_factor_polynomial_expression():
+    test_cases = [
+        # Without substitutions
+        ("x**2 - 4", None, r"\left(x - 2\right) \left(x + 2\right)"),
+        ("a**3 + 3*a**2*b + 3*a*b**2 + b**3", None, r"\left(a + b\right)^{3}"),
+        ("p**2 - 2*p*q + q**2", None, r"\left(p - q\right)^{2}"),
+
+        # With substitutions
+        ("x**2 - 4", {"x": 2}, r"0"),
+        ("a**2 - b**2", {"b": 1}, r"\left(a - 1\right) \left(a + 1\right)"),
+        ("u**2 - 1", {"u": 1}, r"0"),
+        ("t**2 - 4*t + 4", {"t": 2}, r"0"),  # Perfect square
+        ("x**2 + 2*x*y + y**2", {"y": 1}, r"\left(x + 1\right)^{2}"),
+    ]
+
+    for expression, subs, expected_output in test_cases:
+        output = factor_polynomial_expression(expression, subs)
+        assert output == expected_output, (
+            f"Test failed for expression: {expression} with substitutions: {subs}. "
+            f"Expected {expected_output}, got {output}"
+        )
+
+
+def test_cancel_polynomial_expression():
+    test_cases = [
+        # Without substitutions
+        ("(x**2 - 4) / (x - 2)", None, r"x + 2"),
+        ("(a**2 - b**2) / (a - b)", None, r"a + b"),
+        ("(p**2 - q**2) / (p + q)", None, r"p - q"),
+
+        # With substitutions
+        ("(x**2 - 4) / (x - 2)", {"x": 2}, r"Undefined result. This could be a division by zero error."),
+        ("(a**2 - 1) / (a - 1)", {"a": 2}, r"3"),
+        ("(u**2 - 1) / (u - 1)", {"u": 1}, r"Undefined result. This could be a division by zero error."),
+        ("(t**2 - 4*t + 4) / (t - 2)", {"t": 3}, r"1"),
+        ("(x**2 + 2*x + 1) / (x + 1)", {"x": 0}, r"1"),
+    ]
+
+    for expression, subs, expected_output in test_cases:
+        output = cancel_polynomial_expression(expression, subs)
         assert output == expected_output, (
             f"Test failed for expression: {expression} with substitutions: {subs}. "
             f"Expected {expected_output}, got {output}"
