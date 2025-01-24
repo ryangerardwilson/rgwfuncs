@@ -206,7 +206,9 @@ def test_simplify_polynomial_expression():
 def test_solve_homogeneous_polynomial_expression():
     test_cases = [
         # Test case with substitutions
-        (("a*x**2 + b*x + c", "x", {"a": 3, "b": 7, "c": 5}), r"\left[-7/6 - sqrt(11)*I/6, -7/6 + sqrt(11)*I/6\right]"),
+        (("a*x**2 + b*x + c", "x", {"a": 3, "b": 7, "c": 5}), r"\left[- \frac{7}{6} - \frac{\sqrt{11} i}{6}, - \frac{7}{6} + \frac{\sqrt{11} i}{6}\right]"),
+        (("3*q+4/q+3-5*q-1/q-1+a+b","q",{'a':2,'b':45000}), r"\left[11251 - \frac{\sqrt{506340010}}{2}, 11251 + \frac{\sqrt{506340010}}{2}\right]"),
+
     ]
 
     for (expression, variable, subs), expected_output in test_cases:
