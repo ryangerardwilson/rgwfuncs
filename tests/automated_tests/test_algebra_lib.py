@@ -14,8 +14,8 @@ from src.rgwfuncs.algebra_lib import (
     python_polynomial_expression_to_latex,
     expand_polynomial_expression,
     factor_polynomial_expression,
-    cancel_polynomial_expression,
     simplify_polynomial_expression,
+    cancel_polynomial_expression,
     solve_homogeneous_polynomial_expression)
 
 
@@ -164,6 +164,22 @@ def test_factor_polynomial_expression():
         )
 
 
+def test_simplify_polynomial_expression():
+    test_cases = [
+        # Without substitutions
+        (("(np.diff(3*x**8)) / (np.diff(8*x**30) * 11*y**3)", None), r"\frac{1}{110 x^{22} y^{3}}"),
+
+        # With substitutions
+        (("x**2 + y**2", {"x": 3, "y": 4}), "25"),
+        (("a*b + b", {"b": 2}), r"2 a + 2"),  # Assumes no simplification of `a*b`
+        (("(x**2 + y**2 + z**2)", {"x": 1, "y": 0, "z": 0}), "1")
+    ]
+
+    for (expression, subs), expected_output in test_cases:
+        output = simplify_polynomial_expression(expression, subs)
+        assert output == expected_output, (f"Test failed for expression: {expression} with substitutions: {subs}. Expected {expected_output}, got {output}")
+
+
 def test_cancel_polynomial_expression():
     test_cases = [
         # Without substitutions
@@ -187,40 +203,19 @@ def test_cancel_polynomial_expression():
         )
 
 
-def test_simplify_polynomial_expression():
-    test_cases = [
-        # Without substitutions
-        (("(np.diff(3*x**8)) / (np.diff(8*x**30) * 11*y**3)", None), r"\frac{1}{110 x^{22} y^{3}}"),
-
-        # With substitutions
-        (("x**2 + y**2", {"x": 3, "y": 4}), "25"),
-        (("a*b + b", {"b": 2}), r"2 a + 2"),  # Assumes no simplification of `a*b`
-        (("(x**2 + y**2 + z**2)", {"x": 1, "y": 0, "z": 0}), "1")
-    ]
-
-    for (expression, subs), expected_output in test_cases:
-        output = simplify_polynomial_expression(expression, subs)
-        assert output == expected_output, (f"Test failed for expression: {expression} with substitutions: {subs}. Expected {expected_output}, got {output}")
-
-
 def test_solve_homogeneous_polynomial_expression():
     test_cases = [
         # Test case with substitutions
         (("a*x**2 + b*x + c", "x", {"a": 3, "b": 7, "c": 5}), r"\left[- \frac{7}{6} - \frac{\sqrt{11} i}{6}, - \frac{7}{6} + \frac{\sqrt{11} i}{6}\right]"),
         (("3*q+4/q+3-5*q-1/q-1+a+b", "q", {'a': 2, 'b': 45000}), r"\left[11251 - \frac{\sqrt{506340010}}{2}, 11251 + \frac{\sqrt{506340010}}{2}\right]"),
-
         # Simple polynomial equation (no substitutions)
         (("x**2 - 5*x + 6", "x", None), r"\left[2, 3\right]"),
-
         # No solutions (quadratic with no real roots)
         (("x**2 + 1", "x", None), r"\left[- i, i\right]"),
-
         # Single solution
         (("x**2 - 4*x + 4", "x", None), r"\left[2\right]"),
-
         # Complex numbers
         (("x**2 + 4*x + 5", "x", None), r"\left[-2 - i, -2 + i\right]"),
-
         # Edge case with zero coefficients
         (("0*x + 0", "x", None), r"\left[\right]"),  # No variable, identity
 

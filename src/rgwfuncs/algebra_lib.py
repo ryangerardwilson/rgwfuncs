@@ -411,69 +411,6 @@ def factor_polynomial_expression(
     return latex_result
 
 
-def cancel_polynomial_expression(
-    expression: str,
-    subs: Optional[Dict[str, float]] = None
-) -> str:
-    """
-    Cancels common factors within a polynomial expression and converts it to LaTeX format.
-
-    This function parses an algebraic expression given in Python syntax, cancels any common factors,
-    and converts the resulting simplified expression into a LaTeX formatted string. The function can
-    also handle optional substitutions of variables before performing the cancellation.
-
-    Parameters:
-    expression (str): The algebraic expression to simplify and convert to LaTeX.
-                      It should be a valid expression formatted using Python syntax.
-    subs (Optional[Dict[str, float]]): An optional dictionary where the keys are variable names in the
-                                       expression, and the values are the corresponding numbers to substitute
-                                       into the expression before simplification.
-
-    Returns:
-    str: The LaTeX formatted string of the simplified expression. If the expression involves
-         indeterminate forms due to operations like division by zero, a descriptive error message is returned instead.
-
-    Raises:
-    ValueError: If the expression cannot be parsed due to syntax errors or if operations result in
-                undefined behavior, such as division by zero.
-
-    """
-    transformations = standard_transformations + (implicit_multiplication_application,)
-
-    def parse_and_cancel_expression(expr_str: str, sym_vars: Dict[str, symbols]) -> symbols:
-        try:
-            expr = parse_expr(expr_str, local_dict=sym_vars, transformations=transformations)
-            if subs:
-                if not isinstance(subs, dict):
-                    raise ValueError(f"Substitutions must be a dictionary. Received: {subs}")
-                subs_symbols = {symbols(k): v for k, v in subs.items()}
-                expr = expr.subs(subs_symbols)
-
-            canceled_expr = cancel(expr)
-
-            # Check for NaN or indeterminate forms
-            if canceled_expr.has(S.NaN) or canceled_expr.has(S.Infinity) or canceled_expr.has(S.ComplexInfinity):
-                return "Undefined result. This could be a division by zero error."
-
-            return canceled_expr
-
-        except (SyntaxError, ValueError, TypeError, AttributeError, ZeroDivisionError, SympifyError) as e:
-            return f"Error: {str(e)}"
-
-    variable_names = set(re.findall(r'\b[a-zA-Z]\w*\b', expression))
-    sym_vars = {var: symbols(var) for var in variable_names}
-
-    expr = parse_and_cancel_expression(expression, sym_vars)
-
-    # If the expression is already a string (i.e., "Undefined" or error message), return it directly
-    if isinstance(expr, str):
-        return expr
-
-    # Otherwise, convert to LaTeX as usual
-    latex_result = latex(expr)
-    return latex_result
-
-
 def simplify_polynomial_expression(
     expression: str,
     subs: Optional[Dict[str, float]] = None
@@ -647,6 +584,69 @@ def simplify_polynomial_expression(
 
     except Exception as e:
         raise ValueError(f"Error simplifying expression: {e}")
+
+
+def cancel_polynomial_expression(
+    expression: str,
+    subs: Optional[Dict[str, float]] = None
+) -> str:
+    """
+    Cancels common factors within a polynomial expression and converts it to LaTeX format.
+
+    This function parses an algebraic expression given in Python syntax, cancels any common factors,
+    and converts the resulting simplified expression into a LaTeX formatted string. The function can
+    also handle optional substitutions of variables before performing the cancellation.
+
+    Parameters:
+    expression (str): The algebraic expression to simplify and convert to LaTeX.
+                      It should be a valid expression formatted using Python syntax.
+    subs (Optional[Dict[str, float]]): An optional dictionary where the keys are variable names in the
+                                       expression, and the values are the corresponding numbers to substitute
+                                       into the expression before simplification.
+
+    Returns:
+    str: The LaTeX formatted string of the simplified expression. If the expression involves
+         indeterminate forms due to operations like division by zero, a descriptive error message is returned instead.
+
+    Raises:
+    ValueError: If the expression cannot be parsed due to syntax errors or if operations result in
+                undefined behavior, such as division by zero.
+
+    """
+    transformations = standard_transformations + (implicit_multiplication_application,)
+
+    def parse_and_cancel_expression(expr_str: str, sym_vars: Dict[str, symbols]) -> symbols:
+        try:
+            expr = parse_expr(expr_str, local_dict=sym_vars, transformations=transformations)
+            if subs:
+                if not isinstance(subs, dict):
+                    raise ValueError(f"Substitutions must be a dictionary. Received: {subs}")
+                subs_symbols = {symbols(k): v for k, v in subs.items()}
+                expr = expr.subs(subs_symbols)
+
+            canceled_expr = cancel(expr)
+
+            # Check for NaN or indeterminate forms
+            if canceled_expr.has(S.NaN) or canceled_expr.has(S.Infinity) or canceled_expr.has(S.ComplexInfinity):
+                return "Undefined result. This could be a division by zero error."
+
+            return canceled_expr
+
+        except (SyntaxError, ValueError, TypeError, AttributeError, ZeroDivisionError, SympifyError) as e:
+            return f"Error: {str(e)}"
+
+    variable_names = set(re.findall(r'\b[a-zA-Z]\w*\b', expression))
+    sym_vars = {var: symbols(var) for var in variable_names}
+
+    expr = parse_and_cancel_expression(expression, sym_vars)
+
+    # If the expression is already a string (i.e., "Undefined" or error message), return it directly
+    if isinstance(expr, str):
+        return expr
+
+    # Otherwise, convert to LaTeX as usual
+    latex_result = latex(expr)
+    return latex_result
 
 
 def solve_homogeneous_polynomial_expression(

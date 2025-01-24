@@ -403,35 +403,7 @@ Factors a polynomial expression written in Python syntax and converts it into a 
 
 --------------------------------------------------------------------------------
 
-### 8. `cancel_polynomial_expression`
-
-Cancels common factors within a polynomial expression written in Python syntax and converts it to a LaTeX formatted string. This function parses an algebraic expression, cancels common factors using SymPy, and translates the reduced expression into a LaTeX representation. It can also accommodate optional substitutions to be made prior to simplification.
-
-- Parameters:
-  - `expression` (str): The algebraic expression to simplify and convert to LaTeX. This string should be formatted using Python syntax.
-  - `subs` (Optional[Dict[str, float]]): An optional dictionary of substitutions where the keys are variable names in the expression, and the values are the numbers to substitute.
-
-- Returns:
-  - `str`: The LaTeX formatted string of the simplified expression. If the expression involves indeterminate forms due to operations like division by zero, a descriptive error message is returned instead.
-
-- Raises:
-  - `ValueError`: If the expression cannot be parsed due to syntax errors or involves undefined operations, such as division by zero.
-
-- Example:
-
-    from rgwfuncs import cancel_polynomial_expression
-
-    # Cancel common factors within a polynomial expression
-    latex_result1 = cancel_polynomial_expression("(x**2 - 4) / (x - 2)")
-    print(latex_result1)  # Output: "x + 2"
-
-    # Cancel with substituted values
-    latex_result2 = cancel_polynomial_expression("(x**2 - 4) / (x - 2)", {"x": 2})
-    print(latex_result2)  # Output: "Undefined result. This could be a division by zero error."
-
---------------------------------------------------------------------------------
-
-### 9. `simplify_polynomial_expression`
+### 8. `simplify_polynomial_expression`
 
 Simplifies an algebraic expression in polynomial form and returns it in LaTeX format. Takes an algebraic expression, in polynomial form, written in Python syntax and simplifies it. The result is returned as a LaTeX formatted string, suitable for academic or professional documentation.
 
@@ -461,6 +433,34 @@ Simplifies an algebraic expression in polynomial form and returns it in LaTeX fo
     # Example 4: Simplifying with partial substitution
     simplified_expr4 = simplify_polynomial_expression("a*b + b", subs={"b": 2})
     print(simplified_expr4)  # Output: "2 a + 2"
+
+--------------------------------------------------------------------------------
+
+### 9. `cancel_polynomial_expression`
+
+Cancels common factors within a polynomial expression written in Python syntax and converts it to a LaTeX formatted string. This function parses an algebraic expression, cancels common factors using SymPy, and translates the reduced expression into a LaTeX representation. It can also accommodate optional substitutions to be made prior to simplification.
+
+- Parameters:
+  - `expression` (str): The algebraic expression to simplify and convert to LaTeX. This string should be formatted using Python syntax.
+  - `subs` (Optional[Dict[str, float]]): An optional dictionary of substitutions where the keys are variable names in the expression, and the values are the numbers to substitute.
+
+- Returns:
+  - `str`: The LaTeX formatted string of the simplified expression. If the expression involves indeterminate forms due to operations like division by zero, a descriptive error message is returned instead.
+
+- Raises:
+  - `ValueError`: If the expression cannot be parsed due to syntax errors or involves undefined operations, such as division by zero.
+
+- Example:
+
+    from rgwfuncs import cancel_polynomial_expression
+
+    # Cancel common factors within a polynomial expression
+    latex_result1 = cancel_polynomial_expression("(x**2 - 4) / (x - 2)")
+    print(latex_result1)  # Output: "x + 2"
+
+    # Cancel with substituted values
+    latex_result2 = cancel_polynomial_expression("(x**2 - 4) / (x - 2)", {"x": 2})
+    print(latex_result2)  # Output: "Undefined result. This could be a division by zero error."
 
 --------------------------------------------------------------------------------
 
