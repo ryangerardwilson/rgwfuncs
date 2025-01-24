@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "rgwfuncs"
-version = "0.0.40"
+version = "0.0.41"
 authors = [
   { name = "Ryan Gerard Wilson", email = "ryangerardwilson@gmail.com" },
 ]
@@ -27,7 +27,7 @@ dependencies = [
     "requests",
     "slack-sdk",
     "google-api-python-client",
-    "boto"
+    "boto3"
 ]
 
 dynamic = ["scripts"]
