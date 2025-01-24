@@ -2,7 +2,10 @@
 
 ***By Ryan Gerard Wilson (https://ryangerardwilson.com)***
 
-This library is meant to make ML/ Data Science pipelines more readable. It assumes a linux environment, and the existence of a `.rgwfuncsrc` file for certain features (like db querying, sending data to slack, etc.)
+
+This library is meant to protect your eyes (and brain) from OOP syntax. It is unbelievably sad that some of the best work done in creating math and data science libraries in Python has been corrupted by the OOP mind-virus. 
+
+By creating a functional-programming wrapper around these libraries, we aim to soothe. This library assumes a Linux environment and the existence of a `.rgwfuncsrc` file for certain features (like database querying, sending data to Slack, etc.).
 
 --------------------------------------------------------------------------------
 
@@ -333,6 +336,42 @@ Converts a polynomial expression written in Python syntax to a LaTeX formatted s
     # Simplified trigonometric functions example with substitution
     latex_result5 = python_polynomial_expression_to_latex("sin(x) + cos(y)", {"x": 0})
     print(latex_result5)  # Output: "cos y"
+
+--------------------------------------------------------------------------------
+
+### 6. `expand_polynomial_expression`
+
+Expands a polynomial expression written in Python syntax and converts it into a LaTeX formatted string. This function takes algebraic expressions provided as strings using Python's syntax, applies polynomial expansion through SymPy, and translates them into LaTeX representations, suitable for academic or professional documentation. It supports expressions with named variables and provides an option to substitute specific values into the expression before expansion.
+
+- Parameters:
+  - `expression` (str): The algebraic expression to expand and convert to LaTeX. This string should be formatted using Python syntax acceptable by SymPy.
+  - `subs` (Optional[Dict[str, float]]): An optional dictionary of substitutions where the keys are variable names in the expression, and the values are the numbers with which to substitute those variables before expanding.
+
+- Returns:
+  - `str`: The LaTeX formatted string of the expanded expression.
+
+- Raises:
+  - `ValueError`: If the expression cannot be parsed due to syntax errors.
+
+- Example:
+
+    from rgwfuncs import expand_polynomial_expression
+
+    # Expand a simple polynomial expression and convert to LaTeX
+    latex_result1 = expand_polynomial_expression("(x + y)**2")
+    print(latex_result1)  # Output: "x^{2} + 2 x y + y^{2}"
+
+    # Expand polynomial expression with substituted values
+    latex_result2 = expand_polynomial_expression("(x + y)**2", {"x": 3, "y": 4})
+    print(latex_result2)  # Output: "49"
+
+    # Another example with partial substitution
+    latex_result3 = expand_polynomial_expression("(x + y)**2", {"x": 3})
+    print(latex_result3)  # Output: "y^{2} + 6 y + 9"
+
+    # Handling trigonometric functions with symbolic variables
+    latex_result4 = expand_polynomial_expression("sin(x + z**2) + cos(y)", {"x": 55})
+    print(latex_result4)  # Output: "cos y + sin \\left(z^{2} + 55\\right)"
 
 --------------------------------------------------------------------------------
 

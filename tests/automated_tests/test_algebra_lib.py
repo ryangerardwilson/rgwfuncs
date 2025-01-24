@@ -12,6 +12,7 @@ from src.rgwfuncs.algebra_lib import (
     compute_constant_expression_involving_matrices,
     compute_constant_expression_involving_ordered_series,
     python_polynomial_expression_to_latex,
+    expand_polynomial_expression,
     simplify_polynomial_expression,
     solve_homogeneous_polynomial_expression)
 
@@ -109,6 +110,28 @@ def test_python_polynomial_expression_to_latex():
 
     for expression, subs, expected_output in test_cases:
         output = python_polynomial_expression_to_latex(expression, subs)
+        assert output == expected_output, (
+            f"Test failed for expression: {expression} with substitutions: {subs}. "
+            f"Expected {expected_output}, got {output}"
+        )
+
+def test_expand_polynomial_expression():
+    test_cases = [
+        # Without substitutions
+        ("(x + y)**2", None, r"x^{2} + 2 x y + y^{2}"),
+        ("(a + b)**3", None, r"a^{3} + 3 a^{2} b + 3 a b^{2} + b^{3}"),
+        ("(p + q + r)**2", None, r"p^{2} + 2 p q + 2 p r + q^{2} + 2 q r + r^{2}"),
+
+        # With substitutions
+        ("(x + y)**2", {"x": 3, "y": 4}, r"49"),
+        ("(a + b)**2", {"a": 1}, r"b^{2} + 2 b + 1"),
+        ("(u + v)**3", {"v": 2}, r"u^{3} + 6 u^{2} + 12 u + 8"),
+        ("(s * t)**2", {"s": 2, "t": 3}, r"36"),
+        ("cos(x + y)", {"x": 0}, r"cos y"),
+    ]
+
+    for expression, subs, expected_output in test_cases:
+        output = expand_polynomial_expression(expression, subs)
         assert output == expected_output, (
             f"Test failed for expression: {expression} with substitutions: {subs}. "
             f"Expected {expected_output}, got {output}"

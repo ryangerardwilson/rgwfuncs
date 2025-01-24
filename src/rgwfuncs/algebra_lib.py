@@ -320,6 +320,50 @@ def python_polynomial_expression_to_latex(
     latex_result = latex(expr)
     return latex_result
 
+def expand_polynomial_expression(
+    expression: str,
+    subs: Optional[Dict[str, float]] = None
+) -> str:
+    """
+    Expands a polynomial expression written in Python syntax and converts it to LaTeX format.
+
+    This function takes an algebraic expression written in Python syntax, 
+    applies polynomial expansion, and converts the expanded expression 
+    to a LaTeX formatted string. The expression should be compatible with sympy.
+
+    Parameters:
+    expression (str): The algebraic expression to expand and convert to LaTeX. 
+                      The expression should be written using Python syntax.
+    subs (Optional[Dict[str, float]]): An optional dictionary of substitutions 
+                                       to apply to variables in the expression 
+                                       before expansion.
+
+    Returns:
+    str: The expanded expression represented as a LaTeX string.
+
+    Raises:
+    ValueError: If the expression cannot be parsed due to syntax errors.
+    """
+    transformations = standard_transformations + (implicit_multiplication_application,)
+    
+    def parse_and_expand_expression(expr_str: str, sym_vars: Dict[str, symbols]) -> symbols:
+        try:
+            expr = parse_expr(expr_str, local_dict=sym_vars, transformations=transformations)
+            if subs:
+                subs_symbols = {symbols(k): v for k, v in subs.items()}
+                expr = expr.subs(subs_symbols)
+            return expr.expand()
+        except (SyntaxError, ValueError, TypeError) as e:
+            raise ValueError(f"Error parsing expression: {expr_str}. Error: {e}")
+
+    variable_names = set(re.findall(r'\b[a-zA-Z]\w*\b', expression))
+    sym_vars = {var: symbols(var) for var in variable_names}
+
+    expr = parse_and_expand_expression(expression, sym_vars)
+    latex_result = latex(expr)
+    return latex_result
+
+
 
 def simplify_polynomial_expression(
     expression: str,
