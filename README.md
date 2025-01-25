@@ -487,6 +487,45 @@ Solves a homogeneous polynomial expression for a specified variable and returns 
     
 --------------------------------------------------------------------------------
 
+### 11. `plot_polynomial_functions`
+
+This function plots polynomial functions described by a list of expressions and their corresponding substitution dictionaries. It generates SVG markup of the plots, with options for specifying the domain, axis zoom, and legend display.
+
+• Parameters:
+- `functions` (`List[Dict[str, Dict[str, Any]]]`): A list of dictionaries, each containing:
+  - A key which is a string representing a Python/NumPy expression (e.g., `"x**2"`, `"np.diff(x,2)"`).
+  - A value which is a dictionary containing substitutions for the expression. Must include an `"x"` key, either as `"*"` for default domain or a NumPy array.
+- `zoom` (`float`): Determines the numeric axis range from `-zoom` to `+zoom` for both x and y axes (default is `10.0`).
+- `show_legend` (`bool`): Specifies whether to include a legend in the plot (default is `True`).
+
+• Returns:
+- `str`: The raw SVG markup of the resulting plot.
+
+• Example:
+
+    import subprocess
+    from rgwfuncs import plot_polynomial_functions
+
+    # Generate the SVG
+    plot_svg_string = plot_polynomial_functions(
+        functions=[
+            {"x**2": {"x": "*"}},  # Single expression, "*" means plot all discernable points
+            {"x**2/(2 + a) + a": {"x": np.linspace(-3, 4, 101), "a": 1.23}},
+            {"np.diff(x**3, 2)": {"x": np.linspace(-2, 2, 10)}}
+        ],
+        zoom=2
+    )
+
+    # Write the SVG to an actual file
+    with open("plot.svg", "w", encoding="utf-8") as file:
+        file.write(plot_svg_string)
+
+• Displaying the SVG:
+
+![Plot](./media/plot_polynomial_functions_example_1.svg)
+
+--------------------------------------------------------------------------------
+
 ## String Based Functions
 
 ### 1. send_telegram_message

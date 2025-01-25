@@ -8,7 +8,12 @@ from sympy.parsing.sympy_parser import parse_expr
 from sympy import __all__ as sympy_functions
 from sympy.parsing.sympy_parser import (standard_transformations, implicit_multiplication_application)
 
-from typing import Tuple, List, Dict, Optional
+from typing import Tuple, List, Dict, Optional, Any
+
+
+import numpy as np
+import matplotlib.pyplot as plt
+from io import BytesIO
 
 
 def compute_prime_factors(n: int) -> str:
@@ -285,7 +290,6 @@ def python_polynomial_expression_to_latex(
     Raises:
     ValueError: If the expression cannot be parsed due to syntax errors.
     """
-
     transformations = standard_transformations + (implicit_multiplication_application,)
 
     def parse_and_convert_expression(expr_str: str, sym_vars: Dict[str, Expr]) -> Expr:
@@ -701,3 +705,145 @@ def solve_homogeneous_polynomial_expression(
 
     except Exception as e:
         raise ValueError(f"Error solving the expression: {e}")
+
+
+def plot_polynomial_functions(
+    functions: List[Dict[str, Dict[str, Any]]],
+    zoom: float = 10.0,
+    show_legend: bool = True
+) -> str:
+    """
+    Plots expressions described by a list of dictionaries of the form:
+        [
+          { "expression_string": { "x": "*", "a":..., "b":... } },
+          { "expression_string": { "x": np.linspace(...), "a":..., ... } },
+          ...
+        ]
+
+    In each top-level dictionary, there is exactly one key (a string
+    representing a Python/NumPy expression) and one value (a dictionary of
+    substitutions). This substitutions dictionary must have an "x" key:
+      • "x": "*"  -> Use a default domain from -zoom..+zoom.
+      • "x": np.array(...)  -> Use that array as the domain.
+    Other variables (like "a", "b", etc.) may also appear in the same dict.
+
+    Additionally, we use latexify_expression(...) to transform the expression
+    into a nice LaTeX form for the legend, including a special Δ notation for np.diff(...).
+
+    Parameters
+    ----------
+    functions : List[Dict[str, Dict[str, Any]]]
+        A list of items. Each item is a dictionary:
+          key   = expression string (e.g., "x**2", "np.diff(x,2)", etc.)
+          value = a dictionary of substitutions. Must contain "x",
+                  either as "*" or a NumPy array. May contain additional
+                  parameters like "a", "b", etc.
+    zoom : float
+        Sets the numeric axis range from -zoom..+zoom in both x and y.
+    show_legend : bool
+        Whether to add a legend to the plot (defaults to True).
+
+    Returns
+    -------
+    str
+        The raw SVG markup of the resulting plot.
+    """
+
+    def latexify_expression(expr_str: str) -> str:
+        # Regex to locate np.diff(...) with an optional second argument
+        DIFF_PATTERN = r"np\.diff\s*\(\s*([^,\)]+)(?:,\s*(\d+))?\)"
+
+        def diff_replacer(match: re.Match) -> str:
+            inside = match.group(1).strip()
+            exponent = match.group(2)
+            inside_no_np = inside.replace("np.", "")
+            if exponent:
+                return rf"\Delta^{exponent}\left({inside_no_np}\right)"
+            else:
+                return rf"\Delta\left({inside_no_np}\right)"
+
+        expr_tmp = re.sub(DIFF_PATTERN, diff_replacer, expr_str)
+        expr_tmp = expr_tmp.replace("np.", "")
+        try:
+            latex_expr = python_polynomial_expression_to_latex(expr_tmp)
+            return latex_expr
+        except Exception:
+            # Fallback: just do naive **
+            return expr_tmp.replace("**", "^")
+
+    buffer = BytesIO()
+    fig, ax = plt.subplots()
+
+    for entry in functions:
+        if len(entry) != 1:
+            print("Skipping invalid item. Must have exactly 1 expression->substitutions pair.")
+            continue
+
+        expression, sub_dict = list(entry.items())[0]
+        if "x" not in sub_dict:
+            print(f"Skipping '{expression}' because sub-dict lacks 'x' key.")
+            continue
+
+        # If "x" is "*", create a default domain
+        x_val = sub_dict["x"]
+        if isinstance(x_val, str) and x_val == "*":
+            x_values = np.linspace(-zoom, zoom, 1201)
+            sub_dict["x"] = x_values
+        elif isinstance(x_val, np.ndarray):
+            x_values = x_val
+        else:
+            print(f"Skipping '{expression}' because 'x' is neither '*' nor a NumPy array.")
+            continue
+
+        # Evaluate the expression
+        try:
+            eval_context = {"np": np}
+            eval_context.update(sub_dict)
+            y_values = eval(expression, {"np": np}, eval_context)
+        except Exception as e:
+            print(f"Error evaluating expression '{expression}': {e}")
+            continue
+
+        if not isinstance(y_values, np.ndarray):
+            print(f"Skipping '{expression}' because it did not produce a NumPy array.")
+            continue
+
+        # If y_values is shorter than x_values (like np.diff), truncate x
+        if len(y_values) < len(x_values):
+            x_values = x_values[:len(y_values)]
+
+        # Convert expression to a nice LaTeX string
+        label_expr = latexify_expression(expression)
+        ax.plot(x_values, y_values, label=rf"${label_expr}$")
+
+    # Configure axes
+    ax.set_xlim(-zoom, zoom)
+    ax.set_ylim(-zoom, zoom)
+    ax.spines['left'].set_position('zero')
+    ax.spines['bottom'].set_position('zero')
+    ax.spines['right'].set_color('none')
+    ax.spines['top'].set_color('none')
+    ax.set_aspect('equal', 'box')
+    ax.xaxis.set_ticks_position('bottom')
+    ax.yaxis.set_ticks_position('left')
+    ax.grid(True)
+
+    # Show legend
+    if show_legend:
+        leg = ax.legend(
+            loc='upper center',
+            bbox_to_anchor=(0.5, -0.03),
+            fancybox=True,
+            shadow=True,
+            ncol=1
+        )
+        plt.savefig(
+            buffer,
+            format='svg',
+            bbox_inches='tight',
+            bbox_extra_artists=[leg]  # ensures the legend is fully captured
+        )
+    else:
+        plt.savefig(buffer, format='svg', bbox_inches='tight')
+    plt.close(fig)
+    return buffer.getvalue().decode('utf-8')
