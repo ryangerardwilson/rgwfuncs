@@ -522,12 +522,7 @@ This function plots polynomial functions described by a list of expressions and 
 
 • Displaying the SVG:
 
-```markdown
-<!-- Displaying the SVG and centering it using HTML -->
-<div align="center">
-  <img src="./media/plot_polynomial_functions_example_1.svg" alt="Plot" />
-</div>
-```
+![Plot](./media/plot_polynomial_functions_example_1.svg)
 
 --------------------------------------------------------------------------------
 
