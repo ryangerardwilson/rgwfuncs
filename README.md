@@ -503,7 +503,6 @@ This function plots polynomial functions described by a list of expressions and 
 
 • Example:
 
-    import subprocess
     from rgwfuncs import plot_polynomial_functions
 
     # Generate the SVG
