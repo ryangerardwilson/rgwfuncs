@@ -343,17 +343,17 @@ Converts a polynomial expression written in Python syntax to a LaTeX formatted s
 
 Expands a polynomial expression written in Python syntax and converts it into a LaTeX formatted string. This function takes algebraic expressions provided as strings using Python's syntax, applies polynomial expansion through SymPy, and translates them into LaTeX representations, suitable for academic or professional documentation. It supports expressions with named variables and provides an option to substitute specific values into the expression before expansion.
 
-- Parameters:
+• Parameters:
   - `expression` (str): The algebraic expression to expand and convert to LaTeX. This string should be formatted using Python syntax acceptable by SymPy.
   - `subs` (Optional[Dict[str, float]]): An optional dictionary of substitutions where the keys are variable names in the expression, and the values are the numbers with which to substitute those variables before expanding.
 
-- Returns:
+• Returns:
   - `str`: The LaTeX formatted string of the expanded expression.
 
-- Raises:
+• Raises:
   - `ValueError`: If the expression cannot be parsed due to syntax errors.
 
-- Example:
+• Example:
 
     from rgwfuncs import expand_polynomial_expression
 
@@ -379,17 +379,17 @@ Expands a polynomial expression written in Python syntax and converts it into a 
 
 Factors a polynomial expression written in Python syntax and converts it into a LaTeX formatted string. This function parses an algebraic expression, performs polynomial factoring using SymPy, and converts the factored expression into a LaTeX representation, ideal for academic or professional use. Optional substitutions can be made before factoring.
 
-- Parameters:
+• Parameters:
   - `expression` (str): The polynomial expression to factor and convert to LaTeX. This should be a valid expression formatted using Python syntax.
   - `subs` (Optional[Dict[str, float]]): An optional dictionary of substitutions. The keys are variable names in the expression, and the values are numbers that replace these variables.
 
-- Returns:
+• Returns:
   - `str`: The LaTeX formatted string representing the factored expression.
 
-- Raises:
+• Raises:
   - `ValueError`: If the expression cannot be parsed due to syntax errors.
 
-- Example:
+• Example:
 
     from rgwfuncs import factor_polynomial_expression
 
@@ -414,7 +414,7 @@ Simplifies an algebraic expression in polynomial form and returns it in LaTeX fo
 • Returns:
   - `str`: The simplified expression formatted as a LaTeX string.
 
-• Example Usage:
+• Example:
 
     from rgwfuncs import simplify_polynomial_expression
 
@@ -440,17 +440,17 @@ Simplifies an algebraic expression in polynomial form and returns it in LaTeX fo
 
 Cancels common factors within a polynomial expression written in Python syntax and converts it to a LaTeX formatted string. This function parses an algebraic expression, cancels common factors using SymPy, and translates the reduced expression into a LaTeX representation. It can also accommodate optional substitutions to be made prior to simplification.
 
-- Parameters:
+• Parameters:
   - `expression` (str): The algebraic expression to simplify and convert to LaTeX. This string should be formatted using Python syntax.
   - `subs` (Optional[Dict[str, float]]): An optional dictionary of substitutions where the keys are variable names in the expression, and the values are the numbers to substitute.
 
-- Returns:
+• Returns:
   - `str`: The LaTeX formatted string of the simplified expression. If the expression involves indeterminate forms due to operations like division by zero, a descriptive error message is returned instead.
 
-- Raises:
+• Raises:
   - `ValueError`: If the expression cannot be parsed due to syntax errors or involves undefined operations, such as division by zero.
 
-- Example:
+• Example:
 
     from rgwfuncs import cancel_polynomial_expression
 
@@ -522,7 +522,12 @@ This function plots polynomial functions described by a list of expressions and 
 
 • Displaying the SVG:
 
-![Plot](./media/plot_polynomial_functions_example_1.svg)
+```markdown
+<!-- Displaying the SVG and centering it using HTML -->
+<div align="center">
+  <img src="./media/plot_polynomial_functions_example_1.svg" alt="Plot" />
+</div>
+```
 
 --------------------------------------------------------------------------------
 
