@@ -523,7 +523,7 @@ This function plots polynomial functions described by a list of expressions and 
 
 • Displaying the SVG:
 
-    ![Plot](./media/plot_polynomial_functions_example_1.svg)
+![Plot](./media/plot_polynomial_functions_example_1.svg)
 
 --------------------------------------------------------------------------------
 
