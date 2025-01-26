@@ -497,6 +497,8 @@ This function plots polynomial functions described by a list of expressions and 
   - A value which is a dictionary containing substitutions for the expression. Must include an `"x"` key, either as `"*"` for default domain or a NumPy array.
 - `zoom` (`float`): Determines the numeric axis range from `-zoom` to `+zoom` for both x and y axes (default is `10.0`).
 - `show_legend` (`bool`): Specifies whether to include a legend in the plot (default is `True`).
+- `open_file` (`bool`): If saving to path is not desireable, opens the svg as a temp file, else opens the file from the actual location using the system's default viewer (defaults to False).
+- `save_path` (`Optional[str]`): If specified, saves the output string as a .svg at the indicated path (defaults to None).
 
 • Returns:
 - `str`: The raw SVG markup of the resulting plot.
@@ -521,7 +523,7 @@ This function plots polynomial functions described by a list of expressions and 
 
 • Displaying the SVG:
 
-![Plot](./media/plot_polynomial_functions_example_1.svg)
+    ![Plot](./media/plot_polynomial_functions_example_1.svg)
 
 --------------------------------------------------------------------------------
 

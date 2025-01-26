@@ -1,16 +1,15 @@
 import re
 import math
 import ast
+import subprocess
+import tempfile
 from sympy import symbols, latex, simplify, solve, diff, Expr, factor, cancel, Eq
 from sympy.core.sympify import SympifyError
 from sympy.core import S
 from sympy.parsing.sympy_parser import parse_expr
 from sympy import __all__ as sympy_functions
 from sympy.parsing.sympy_parser import (standard_transformations, implicit_multiplication_application)
-
 from typing import Tuple, List, Dict, Optional, Any
-
-
 import numpy as np
 import matplotlib.pyplot as plt
 from io import BytesIO
@@ -710,7 +709,9 @@ def solve_homogeneous_polynomial_expression(
 def plot_polynomial_functions(
     functions: List[Dict[str, Dict[str, Any]]],
     zoom: float = 10.0,
-    show_legend: bool = True
+    show_legend: bool = True,
+    open_file: bool = False,
+    save_path: Optional[str] = None,
 ) -> str:
     """
     Plots expressions described by a list of dictionaries of the form:
@@ -742,6 +743,13 @@ def plot_polynomial_functions(
         Sets the numeric axis range from -zoom..+zoom in both x and y.
     show_legend : bool
         Whether to add a legend to the plot (defaults to True).
+    open_file : bool
+        If saving to path is not desireable, opens the svg as a temp file, else opens
+        the file from the actual location using the system's default viewer (defaults to
+        False).
+    save_path : Optional[str]
+        If specified, saves the output string as a .svg at the indicated path (defaults to
+        None).
 
     Returns
     -------
@@ -770,6 +778,33 @@ def plot_polynomial_functions(
         except Exception:
             # Fallback: just do naive **
             return expr_tmp.replace("**", "^")
+
+    def handle_open_and_save(
+        svg_string: str,
+        open_file: bool,
+        save_path: Optional[str]
+    ) -> None:
+        # Save the SVG to a file if a save path is provided
+        if save_path:
+            try:
+                with open(save_path, 'w', encoding='utf-8') as file:
+                    file.write(svg_string)
+                print(f"[INFO] SVG saved to: {save_path}")
+            except IOError as e:
+                print(f"[ERROR] Failed to save SVG to {save_path}. IOError: {e}")
+
+        # Handle opening the file if requested
+        if open_file and save_path:
+            result = subprocess.run(["xdg-open", save_path], stderr=subprocess.DEVNULL)
+            if result.returncode != 0:
+                print("[ERROR] Failed to open the SVG file with the default viewer.")
+        elif open_file:
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".svg") as tmpfile:
+                temp_svg_path = tmpfile.name
+                tmpfile.write(svg_string.encode('utf-8'))
+            result = subprocess.run(["xdg-open", temp_svg_path], stderr=subprocess.DEVNULL)
+            if result.returncode != 0:
+                print("[ERROR] Failed to open the SVG file with the default viewer.")
 
     buffer = BytesIO()
     fig, ax = plt.subplots()
@@ -845,5 +880,8 @@ def plot_polynomial_functions(
         )
     else:
         plt.savefig(buffer, format='svg', bbox_inches='tight')
+
     plt.close(fig)
-    return buffer.getvalue().decode('utf-8')
+    svg_string = buffer.getvalue().decode('utf-8')
+    handle_open_and_save(svg_string, open_file, save_path)
+    return svg_string
