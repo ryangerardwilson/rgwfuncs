@@ -514,16 +514,57 @@ This function plots polynomial functions described by a list of expressions and 
             {"x**2/(2 + a) + a": {"x": np.linspace(-3, 4, 101), "a": 1.23}},
             {"np.diff(x**3, 2)": {"x": np.linspace(-2, 2, 10)}}
         ],
-        zoom=2
+        zoom=2,
+        open_file=True,
+        save_path="plot_polynomial_functions_example_1.svg"
     )
-
-    # Write the SVG to an actual file
-    with open("plot.svg", "w", encoding="utf-8") as file:
-        file.write(plot_svg_string)
 
 • Displaying the SVG:
 
 ![Plot](./media/plot_polynomial_functions_example_1.svg)
+
+--------------------------------------------------------------------------------
+
+media/plot_x_points_of_polynomial_functions_example_5.svg
+
+### 12. `plot_x_points_of_polynomial_functions`
+
+This function plots one or more expressions described by a list of dictionaries. For each item in the list, the function evaluates the given Python/NumPy expression at the specified x-values (converted to NumPy arrays if they are Python lists) and plots the resulting points on a single figure.
+
+• Parameters:  
+- `functions` (`List[Dict[str, Dict[str, Any]]]`): A list of one or more items, each of which has exactly one key-value pair:  
+  - Key (`str`): A valid Python/NumPy expression (e.g., `x**2`, `np.sin(x)`, `x - a`).  
+  - Value (`Dict[str, Any]`): Must assign `x` a value
+- `zoom` (`float`):  Numeric range from -zoom to +zoom on both x and y axes (default 10.0).  
+- `show_legend` (`bool`): If True, includes a legend (default True).  
+- `open_file` (bool):
+  - If True and `save_path` is given, opens that file with the system viewer.  
+  - If True and `save_path` is None, writes to a temporary file and opens it (default False).  
+- `save_path` (`Optional[str]`): If specified, writes the resulting SVG to this path (default None).  
+
+• Returns:  
+- `str`: The raw SVG markup of the resulting scatter plot.
+
+• Example:
+
+    from rgwfuncs import plot_x_points_of_polynomial_functions
+    import numpy as np
+
+    svg_output = plot_x_points_of_polynomial_functions(
+        functions=[
+            {"x**2": {"x": np.array([-2, -1, 0, 1, 2])}},
+            {"np.sin(x)": {"x": np.linspace(0, 2*np.pi, 5)}},
+            {"x - 3": {"x": np.array([-2, 0, 2, 4, 6])}}
+        ],
+        zoom=6,
+        show_legend=True,
+        open_file=True,
+        save_path="plot_x_points_of_polynomial_functions_example_5.svg"
+    )
+
+• Displaying the SVG:
+
+![Plot](./media/plot_x_points_of_polynomial_functions_example_5.svg)
 
 --------------------------------------------------------------------------------
 

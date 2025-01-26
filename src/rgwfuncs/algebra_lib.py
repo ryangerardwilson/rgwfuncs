@@ -744,11 +744,11 @@ def plot_polynomial_functions(
     show_legend : bool
         Whether to add a legend to the plot (defaults to True).
     open_file : bool
-        If saving to path is not desirable, opens the SVG as a temp file;  
-        otherwise opens the file from the actual location using the system's  
+        If saving to path is not desirable, opens the SVG as a temp file;
+        otherwise opens the file from the actual location using the system's
         default viewer (defaults to False).
     save_path : Optional[str]
-        If specified, saves the output string as a .svg at the indicated path  
+        If specified, saves the output string as a .svg at the indicated path
         (defaults to None).
 
     Returns
@@ -899,3 +899,166 @@ def plot_polynomial_functions(
 
     return svg_string
 
+
+def plot_x_points_of_polynomial_functions(
+    functions: List[Dict[str, Dict[str, Any]]],
+    zoom: float = 10.0,
+    show_legend: bool = True,
+    open_file: bool = False,
+    save_path: Optional[str] = None,
+) -> str:
+    """
+    Plots one or more expressions described by a list of dictionaries. For each
+    item in the list, the function evaluates the given Python/NumPy expression
+    at the specified x-values (converted to NumPy arrays if they are Python lists)
+    and plots the resulting points on a single figure.
+
+    Parameters
+    ----------
+    functions : List[Dict[str, Dict[str, Any]]] A list of one or more items,
+    each of which has exactly one key-value pair:
+        - Key (`str`): A valid Python/NumPy expression (e.g., `x**2`,
+          `np.sin(x)`, `x - a`).
+        - Value (`Dict[str, Any]`): Must assign `x` a value
+    zoom : float, optional
+        Determines the numeric axis range from -zoom..+zoom in both x and y
+        (default is 10.0).
+    show_legend : bool, optional
+        Whether to include a legend in the plot (default is True).
+    open_file : bool, optional
+        If saving to path is not desirable, opens the SVG as a temp file;
+        otherwise opens the file from the indicated path using the system's
+        default viewer (defaults to False).
+    save_path : Optional[str], optional
+        If specified, saves the output SVG at the given path (defaults to None).
+
+    Returns
+    -------
+    str
+        The raw SVG markup of the resulting scatter plot.
+
+    """
+    def latexify_expression(expr_str: str) -> str:
+        # Regex to locate np.diff(...) with an optional second argument
+        DIFF_PATTERN = r"np\.diff\s*\(\s*([^,\)]+)(?:,\s*(\d+))?\)"
+
+        def diff_replacer(match: re.Match) -> str:
+            inside = match.group(1).strip()
+            exponent = match.group(2)
+            inside_no_np = inside.replace("np.", "")
+            if exponent:
+                return rf"\Delta^{exponent}\left({inside_no_np}\right)"
+            else:
+                return rf"\Delta\left({inside_no_np}\right)"
+
+        expr_tmp = re.sub(DIFF_PATTERN, diff_replacer, expr_str)
+        expr_tmp = expr_tmp.replace("np.", "")
+
+        # Attempt to convert basic Pythonic polynomial expressions into LaTeX
+        try:
+            from python_latex_helpers import python_polynomial_expression_to_latex
+            latex_expr = python_polynomial_expression_to_latex(expr_tmp)
+            return latex_expr
+        except Exception:
+            # Fallback: naive ** -> ^
+            return expr_tmp.replace("**", "^")
+
+    def handle_open_and_save(svg_string: str, open_it: bool, path: Optional[str]) -> None:
+        # Save the SVG to a file if a path is provided
+        if path:
+            try:
+                with open(path, 'w', encoding='utf-8') as file:
+                    file.write(svg_string)
+                print(f"[INFO] SVG saved to: {path}")
+            except IOError as e:
+                print(f"[ERROR] Failed to save SVG to {path}. IOError: {e}")
+
+        # Handle opening the file if requested
+        if open_it and path:
+            result = subprocess.run(["xdg-open", path], stderr=subprocess.DEVNULL)
+            if result.returncode != 0:
+                print("[ERROR] Failed to open the SVG file with the default viewer.")
+        elif open_it:
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".svg") as tmpfile:
+                temp_svg_path = tmpfile.name
+                tmpfile.write(svg_string.encode('utf-8'))
+            result = subprocess.run(["xdg-open", temp_svg_path], stderr=subprocess.DEVNULL)
+            if result.returncode != 0:
+                print("[ERROR] Failed to open the SVG file with the default viewer.")
+
+    # Set up a buffer for the SVG output
+    buffer = BytesIO()
+    fig, ax = plt.subplots()
+
+    # Iterate over each expression-substitution dictionary
+    for item in functions:
+        # Each entry in 'functions' must have exactly one key-value pair
+        if len(item) != 1:
+            print("[WARNING] Skipping invalid item. It must have exactly 1 expression->substitutions pair.")
+            continue
+
+        expression, sub_dict = next(iter(item.items()))
+
+        # Ensure 'x' is present
+        if "x" not in sub_dict:
+            print(f"[WARNING] Skipping '{expression}' because there is no 'x' key.")
+            continue
+
+        x_vals = sub_dict["x"]
+        # Convert to numpy array if needed
+        if not isinstance(x_vals, np.ndarray):
+            x_vals = np.array(x_vals)
+
+        # Evaluate expression with the given variables
+        try:
+            eval_context = {"np": np}
+            eval_context.update(sub_dict)  # put all user-provided variables in the context
+            y_vals = eval(expression, {"np": np}, eval_context)
+        except Exception as e:
+            print(f"[ERROR] Could not evaluate expression '{expression}': {e}")
+            continue
+
+        # Convert y-values to a numpy array if needed
+        if not isinstance(y_vals, np.ndarray):
+            y_vals = np.array(y_vals)
+
+        # Prepare label (LaTeXified)
+        label_expr = latexify_expression(expression)
+
+        # Scatter plot
+        ax.scatter(x_vals, y_vals, label=rf"${label_expr}$")
+
+    # Configure axes
+    ax.set_xlim(-zoom, zoom)
+    ax.set_ylim(-zoom, zoom)
+
+    # Place spines at center (optional styling preference)
+    ax.spines['left'].set_position('zero')
+    ax.spines['bottom'].set_position('zero')
+    ax.spines['right'].set_color('none')
+    ax.spines['top'].set_color('none')
+    ax.xaxis.set_ticks_position('bottom')
+    ax.yaxis.set_ticks_position('left')
+    ax.set_aspect('equal', 'box')
+    ax.grid(True)
+
+    # If requested, show the legend
+    if show_legend:
+        leg = ax.legend(
+            loc='upper center',
+            bbox_to_anchor=(0.5, -0.03),
+            fancybox=True,
+            shadow=True,
+            ncol=1
+        )
+        plt.savefig(buffer, format='svg', bbox_inches='tight', bbox_extra_artists=[leg])
+    else:
+        plt.savefig(buffer, format='svg', bbox_inches='tight')
+
+    plt.close(fig)
+    svg_string = buffer.getvalue().decode('utf-8')
+
+    # Optionally open/save the file
+    handle_open_and_save(svg_string, open_file, save_path)
+
+    return svg_string
