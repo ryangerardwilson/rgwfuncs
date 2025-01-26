@@ -744,12 +744,12 @@ def plot_polynomial_functions(
     show_legend : bool
         Whether to add a legend to the plot (defaults to True).
     open_file : bool
-        If saving to path is not desireable, opens the svg as a temp file, else opens
-        the file from the actual location using the system's default viewer (defaults to
-        False).
+        If saving to path is not desirable, opens the SVG as a temp file;  
+        otherwise opens the file from the actual location using the system's  
+        default viewer (defaults to False).
     save_path : Optional[str]
-        If specified, saves the output string as a .svg at the indicated path (defaults to
-        None).
+        If specified, saves the output string as a .svg at the indicated path  
+        (defaults to None).
 
     Returns
     -------
@@ -772,33 +772,34 @@ def plot_polynomial_functions(
 
         expr_tmp = re.sub(DIFF_PATTERN, diff_replacer, expr_str)
         expr_tmp = expr_tmp.replace("np.", "")
+
+        # Attempt to convert basic Pythonic polynomial expressions to LaTeX
         try:
+            # Suppose you have a helper function python_polynomial_expression_to_latex
+            # If not, you can do a naive replacement or skip
+            from python_latex_helpers import python_polynomial_expression_to_latex
             latex_expr = python_polynomial_expression_to_latex(expr_tmp)
             return latex_expr
         except Exception:
-            # Fallback: just do naive **
+            # Fallback: naive ** -> ^
             return expr_tmp.replace("**", "^")
 
-    def handle_open_and_save(
-        svg_string: str,
-        open_file: bool,
-        save_path: Optional[str]
-    ) -> None:
-        # Save the SVG to a file if a save path is provided
-        if save_path:
+    def handle_open_and_save(svg_string: str, open_it: bool, path: Optional[str]) -> None:
+        # Save the SVG to a file if a path is provided
+        if path:
             try:
-                with open(save_path, 'w', encoding='utf-8') as file:
+                with open(path, 'w', encoding='utf-8') as file:
                     file.write(svg_string)
-                print(f"[INFO] SVG saved to: {save_path}")
+                print(f"[INFO] SVG saved to: {path}")
             except IOError as e:
-                print(f"[ERROR] Failed to save SVG to {save_path}. IOError: {e}")
+                print(f"[ERROR] Failed to save SVG to {path}. IOError: {e}")
 
         # Handle opening the file if requested
-        if open_file and save_path:
-            result = subprocess.run(["xdg-open", save_path], stderr=subprocess.DEVNULL)
+        if open_it and path:
+            result = subprocess.run(["xdg-open", path], stderr=subprocess.DEVNULL)
             if result.returncode != 0:
                 print("[ERROR] Failed to open the SVG file with the default viewer.")
-        elif open_file:
+        elif open_it:
             with tempfile.NamedTemporaryFile(delete=False, suffix=".svg") as tmpfile:
                 temp_svg_path = tmpfile.name
                 tmpfile.write(svg_string.encode('utf-8'))
@@ -810,60 +811,74 @@ def plot_polynomial_functions(
     fig, ax = plt.subplots()
 
     for entry in functions:
+        # Each entry is something like {"x**2": {"x": "*", "a": ...}}
         if len(entry) != 1:
-            print("Skipping invalid item. Must have exactly 1 expression->substitutions pair.")
+            print("[WARNING] Skipping invalid item. Must have exactly 1 expression->substitutions pair.")
             continue
 
-        expression, sub_dict = list(entry.items())[0]
+        # Extract the expression string and substitutions
+        expression, sub_dict = next(iter(entry.items()))
+
+        # Check presence of "x"
         if "x" not in sub_dict:
-            print(f"Skipping '{expression}' because sub-dict lacks 'x' key.")
+            print(f"[WARNING] Skipping '{expression}' because there is no 'x' key.")
             continue
 
-        # If "x" is "*", create a default domain
         x_val = sub_dict["x"]
+
+        # 1) If x == "*", generate from -zoom..+zoom
         if isinstance(x_val, str) and x_val == "*":
             x_values = np.linspace(-zoom, zoom, 1201)
-            sub_dict["x"] = x_values
+            sub_dict["x"] = x_values  # might as well update it in place
+        # 2) If x is already a NumPy array, use as-is
         elif isinstance(x_val, np.ndarray):
             x_values = x_val
         else:
-            print(f"Skipping '{expression}' because 'x' is neither '*' nor a NumPy array.")
+            print(f"[WARNING] Skipping '{expression}' because 'x' is neither '*' nor a NumPy array.")
             continue
 
-        # Evaluate the expression
+        # Evaluate the expression with the variables from sub_dict
+        # We'll inject them into an eval() context, including 'np'
         try:
             eval_context = {"np": np}
+            # Put all user-provided variables (like a=1.23) in:
             eval_context.update(sub_dict)
             y_values = eval(expression, {"np": np}, eval_context)
         except Exception as e:
-            print(f"Error evaluating expression '{expression}': {e}")
+            print(f"[ERROR] Could not evaluate '{expression}' -> {e}")
             continue
 
+        # Check we got a NumPy array
         if not isinstance(y_values, np.ndarray):
-            print(f"Skipping '{expression}' because it did not produce a NumPy array.")
+            print(f"[WARNING] Skipping '{expression}' because it did not produce a NumPy array.")
             continue
 
-        # If y_values is shorter than x_values (like np.diff), truncate x
+        # If y is shorter (like np.diff), truncate x
         if len(y_values) < len(x_values):
             x_values = x_values[:len(y_values)]
 
-        # Convert expression to a nice LaTeX string
+        # Convert the expression to a LaTeX label
         label_expr = latexify_expression(expression)
         ax.plot(x_values, y_values, label=rf"${label_expr}$")
 
     # Configure axes
     ax.set_xlim(-zoom, zoom)
     ax.set_ylim(-zoom, zoom)
+
+    # Place spines at center
     ax.spines['left'].set_position('zero')
     ax.spines['bottom'].set_position('zero')
+    # Hide the right and top spines
     ax.spines['right'].set_color('none')
     ax.spines['top'].set_color('none')
-    ax.set_aspect('equal', 'box')
     ax.xaxis.set_ticks_position('bottom')
     ax.yaxis.set_ticks_position('left')
+
+    # Ensure equal aspect ratio
+    ax.set_aspect('equal', 'box')
     ax.grid(True)
 
-    # Show legend
+    # If requested, show the legend
     if show_legend:
         leg = ax.legend(
             loc='upper center',
@@ -872,16 +887,15 @@ def plot_polynomial_functions(
             shadow=True,
             ncol=1
         )
-        plt.savefig(
-            buffer,
-            format='svg',
-            bbox_inches='tight',
-            bbox_extra_artists=[leg]  # ensures the legend is fully captured
-        )
+        plt.savefig(buffer, format='svg', bbox_inches='tight', bbox_extra_artists=[leg])
     else:
         plt.savefig(buffer, format='svg', bbox_inches='tight')
 
     plt.close(fig)
     svg_string = buffer.getvalue().decode('utf-8')
+
+    # Optionally open/save the file
     handle_open_and_save(svg_string, open_file, save_path)
+
     return svg_string
+
