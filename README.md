@@ -525,8 +525,6 @@ This function plots polynomial functions described by a list of expressions and 
 
 --------------------------------------------------------------------------------
 
-media/plot_x_points_of_polynomial_functions_example_5.svg
-
 ### 12. `plot_x_points_of_polynomial_functions`
 
 This function plots one or more expressions described by a list of dictionaries. For each item in the list, the function evaluates the given Python/NumPy expression at the specified x-values (converted to NumPy arrays if they are Python lists) and plots the resulting points on a single figure.
