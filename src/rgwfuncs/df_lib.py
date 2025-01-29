@@ -2,7 +2,7 @@ import pandas as pd
 import pymssql
 import os
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 import time
 import gc
 import mysql.connector
