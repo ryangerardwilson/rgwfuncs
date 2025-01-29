@@ -23,7 +23,7 @@ from googleapiclient.discovery import build
 import base64
 import boto3
 # import inspect
-from typing import Optional, Dict, List, Tuple, Any
+from typing import Optional, Dict, List, Tuple, Any, Callable
 import warnings
 
 # Suppress all FutureWarnings
@@ -212,9 +212,7 @@ def update_rows(
 
     invalid_cols = [col for col in updates if col not in df.columns]
     if invalid_cols:
-        raise ValueError(
-            f"Columns {
-                ', '.join(invalid_cols)} do not exist in the DataFrame.")
+        raise ValueError(f"Columns {', '.join(invalid_cols)} do not exist in the DataFrame.")
 
     new_df = df.copy()
     for col_name, new_value in updates.items():
@@ -505,8 +503,7 @@ def load_data_from_path(file_path: str) -> pd.DataFrame:
                         df = pd.read_hdf(file_path, key=key)
                         break
                     else:
-                        print(
-                            f"Key '{key}' is not in the available keys.")
+                        print(f"Key '{key}' is not in the available keys.")
         return df
 
     # Ensure the file path is absolute
@@ -645,11 +642,7 @@ def top_n_unique_values(df: pd.DataFrame, n: int, columns: List[str]) -> None:
                 top_n_values = frequency.nlargest(n)
                 report[column] = {str(value): str(count)
                                   for value, count in top_n_values.items()}
-                print(
-                    f"Top {n} unique values for column '{column}':\n{
-                        json.dumps(
-                            report[column],
-                            indent=2)}\n")
+                print(f"Top {n} unique values for column '{column}':\n{json.dumps(report[column], indent=2)}\n")
             else:
                 print(f"Column '{column}' does not exist in the DataFrame.")
     else:
@@ -692,11 +685,7 @@ def bottom_n_unique_values(
                 report[column] = {
                     str(value): str(count) for value,
                     count in bottom_n_values.items()}
-                print(
-                    f"Bottom {n} unique values for column '{column}':\n{
-                        json.dumps(
-                            report[column],
-                            indent=2)}\n")
+                print(f"Bottom {n} unique values for column '{column}':\n{json.dumps(report[column], indent=2)}\n")
             else:
                 print(f"Column '{column}' does not exist in the DataFrame.")
     else:
@@ -755,8 +744,7 @@ def print_memory_usage(df: pd.DataFrame) -> None:
     - ValueError: If the DataFrame is `None`.
     """
     if df is not None:
-        memory_usage = df.memory_usage(deep=True).sum(
-        ) / (1024 * 1024)  # Convert bytes to MB
+        memory_usage = df.memory_usage(deep=True).sum() / (1024 * 1024)  # Convert bytes to MB
         print(f"Memory usage of DataFrame: {memory_usage:.2f} MB")
     else:
         raise ValueError("No DataFrame to print. Please provide a DataFrame.")
@@ -837,8 +825,7 @@ def print_dataframe(df: pd.DataFrame, source: Optional[str] = None) -> None:
     """
     if df is not None:
         print(df)
-        columns_with_types = [
-            f"{col} ({df[col].dtypes})" for col in df.columns]
+        columns_with_types = [f"{col} ({df[col].dtypes})" for col in df.columns]
         print("Columns:", columns_with_types)
         if source:
             print(f"Source: {source}")
@@ -902,8 +889,7 @@ def send_dataframe_via_telegram(
                     'caption': message or ''}
                 files = {'document': file}
                 response = requests.post(
-                    f"https://api.telegram.org/bot{
-                        bot_config['bot_token']}/sendDocument",
+                    f"https://api.telegram.org/bot{bot_config['bot_token']}/sendDocument",
                     data=payload,
                     files=files)
             if remove_after_send and os.path.exists(file_name):
@@ -1012,8 +998,7 @@ def send_data_to_email(
                 encoders.encode_base64(part)
                 part.add_header(
                     'Content-Disposition',
-                    f'attachment; filename={
-                        os.path.basename(tmp_file_name)}')
+                    f'attachment; filename={os.path.basename(tmp_file_name)}')
                 message.attach(part)
 
             if remove_after_send and os.path.exists(tmp_file_name):
@@ -1236,9 +1221,7 @@ def append_ranged_classification_column(
             for r in range_list
         )
 
-        labels = [f"{pad_number(range_list[i],
-                                max_integer_length)} to {pad_number(range_list[i + 1],
-                                                                    max_integer_length)}" for i in range(len(range_list) - 1)]
+        labels = [f"{pad_number(range_list[i], max_integer_length)} to {pad_number(range_list[i + 1], max_integer_length)}" for i in range(len(range_list) - 1)]
 
     # Ensure the target column is numeric
     df[target_col] = pd.to_numeric(df[target_col], errors='coerce')
@@ -1284,10 +1267,8 @@ def append_percentile_classification_column(
 
     if has_decimals:
         percentiles_list = [float(p) for p in percentiles_list]
-        max_decimal_length = max(
-            len(str(p).split('.')[1]) for p in percentiles_list if '.' in str(p))
-        max_integer_length = max(len(str(int(float(p))))
-                                 for p in percentiles_list)
+        max_decimal_length = max(len(str(p).split('.')[1]) for p in percentiles_list if '.' in str(p))
+        max_integer_length = max(len(str(int(float(p)))) for p in percentiles_list)
 
         labels = []
 
@@ -1381,8 +1362,7 @@ def rename_columns(df: pd.DataFrame,
         A new DataFrame with columns renamed.
     """
     if df is None:
-        raise ValueError(
-            "No DataFrame to rename columns. Please provide a valid DataFrame.")
+        raise ValueError("No DataFrame to rename columns. Please provide a valid DataFrame.")
 
     return df.rename(columns=rename_pairs)
 
@@ -1400,8 +1380,7 @@ def cascade_sort(df: pd.DataFrame, columns: List[str]) -> pd.DataFrame:
         A new DataFrame sorted by specified columns.
     """
     if df is None:
-        raise ValueError(
-            "No DataFrame to sort. Please provide a valid DataFrame.")
+        raise ValueError("No DataFrame to sort. Please provide a valid DataFrame.")
 
     col_names = []
     asc_order = []
@@ -1436,8 +1415,7 @@ def append_xgb_labels(df: pd.DataFrame, ratio_str: str) -> pd.DataFrame:
         A new DataFrame with XGB_TYPE labels appended.
     """
     if df is None:
-        raise ValueError(
-            "No DataFrame to add labels. Please provide a valid DataFrame.")
+        raise ValueError("No DataFrame to add labels. Please provide a valid DataFrame.")
 
     ratios = list(map(int, ratio_str.split(':')))
     total_ratio = sum(ratios)
@@ -1454,8 +1432,7 @@ def append_xgb_labels(df: pd.DataFrame, ratio_str: str) -> pd.DataFrame:
         labels = ['TRAIN'] * train_rows + ['VALIDATE'] * \
             validate_rows + ['TEST'] * test_rows
     else:
-        raise ValueError(
-            "Invalid ratio string format. Use 'TRAIN:TEST' or 'TRAIN:VALIDATE:TEST'.")
+        raise ValueError("Invalid ratio string format. Use 'TRAIN:TEST' or 'TRAIN:VALIDATE:TEST'.")
 
     df_with_labels = df.copy()
     df_with_labels['XGB_TYPE'] = labels
@@ -1485,8 +1462,7 @@ def append_xgb_regression_predictions(
         DataFrame with predictions appended.
     """
     if df is None or 'XGB_TYPE' not in df.columns:
-        raise ValueError(
-            "DataFrame is not initialized or 'XGB_TYPE' column is missing.")
+        raise ValueError("DataFrame is not initialized or 'XGB_TYPE' column is missing.")
 
     features = feature_cols.replace(' ', '').split(',')
 
@@ -1560,8 +1536,7 @@ def append_xgb_logistic_regression_predictions(
         DataFrame with predictions appended.
     """
     if df is None or 'XGB_TYPE' not in df.columns:
-        raise ValueError(
-            "DataFrame is not initialized or 'XGB_TYPE' column is missing.")
+        raise ValueError("DataFrame is not initialized or 'XGB_TYPE' column is missing.")
 
     features = feature_cols.replace(' ', '').split(',')
 
@@ -1605,8 +1580,7 @@ def append_xgb_logistic_regression_predictions(
     if model_path:
         model.save_model(model_path)
 
-    columns_order = [col for col in df.columns if col not in [
-        'XGB_TYPE', target_col, pred_col]] + ['XGB_TYPE', target_col, pred_col]
+    columns_order = [col for col in df.columns if col not in ['XGB_TYPE', target_col, pred_col]] + ['XGB_TYPE', target_col, pred_col]
     df = df[columns_order]
 
     return df
@@ -1661,9 +1635,7 @@ def print_n_frequency_cascading(
             if len(columns) > 1:
                 sub_report = generate_cascade_report(
                     filtered_df, columns[1:], limit, order_by)
-                report[value] = {
-                    "count": str(count), f"sub_distribution({
-                        columns[1]})": sub_report if sub_report else {}}
+                report[value] = {"count": str(count), f"sub_distribution({columns[1]})": sub_report if sub_report else {}}
             else:
                 report[value] = {"count": str(count)}
 
@@ -1854,8 +1826,7 @@ def union_join(df1: pd.DataFrame, df2: pd.DataFrame) -> pd.DataFrame:
         ValueError: If the DataFrames do not have the same columns.
     """
     if set(df1.columns) != set(df2.columns):
-        raise ValueError(
-            "Both DataFrames must have the same columns for a union join")
+        raise ValueError("Both DataFrames must have the same columns for a union join")
 
     result_df = pd.concat([df1, df2], ignore_index=True).drop_duplicates()
     return result_df
@@ -1876,8 +1847,7 @@ def bag_union_join(df1: pd.DataFrame, df2: pd.DataFrame) -> pd.DataFrame:
         ValueError: If the DataFrames do not have the same columns.
     """
     if set(df1.columns) != set(df2.columns):
-        raise ValueError(
-            "Both DataFrames must have the same columns for a bag union join")
+        raise ValueError("Both DataFrames must have the same columns for a bag union join")
 
     result_df = pd.concat([df1, df2], ignore_index=True)
     return result_df
@@ -1976,12 +1946,7 @@ def insert_dataframe_in_sqlite_database(
         cursor = conn.cursor()
 
         if not table_exists(cursor, tablename):
-            columns_with_types = ', '.join(
-                f'"{col}" {
-                    map_dtype(dtype)}' for col,
-                dtype in zip(
-                    df.columns,
-                    df.dtypes))
+            columns_with_types = ', '.join(f'"{col}" {map_dtype(dtype)}' for col, dtype in zip(df.columns, df.dtypes))
             create_table_query = f'CREATE TABLE "{tablename}" ({columns_with_types})'
             conn.execute(create_table_query)
 
@@ -2026,12 +1991,7 @@ def sync_dataframe_to_sqlite_database(
         cursor.execute(f"PRAGMA table_info({new_table_name})")
         if cursor.fetchall() == []:  # Table does not exist
             # Create a table using the DataFrame's column names and types
-            columns_with_types = ', '.join(
-                f'"{col}" {
-                    map_dtype(dtype)}' for col,
-                dtype in zip(
-                    df.columns,
-                    df.dtypes))
+            columns_with_types = ', '.join(f'"{col}" {map_dtype(dtype)}' for col, dtype in zip(df.columns, df.dtypes))
             create_table_query = f'CREATE TABLE "{new_table_name}" ({columns_with_types})'
             conn.execute(create_table_query)
 
@@ -2048,3 +2008,65 @@ def sync_dataframe_to_sqlite_database(
             conn.execute(f"DROP TABLE IF EXISTS {tablename}")
             # Rename the new table to the old table name
             conn.execute(f"ALTER TABLE {new_table_name} RENAME TO {tablename}")
+
+
+def load_fresh_data_or_pull_from_cache(fetch_func: Callable[[], pd.DataFrame], cache_dir: str, file_prefix: str, cache_cutoff_hours: int) -> pd.DataFrame:
+    """
+    Retrieve data from a cache if a recent cache file exists, or fetch fresh data, save it to the cache, and return it.
+    
+    This function checks a specified directory for the most recent cache file matching a specified prefix.
+    If a recent cache file (within the cutoff time in hours) is found, the data is read from there.
+    Otherwise, it calls the data-fetching function, saves the newly fetched data to a new cache file, and returns it.
+
+    Parameters:
+    - fetch_func (typing.Callable[[], pd.DataFrame]): 
+        A callable function that, when executed, returns a pandas DataFrame with fresh data.
+    - cache_dir (str): 
+        The directory where cache files are stored.
+    - file_prefix (str): 
+        The prefix used for cache filenames to identify relevant cache files.
+    - cache_cutoff_hours (int): 
+        The maximum age of a cache file (in hours) to be considered valid.
+        If no file is fresh enough, fresh data will be fetched.
+
+    Returns:
+    - pd.DataFrame: 
+        The pandas DataFrame containing either cached or freshly fetched data.
+    """
+
+    # Ensure the directory exists
+    os.makedirs(cache_dir, exist_ok=True)
+
+    # Generate the current timestamp in the required format
+    now: datetime = datetime.now()
+
+    # Initialize cache file details
+    latest_cache_filename: str = None
+    latest_cache_time: datetime = None
+
+    # Retrieve the latest cache file if it exists
+    for filename in os.listdir(cache_dir):
+        if filename.startswith(file_prefix) and filename.endswith(".csv"):
+            timestamp_str: str = filename[len(file_prefix)+1:].replace('.csv', '')
+            try:
+                file_time: datetime = datetime.strptime(timestamp_str, '%Y%m%d%H%M%S')
+                if latest_cache_time is None or file_time > latest_cache_time:
+                    latest_cache_time = file_time
+                    latest_cache_filename = filename
+            except ValueError:
+                continue
+
+    # If a valid cache exists and is within the cutoff time, read from it
+    if latest_cache_time and now - latest_cache_time < timedelta(hours=cache_cutoff_hours):
+        df: pd.DataFrame = pd.read_csv(os.path.join(cache_dir, latest_cache_filename))
+    else:
+        # Fetch new data via the provided function
+        df = fetch_func()
+
+        # Save the new data in a cache file
+        current_time_str: str = now.strftime('%Y%m%d%H%M%S')
+        cache_filename: str = f"{file_prefix}_{current_time_str}.csv"
+        df.to_csv(os.path.join(cache_dir, cache_filename), index=False)
+
+    return df
+
