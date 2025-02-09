@@ -2013,24 +2013,24 @@ def sync_dataframe_to_sqlite_database(
 def load_fresh_data_or_pull_from_cache(fetch_func: Callable[[], pd.DataFrame], cache_dir: str, file_prefix: str, cache_cutoff_hours: int) -> pd.DataFrame:
     """
     Retrieve data from a cache if a recent cache file exists, or fetch fresh data, save it to the cache, and return it.
-    
+
     This function checks a specified directory for the most recent cache file matching a specified prefix.
     If a recent cache file (within the cutoff time in hours) is found, the data is read from there.
     Otherwise, it calls the data-fetching function, saves the newly fetched data to a new cache file, and returns it.
 
     Parameters:
-    - fetch_func (typing.Callable[[], pd.DataFrame]): 
+    - fetch_func (typing.Callable[[], pd.DataFrame]):
         A callable function that, when executed, returns a pandas DataFrame with fresh data.
-    - cache_dir (str): 
+    - cache_dir (str):
         The directory where cache files are stored.
-    - file_prefix (str): 
+    - file_prefix (str):
         The prefix used for cache filenames to identify relevant cache files.
-    - cache_cutoff_hours (int): 
+    - cache_cutoff_hours (int):
         The maximum age of a cache file (in hours) to be considered valid.
         If no file is fresh enough, fresh data will be fetched.
 
     Returns:
-    - pd.DataFrame: 
+    - pd.DataFrame:
         The pandas DataFrame containing either cached or freshly fetched data.
     """
 
@@ -2047,7 +2047,7 @@ def load_fresh_data_or_pull_from_cache(fetch_func: Callable[[], pd.DataFrame], c
     # Retrieve the latest cache file if it exists
     for filename in os.listdir(cache_dir):
         if filename.startswith(file_prefix) and filename.endswith(".csv"):
-            timestamp_str: str = filename[len(file_prefix)+1:].replace('.csv', '')
+            timestamp_str: str = filename[len(file_prefix) + 1:].replace('.csv', '')
             try:
                 file_time: datetime = datetime.strptime(timestamp_str, '%Y%m%d%H%M%S')
                 if latest_cache_time is None or file_time > latest_cache_time:
@@ -2069,4 +2069,3 @@ def load_fresh_data_or_pull_from_cache(fetch_func: Callable[[], pd.DataFrame], c
         df.to_csv(os.path.join(cache_dir, cache_filename), index=False)
 
     return df
-

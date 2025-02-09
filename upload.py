@@ -1,4 +1,3 @@
-import os
 import re
 import shutil
 import subprocess
@@ -34,7 +33,7 @@ def create_init_file():
 
     with init_file.open('w') as f:
         f.write(init_file_content)
-    
+
     print("Generated __init__.py with content:")
     print(init_file_content)
 
@@ -63,7 +62,7 @@ def increment_version():
 
         with setup_file.open('r') as f:
             setup_content = f.read()
-        
+
         setup_content = setup_content.replace(f'version = {current_version}', f'version = {new_version}')
         with setup_file.open('w') as f:
             f.write(setup_content)
@@ -88,7 +87,7 @@ def upload_package():
 
 def verify_package(new_version):
     print(f"Execute this command after a minute to verify the new version {new_version}:")
-    print(f"pip3 install --upgrade rgwfuncs")
+    print("pip3 install --upgrade rgwfuncs")
 
 
 if __name__ == "__main__":
@@ -106,4 +105,3 @@ if __name__ == "__main__":
 
     print("Verifying package...")
     verify_package(new_version)
-

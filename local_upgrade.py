@@ -1,10 +1,10 @@
-import os
 import subprocess
 import shutil
 import sys
 import inspect
 import importlib
 from pathlib import Path
+
 
 def create_init_file():
     init_file = Path('./src/rgwfuncs/__init__.py')
@@ -32,7 +32,7 @@ def create_init_file():
 
     with init_file.open('w') as f:
         f.write(init_file_content)
-    
+
     print("Generated __init__.py with content:")
     print(init_file_content)
 
@@ -40,12 +40,12 @@ def create_init_file():
 def rebuild_package():
     # Install required build tools
     subprocess.run(['python3', '-m', 'pip', 'install', '--upgrade', 'build'], check=True)
-    
+
     # Remove old distribution folders
     dist_dir = Path('dist')
     if dist_dir.exists():
         shutil.rmtree(dist_dir)
-    
+
     # Build the package
     subprocess.run(['python3', '-m', 'build'], check=True)
 
@@ -55,9 +55,9 @@ def uninstall_local_library():
     name_line = [line for line in Path('pyproject.toml').read_text().splitlines() if line.startswith('name = ')]
     if not name_line:
         raise RuntimeError("Package name not found in pyproject.toml")
-    
+
     package_name = name_line[0].split('=')[1].strip().strip('"')
-    
+
     # Uninstall the local library
     subprocess.run(['pip3', 'uninstall', '-y', package_name], check=True)
 
@@ -81,4 +81,3 @@ if __name__ == "__main__":
     install_local_version()
 
     print("The local version of the package has been reinstalled.")
-
