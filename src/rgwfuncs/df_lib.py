@@ -509,6 +509,10 @@ def load_data_from_path(file_path: str) -> pd.DataFrame:
     # Ensure the file path is absolute
     file_path = os.path.abspath(file_path)
 
+    # Check if the file exists
+    if not os.path.isfile(file_path):
+        raise ValueError(f"File not found: {file_path}")
+
     # Determine file type by extension
     file_extension = file_path.split('.')[-1].lower()
 
@@ -518,6 +522,8 @@ def load_data_from_path(file_path: str) -> pd.DataFrame:
         df.replace('', None, inplace=True)
     elif file_extension in ['xls', 'xlsx']:
         df = pd.read_excel(file_path)
+    elif file_extension == 'ods':
+        df = pd.read_excel(file_path, engine='odf')
     elif file_extension == 'json':
         df = pd.read_json(file_path)
     elif file_extension == 'parquet':
