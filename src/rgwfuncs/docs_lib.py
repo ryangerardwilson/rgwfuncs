@@ -49,3 +49,4 @@ def docs(method_type_filter: Optional[str] = None) -> None:
                     docstring: Optional[str] = functions[name].__doc__
                     if docstring:
                         print(f"\n{name}:\n{docstring}")
+    print()

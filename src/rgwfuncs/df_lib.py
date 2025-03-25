@@ -22,8 +22,7 @@ from email import encoders
 from googleapiclient.discovery import build
 import base64
 import boto3
-# import inspect
-from typing import Optional, Dict, List, Tuple, Any, Callable
+from typing import Optional, Dict, List, Tuple, Any, Callable, Union
 import warnings
 
 # Suppress all FutureWarnings
@@ -311,13 +310,17 @@ def drop_duplicates_retain_last(
     return df.drop_duplicates(subset=columns_list, keep='last')
 
 
-def load_data_from_query(db_preset_name: str, query: str) -> pd.DataFrame:
+def load_data_from_query(db_preset_name: str, query: str, config: Optional[Union[str, dict]] = None) -> pd.DataFrame:
     """
     Load data from a database query into a DataFrame based on a configuration preset.
 
     Parameters:
         db_preset_name: The name of the database preset in the configuration file.
         query: The SQL query to execute.
+        config (Optional[Union[str, dict]], optional): Configuration source. Can be:
+            - None: Uses default path '~/.rgwfuncsrc'
+            - str: Path to a JSON configuration file
+            - dict: Direct configuration dictionary
 
     Returns:
         A DataFrame containing the query result.
@@ -326,6 +329,27 @@ def load_data_from_query(db_preset_name: str, query: str) -> pd.DataFrame:
         FileNotFoundError: If the configuration file is not found.
         ValueError: If the database preset or db_type is invalid.
     """
+
+    def get_config(config: Optional[Union[str, dict]] = None) -> dict:
+        """Get telegram configuration either from a path or direct dictionary."""
+        def get_config_from_file(config_path: str) -> dict:
+            """Load configuration from a JSON file."""
+            with open(config_path, 'r') as file:
+                return json.load(file)
+
+        # Determine the config to use
+        if config is None:
+            # Default to ~/.rgwfuncsrc if no config provided
+            config_path = os.path.expanduser('~/.rgwfuncsrc')
+            return get_config_from_file(config_path)
+        elif isinstance(config, str):
+            # If config is a string, treat it as a path and load it
+            return get_config_from_file(config)
+        elif isinstance(config, dict):
+            # If config is already a dict, use it directly
+            return config
+        else:
+            raise ValueError("Config must be either a path string or a dictionary")
 
     def query_mssql(db_preset: Dict[str, Any], query: str) -> pd.DataFrame:
         server = db_preset['host']
@@ -446,11 +470,7 @@ def load_data_from_query(db_preset_name: str, query: str) -> pd.DataFrame:
         wait_for_athena_query_to_complete(athena_client, query_execution_id)
         return download_athena_query_results(athena_client, query_execution_id)
 
-    # Assume the configuration file is located at ~/.rgwfuncsrc
-    config_path = os.path.expanduser('~/.rgwfuncsrc')
-    with open(config_path, 'r') as f:
-        config = json.load(f)
-
+    config = get_config(config)
     db_presets = config.get('db_presets', [])
     db_preset = next(
         (preset for preset in db_presets if preset['name'] == db_preset_name),
@@ -846,7 +866,8 @@ def send_dataframe_via_telegram(
         bot_name: str,
         message: Optional[str] = None,
         as_file: bool = True,
-        remove_after_send: bool = True) -> None:
+        remove_after_send: bool = True,
+        config: Optional[Union[str, dict]] = None) -> None:
     """
     Send a DataFrame via Telegram using a specified bot configuration.
 
@@ -856,6 +877,10 @@ def send_dataframe_via_telegram(
         message: Custom message to send along with the DataFrame or file. Defaults to None.
         as_file: Boolean flag to indicate whether the DataFrame should be sent as a file (True) or as text (False). Defaults to True.
         remove_after_send: If True, removes the CSV file after sending. Defaults to True.
+        config (Optional[Union[str, dict]], optional): Configuration source. Can be:
+            - None: Uses default path '~/.rgwfuncsrc'
+            - str: Path to a JSON configuration file
+            - dict: Direct configuration dictionary
 
     Raises:
         ValueError: If the specified bot is not found or if no DataFrame is provided.
@@ -865,14 +890,29 @@ def send_dataframe_via_telegram(
         The configuration file is assumed to be located at `~/.rgwfuncsrc`.
     """
 
-    def get_config(config_path: str) -> dict:
-        """Load configuration from a JSON file."""
-        with open(config_path, 'r') as file:
-            return json.load(file)
+    def get_config(config: Optional[Union[str, dict]] = None) -> dict:
+        """Get telegram configuration either from a path or direct dictionary."""
+        def get_config_from_file(config_path: str) -> dict:
+            """Load configuration from a JSON file."""
+            with open(config_path, 'r') as file:
+                return json.load(file)
 
-    # Assume the configuration file is located at ~/.rgwfuncsrc
-    config_path = os.path.expanduser('~/.rgwfuncsrc')
-    config = get_config(config_path)
+        # Determine the config to use
+        if config is None:
+            # Default to ~/.rgwfuncsrc if no config provided
+            config_path = os.path.expanduser('~/.rgwfuncsrc')
+            return get_config_from_file(config_path)
+        elif isinstance(config, str):
+            # If config is a string, treat it as a path and load it
+            return get_config_from_file(config)
+        elif isinstance(config, dict):
+            # If config is already a dict, use it directly
+            return config
+        else:
+            raise ValueError("Config must be either a path string or a dictionary")
+
+
+    config = get_config(config)
 
     bot_config = next(
         (bot for bot in config['telegram_bot_presets'] if bot['name'] == bot_name),
@@ -926,7 +966,8 @@ def send_data_to_email(
         subject: Optional[str] = None,
         body: Optional[str] = None,
         as_file: bool = True,
-        remove_after_send: bool = True) -> None:
+        remove_after_send: bool = True,
+        config: Optional[Union[str, dict]] = None) -> None:
     """
     Send an email with an optional DataFrame attachment using the Gmail API via a specified preset.
 
@@ -938,6 +979,10 @@ def send_data_to_email(
         body: Optional message body of the email. Defaults to 'Please find the CSV file attached.' if not given.
         as_file: Boolean flag to decide whether to send the DataFrame as a file (True) or embed it in the email (False). Defaults to True.
         remove_after_send: If True, removes the CSV file after sending. Defaults to True.
+        config (Optional[Union[str, dict]], optional): Configuration source. Can be:
+            - None: Uses default path '~/.rgwfuncsrc'
+            - str: Path to a JSON configuration file
+            - dict: Direct configuration dictionary
 
     Raises:
         ValueError: If the preset is not found in the configuration.
@@ -947,12 +992,26 @@ def send_data_to_email(
         The configuration file is assumed to be located at `~/.rgwfuncsrc`.
     """
 
-    def get_config(config_path: str) -> dict:
-        with open(config_path, 'r') as file:
-            try:
+    def get_config(config: Optional[Union[str, dict]] = None) -> dict:
+        """Get telegram configuration either from a path or direct dictionary."""
+        def get_config_from_file(config_path: str) -> dict:
+            """Load configuration from a JSON file."""
+            with open(config_path, 'r') as file:
                 return json.load(file)
-            except json.JSONDecodeError as e:
-                raise ValueError(f"Invalid JSON format in config file: {e}")
+
+        # Determine the config to use
+        if config is None:
+            # Default to ~/.rgwfuncsrc if no config provided
+            config_path = os.path.expanduser('~/.rgwfuncsrc')
+            return get_config_from_file(config_path)
+        elif isinstance(config, str):
+            # If config is a string, treat it as a path and load it
+            return get_config_from_file(config)
+        elif isinstance(config, dict):
+            # If config is already a dict, use it directly
+            return config
+        else:
+            raise ValueError("Config must be either a path string or a dictionary")
 
     def authenticate_service_account(
             service_account_credentials_path: str,
@@ -964,9 +1023,7 @@ def send_data_to_email(
         )
         return build('gmail', 'v1', credentials=credentials)
 
-    # Load configuration from ~/.rgwfuncsrc
-    config_path = os.path.expanduser('~/.rgwfuncsrc')
-    config = get_config(config_path)
+    config = get_config(config)
 
     # Retrieve Gmail preset configuration
     gmail_config = next(
@@ -1038,7 +1095,8 @@ def send_data_to_slack(
         bot_name: str,
         message: Optional[str] = None,
         as_file: bool = True,
-        remove_after_send: bool = True) -> None:
+        remove_after_send: bool = True,
+        config: Optional[Union[str, dict]] = None) -> None:
     """
     Send a DataFrame or message to Slack using a specified bot configuration.
 
@@ -1048,6 +1106,10 @@ def send_data_to_slack(
         message: Custom message to send along with the DataFrame or file. Defaults to None.
         as_file: Boolean flag to decide whether to send the DataFrame as a file (True) or as text (False). Defaults to True.
         remove_after_send: If True, removes the CSV file after sending. Defaults to True.
+        config (Optional[Union[str, dict]], optional): Configuration source. Can be:
+            - None: Uses default path '~/.rgwfuncsrc'
+            - str: Path to a JSON configuration file
+            - dict: Direct configuration dictionary
 
     Raises:
         ValueError: If the specified bot is not found in the configuration.
@@ -1057,14 +1119,29 @@ def send_data_to_slack(
         The configuration file is assumed to be located at `~/.rgwfuncsrc`.
     """
 
-    def get_config(config_path: str) -> dict:
-        """Load configuration from a JSON file."""
-        with open(config_path, 'r') as file:
-            return json.load(file)
+    def get_config(config: Optional[Union[str, dict]] = None) -> dict:
+        """Get telegram configuration either from a path or direct dictionary."""
+        def get_config_from_file(config_path: str) -> dict:
+            """Load configuration from a JSON file."""
+            with open(config_path, 'r') as file:
+                return json.load(file)
+
+        # Determine the config to use
+        if config is None:
+            # Default to ~/.rgwfuncsrc if no config provided
+            config_path = os.path.expanduser('~/.rgwfuncsrc')
+            return get_config_from_file(config_path)
+        elif isinstance(config, str):
+            # If config is a string, treat it as a path and load it
+            return get_config_from_file(config)
+        elif isinstance(config, dict):
+            # If config is already a dict, use it directly
+            return config
+        else:
+            raise ValueError("Config must be either a path string or a dictionary")
 
     # Load the Slack configuration from ~/.rgwfuncsrc
-    config_path = os.path.expanduser('~/.rgwfuncsrc')
-    config = get_config(config_path)
+    config = get_config(config)
 
     bot_config = next(
         (bot for bot in config['slack_bot_presets'] if bot['name'] == bot_name),

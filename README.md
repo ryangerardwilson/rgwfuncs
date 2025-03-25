@@ -575,6 +575,10 @@ Send a message to a Telegram chat using a specified preset from your configurati
 • Parameters:
   - `preset_name` (str): The name of the preset to use for sending the message. This should match a preset in the configuration file.
   - `message` (str): The message text that you want to send to the Telegram chat.
+  - config (Optional[Union[str, dict]], optional): Configuration source. Can be:
+    - None: Uses default path '~/.rgwfuncsrc'
+    - str: Path to a JSON configuration file
+    - dict: Direct configuration dictionary
 
 • Raises:
   - `RuntimeError`: If the preset is not found in the configuration file or if necessary details (bot token or chat ID) are missing.
@@ -837,6 +841,10 @@ Load data from a specified database using a SQL query and return the results in 
 
 - `db_preset_name` (str): The name of the database preset found in the configuration file. This preset determines which database connection details to use.
 - `query` (str): The SQL query string to be executed on the database.
+- `config` (Optional[Union[str, dict]], optional): Configuration source. Can be:
+  - None: Uses default path '~/.rgwfuncsrc'
+  - str: Path to a JSON configuration file
+  - dict: Direct configuration dictionary
 
 #### Returns
 
@@ -1100,6 +1108,10 @@ Send a DataFrame via Telegram using a specified bot configuration.
   - message (str)
   - `as_file` (bool)
   - `remove_after_send` (bool)
+  - `config` (Optional[Union[str, dict]], optional): Configuration source. Can be:
+    - None: Uses default path '~/.rgwfuncsrc'
+    - str: Path to a JSON configuration file
+    - dict: Direct configuration dictionary
 
 • Example:
     
@@ -1129,6 +1141,10 @@ Send an email with an optional DataFrame attachment using the Gmail API via a sp
   - body (str, optional)
   - `as_file` (bool)
   - `remove_after_send` (bool)
+  - `config` (Optional[Union[str, dict]], optional): Configuration source. Can be:
+    - None: Uses default path '~/.rgwfuncsrc'
+    - str: Path to a JSON configuration file
+    - dict: Direct configuration dictionary
 
 • Example:
     
@@ -1157,6 +1173,10 @@ Send a DataFrame or message to Slack using a specified bot configuration.
   - message (str)
   - `as_file` (bool)
   - `remove_after_send` (bool)
+  - `config` (Optional[Union[str, dict]], optional): Configuration source. Can be:
+    - None: Uses default path '~/.rgwfuncsrc'
+    - str: Path to a JSON configuration file
+    - dict: Direct configuration dictionary
 
 • Example:
     
