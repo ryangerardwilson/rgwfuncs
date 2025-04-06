@@ -911,7 +911,6 @@ def send_dataframe_via_telegram(
         else:
             raise ValueError("Config must be either a path string or a dictionary")
 
-
     config = get_config(config)
 
     bot_config = next(
@@ -1232,17 +1231,13 @@ def order_columns(df: pd.DataFrame, column_order_str: str) -> pd.DataFrame:
     return df[new_order]
 
 
-def append_ranged_classification_column(
-        df: pd.DataFrame,
-        ranges: str,
-        target_col: str,
-        new_col_name: str) -> pd.DataFrame:
+def append_ranged_classification_column(df: pd.DataFrame, ranges: List[Union[int, float]], target_col: str, new_col_name: str) -> pd.DataFrame:
     """
     Append a ranged classification column to the DataFrame.
 
     Parameters:
         df: The DataFrame to modify.
-        ranges: A string representation of numeric ranges separated by commas.
+        ranges: A list of numeric range boundaries (integers or floats, last bin extends to infinity).
         target_col: The column to analyze.
         new_col_name: The name of the new classification column.
 
@@ -1259,52 +1254,55 @@ def append_ranged_classification_column(
         else:
             return str(int(number)).zfill(integer_length)
 
-    range_list = ranges.split(',')
-    has_decimals = any('.' in r for r in range_list)
+    # Check if any numbers in ranges are decimals
+    has_decimals = any(isinstance(r, float) and r % 1 != 0 for r in ranges)
 
     if has_decimals:
-        range_list = [float(r) for r in range_list]
+        range_list = [float(r) for r in ranges] + [float('inf')]
 
         max_decimal_length = max(
-            len(str(r).split('.')[1])
-            for r in range_list
-            if '.' in str(r)
+            len(str(r).split('.')[1]) if isinstance(r, float) and r % 1 != 0 else 0
+            for r in ranges
         )
 
         max_integer_length = max(
             len(str(int(float(r))))
-            for r in range_list
+            for r in ranges
         )
 
         labels = []
-
-        for i in range(len(range_list) - 1):
+        for i in range(len(ranges)):
             start = pad_number(
-                range_list[i],
+                ranges[i],
                 max_integer_length,
                 max_decimal_length,
                 decimal=True
             )
-
-            end = pad_number(
-                range_list[i + 1],
-                max_integer_length,
-                max_decimal_length,
-                decimal=True
-            )
-
-            label = f"{start} to {end}"
+            if i == len(ranges) - 1:
+                label = f"{start} to infinity"
+            else:
+                end = pad_number(
+                    ranges[i + 1],
+                    max_integer_length,
+                    max_decimal_length,
+                    decimal=True
+                )
+                label = f"{start} to {end}"
             labels.append(label)
 
     else:
-        range_list = [int(r) for r in range_list]
+        range_list = [int(r) for r in ranges] + [float('inf')]
+        max_integer_length = max(len(str(int(r))) for r in ranges)
 
-        max_integer_length = max(
-            len(str(r))
-            for r in range_list
-        )
-
-        labels = [f"{pad_number(range_list[i], max_integer_length)} to {pad_number(range_list[i + 1], max_integer_length)}" for i in range(len(range_list) - 1)]
+        labels = []
+        for i in range(len(ranges)):
+            start = pad_number(ranges[i], max_integer_length)
+            if i == len(ranges) - 1:
+                label = f"{start} to infinity"
+            else:
+                end = pad_number(ranges[i + 1], max_integer_length)
+                label = f"{start} to {end}"
+            labels.append(label)
 
     # Ensure the target column is numeric
     df[target_col] = pd.to_numeric(df[target_col], errors='coerce')
@@ -1313,22 +1311,19 @@ def append_ranged_classification_column(
         bins=range_list,
         labels=labels,
         right=False,
-        include_lowest=True)
+        include_lowest=True
+    )
 
     return df
 
 
-def append_percentile_classification_column(
-        df: pd.DataFrame,
-        percentiles: str,
-        target_col: str,
-        new_col_name: str) -> pd.DataFrame:
+def append_percentile_classification_column(df: pd.DataFrame, percentiles: List[Union[int, float]], target_col: str, new_col_name: str) -> pd.DataFrame:
     """
     Append a percentile classification column to the DataFrame.
 
     Parameters:
         df: The DataFrame to modify.
-        percentiles: A string representation of percentile values separated by commas.
+        percentiles: A list of percentile values (0-100, integers or floats).
         target_col: The column to analyze.
         new_col_name: The name of the new classification column.
 
@@ -1345,39 +1340,41 @@ def append_percentile_classification_column(
         else:
             return str(int(number)).zfill(integer_length)
 
-    percentiles_list = percentiles.split(',')
-    has_decimals = any('.' in p for p in percentiles_list)
+    # Check if any numbers in percentiles are decimals
+    has_decimals = any(isinstance(p, float) and p % 1 != 0 for p in percentiles)
 
     if has_decimals:
-        percentiles_list = [float(p) for p in percentiles_list]
-        max_decimal_length = max(len(str(p).split('.')[1]) for p in percentiles_list if '.' in str(p))
-        max_integer_length = max(len(str(int(float(p)))) for p in percentiles_list)
+        percentiles_list = [float(p) for p in percentiles]
+        max_decimal_length = max(
+            len(str(p).split('.')[1]) if isinstance(p, float) and p % 1 != 0 else 0
+            for p in percentiles
+        )
+        max_integer_length = max(len(str(int(float(p)))) for p in percentiles)
 
         labels = []
-
         for i in range(len(percentiles_list) - 1):
             start = pad_number(
                 percentiles_list[i],
                 max_integer_length,
                 max_decimal_length,
-                decimal=True)
+                decimal=True
+            )
             end = pad_number(
-                percentiles_list[i + 1], max_integer_length, max_decimal_length, decimal=True)
-
+                percentiles_list[i + 1],
+                max_integer_length,
+                max_decimal_length,
+                decimal=True
+            )
             label = f"{start} to {end}"
             labels.append(label)
     else:
-        percentiles_list = [int(p) for p in percentiles_list]
-
+        percentiles_list = [int(p) for p in percentiles]
         max_integer_length = max(len(str(p)) for p in percentiles_list)
 
         labels = []
-
         for i in range(len(percentiles_list) - 1):
             start = pad_number(percentiles_list[i], max_integer_length)
-
             end = pad_number(percentiles_list[i + 1], max_integer_length)
-
             label = f"{start} to {end}"
             labels.append(label)
 
@@ -1389,22 +1386,19 @@ def append_percentile_classification_column(
         df[target_col],
         bins=quantiles,
         labels=labels,
-        include_lowest=True)
+        include_lowest=True
+    )
 
     return df
 
 
-def append_ranged_date_classification_column(
-        df: pd.DataFrame,
-        date_ranges: str,
-        target_col: str,
-        new_col_name: str) -> pd.DataFrame:
+def append_ranged_date_classification_column(df: pd.DataFrame, date_ranges: list[str], target_col: str, new_col_name: str) -> pd.DataFrame:
     """
     Append a ranged date classification column to the DataFrame.
 
     Parameters:
         df: The DataFrame to modify.
-        date_ranges: A string representation of date ranges separated by commas.
+        date_ranges: A list of date strings in a format pandas can parse (e.g., ['2020-01-01', '2020-06-30', '2020-12-31']).
         target_col: The date column to analyze.
         new_col_name: The name of the new date classification column.
 
@@ -1412,10 +1406,9 @@ def append_ranged_date_classification_column(
         A new DataFrame with the date classification column appended.
     """
 
-    date_list = [pd.to_datetime(date) for date in date_ranges.split(',')]
+    date_list = [pd.to_datetime(date) for date in date_ranges]
 
     labels = []
-
     for i in range(len(date_list) - 1):
         start_date = date_list[i].strftime('%Y-%m-%d')
         end_date = date_list[i + 1].strftime('%Y-%m-%d')
@@ -1426,14 +1419,13 @@ def append_ranged_date_classification_column(
         pd.to_datetime(df[target_col]),
         bins=date_list,
         labels=labels,
-        right=False)
+        right=False
+    )
 
     return df
 
 
-def rename_columns(df: pd.DataFrame,
-                   rename_pairs: Dict[str,
-                                      str]) -> pd.DataFrame:
+def rename_columns(df: pd.DataFrame, rename_pairs: Dict[str, str]) -> pd.DataFrame:
     """
     Rename columns in the DataFrame.
 

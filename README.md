@@ -1221,7 +1221,7 @@ Append a ranged classification column to the DataFrame.
 
 • Parameters:
   - df (pd.DataFrame)
-  - ranges (str): Ranges separated by commas (e.g., "0-10,11-20,21-30").
+  - ranges (list[int | float]): List of numeric range boundaries (e.g., [0, 10, 20, 30]), last bin extends to infinity.
   - `target_col` (str): The column to classify.
   - `new_col_name` (str): Name of the new classification column.
 
@@ -1229,14 +1229,14 @@ Append a ranged classification column to the DataFrame.
   - pd.DataFrame
 
 • Example:
-    
+
     from rgwfuncs import append_ranged_classification_column
     import pandas as pd
 
     df = pd.DataFrame({'Scores': [5, 12, 25]})
-    df_classified = append_ranged_classification_column(df, '0-10,11-20,21-30', 'Scores', 'ScoreRange')
+    df_classified = append_ranged_classification_column(df, [0, 10, 20, 30], 'Scores', 'ScoreRange')
     print(df_classified)
-    
+
 
 --------------------------------------------------------------------------------
 
@@ -1245,7 +1245,7 @@ Append a percentile classification column to the DataFrame.
 
 • Parameters:
   - df (pd.DataFrame)
-  - percentiles (str): Percentile values separated by commas (e.g., "25,50,75").
+  - percentiles (list[int | float]): List of percentile values (0-100, e.g., [25, 50, 75]).
   - `target_col` (str)
   - `new_col_name` (str)
 
@@ -1253,14 +1253,14 @@ Append a percentile classification column to the DataFrame.
   - pd.DataFrame
 
 • Example:
-    
+
     from rgwfuncs import append_percentile_classification_column
     import pandas as pd
 
     df = pd.DataFrame({'Values': [10, 20, 30, 40, 50]})
-    df_classified = append_percentile_classification_column(df, '25,50,75', 'Values', 'ValuePercentile')
+    df_classified = append_percentile_classification_column(df, [25, 50, 75], 'Values', 'ValuePercentile')
     print(df_classified)
-    
+
 
 --------------------------------------------------------------------------------
 
@@ -1269,7 +1269,7 @@ Append a ranged date classification column to the DataFrame.
 
 • Parameters:
   - df (pd.DataFrame)
-  - `date_ranges` (str): Date ranges separated by commas, e.g., `2020-01-01_2020-06-30,2020-07-01_2020-12-31`
+  - `date_ranges` (list[str]): List of date strings in a format pandas can parse (e.g., ['2020-01-01', '2020-06-30', '2020-12-31']).
   - `target_col` (str)
   - `new_col_name` (str)
 
@@ -1277,19 +1277,18 @@ Append a ranged date classification column to the DataFrame.
   - pd.DataFrame
 
 • Example:
-    
+
     from rgwfuncs import append_ranged_date_classification_column
     import pandas as pd
 
-    df = pd.DataFrame({'EventDate': pd.to_datetime(['2020-03-15','2020-08-10'])})
+    df = pd.DataFrame({'EventDate': pd.to_datetime(['2020-03-15', '2020-08-10'])})
     df_classified = append_ranged_date_classification_column(
         df,
-        '2020-01-01_2020-06-30,2020-07-01_2020-12-31',
+        ['2020-01-01', '2020-06-30', '2020-12-31'],
         'EventDate',
         'DateRange'
     )
     print(df_classified)
-    
 
 --------------------------------------------------------------------------------
 

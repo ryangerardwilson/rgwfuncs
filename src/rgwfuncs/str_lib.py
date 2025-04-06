@@ -45,8 +45,6 @@ def send_telegram_message(preset_name: str, message: str, config: Optional[Union
         else:
             raise ValueError("Config must be either a path string or a dictionary")
 
-
-
     def get_telegram_preset(config: dict, preset_name: str) -> dict:
         """Get the Telegram preset configuration."""
         presets = config.get("telegram_bot_presets", [])
