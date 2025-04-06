@@ -1279,7 +1279,7 @@ def append_ranged_classification_column(df: pd.DataFrame, ranges: List[Union[int
                 decimal=True
             )
             if i == len(ranges) - 1:
-                label = f"{start} to infinity"
+                label = f"{start}+"
             else:
                 end = pad_number(
                     ranges[i + 1],
@@ -1287,7 +1287,7 @@ def append_ranged_classification_column(df: pd.DataFrame, ranges: List[Union[int
                     max_decimal_length,
                     decimal=True
                 )
-                label = f"{start} to {end}"
+                label = f"{start} - {end}"
             labels.append(label)
 
     else:
@@ -1298,10 +1298,10 @@ def append_ranged_classification_column(df: pd.DataFrame, ranges: List[Union[int
         for i in range(len(ranges)):
             start = pad_number(ranges[i], max_integer_length)
             if i == len(ranges) - 1:
-                label = f"{start} to infinity"
+                label = f"{start}+"
             else:
                 end = pad_number(ranges[i + 1], max_integer_length)
-                label = f"{start} to {end}"
+                label = f"{start} - {end}"
             labels.append(label)
 
     # Ensure the target column is numeric
@@ -1365,7 +1365,7 @@ def append_percentile_classification_column(df: pd.DataFrame, percentiles: List[
                 max_decimal_length,
                 decimal=True
             )
-            label = f"{start} to {end}"
+            label = f"{start} - {end}"
             labels.append(label)
     else:
         percentiles_list = [int(p) for p in percentiles]
@@ -1375,7 +1375,7 @@ def append_percentile_classification_column(df: pd.DataFrame, percentiles: List[
         for i in range(len(percentiles_list) - 1):
             start = pad_number(percentiles_list[i], max_integer_length)
             end = pad_number(percentiles_list[i + 1], max_integer_length)
-            label = f"{start} to {end}"
+            label = f"{start} - {end}"
             labels.append(label)
 
     # Ensure the target column is numeric
@@ -1412,7 +1412,7 @@ def append_ranged_date_classification_column(df: pd.DataFrame, date_ranges: list
     for i in range(len(date_list) - 1):
         start_date = date_list[i].strftime('%Y-%m-%d')
         end_date = date_list[i + 1].strftime('%Y-%m-%d')
-        label = f"{start_date} to {end_date}"
+        label = f"{start_date} - {end_date}"
         labels.append(label)
 
     df[new_col_name] = pd.cut(
