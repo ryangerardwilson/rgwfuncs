@@ -1706,31 +1706,38 @@ Processes and saves a DataFrame to an SQLite database, adding a timestamp column
 --------------------------------------------------------------------------------
 
 ### 46. `load_fresh_data_or_pull_from_cache`
-Retrieves data from a cache if a recent cache file exists, or fetches fresh data, saves it to the cache, and returns it. If the cache is too old or doesn't exist, it uses a fetching function to get new data, which it caches and returns.
 
-• Parameters:
-  - `fetch_func` (typing.Callable[[], pd.DataFrame]): A callable function that fetches fresh data and returns it as a pandas DataFrame.
-  - `cache_dir` (str): The directory where cache files are stored.
-  - `file_prefix` (str): The prefix used for cache filenames to identify relevant cache files.
-  - `cache_cutoff_hours` (int): The age in hours beyond which a cache file is considered obsolete.
+Retrieves data from a cache if a recent cache file exists, or fetches fresh data, saves it to the cache, removes older cache files, and returns it. If the cache is too old or doesn’t exist, it uses a fetching function to get new data, which it caches and returns. When fresh data is fetched and saved, all earlier cache files with the same prefix are deleted to keep the cache directory clean. An optional `dtype` parameter allows specifying column data types when reading from the cache, preventing issues with mixed-type columns.
 
-• Returns:
-  - `pd.DataFrame`: The DataFrame containing cached or freshly fetched data.
+#### Parameters:
+- **`fetch_func` (typing.Callable[[], pd.DataFrame])**: A callable function that fetches fresh data and returns it as a pandas DataFrame.
+- **`cache_dir` (str)**: The directory where cache files are stored.
+- **`file_prefix` (str)**: The prefix used for cache filenames to identify relevant cache files.
+- **`cache_cutoff_hours` (int)**: The age in hours beyond which a cache file is considered obsolete.
+- **`dtype` (dict, optional)**: A dictionary specifying the data types for columns when reading the CSV cache file. Passed to `pd.read_csv()` to handle mixed-type columns explicitly. Defaults to `None`, in which case pandas infers the types.
 
-• Example:
+#### Returns:
+- **`pd.DataFrame`**: The DataFrame containing cached or freshly unmarked data.
+
+#### Example:
 
     from rgwfuncs import load_fresh_data_or_pull_from_cache
     import pandas as pd
 
     def fetch_data():
         # This is your data-fetching logic. Replace with real fetching code.
-        return pd.DataFrame({'Column1': [1, 2, 3], 'Column2': [4, 5, 6]})
+        return pd.DataFrame({'Column1': [1, 2, 3], 'Column2': ['4', '5', '6']})
 
     cache_dir = 'cache_directory'
     file_prefix = 'cached_data'
     cache_cutoff_hours = 24
 
+    # Without dtype (pandas infers types)
     df = load_fresh_data_or_pull_from_cache(fetch_data, cache_dir, file_prefix, cache_cutoff_hours)
+
+    # With dtype to handle mixed types
+    df = load_fresh_data_or_pull_from_cache(fetch_data, cache_dir, file_prefix, cache_cutoff_hours, dtype={'Column2': str})
+    print(df)
 
 --------------------------------------------------------------------------------
 

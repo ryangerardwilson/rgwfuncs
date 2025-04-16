@@ -2085,13 +2085,14 @@ def sync_dataframe_to_sqlite_database(
             conn.execute(f"ALTER TABLE {new_table_name} RENAME TO {tablename}")
 
 
-def load_fresh_data_or_pull_from_cache(fetch_func: Callable[[], pd.DataFrame], cache_dir: str, file_prefix: str, cache_cutoff_hours: int) -> pd.DataFrame:
+def load_fresh_data_or_pull_from_cache(fetch_func: Callable[[], pd.DataFrame], cache_dir: str, file_prefix: str, cache_cutoff_hours: int, dtype: dict = None) -> pd.DataFrame:
     """
-    Retrieve data from a cache if a recent cache file exists, or fetch fresh data, save it to the cache, and return it.
+    Retrieve data from a cache if a recent cache file exists, or fetch fresh data, save it to the cache, remove older cache files, and return it.
 
     This function checks a specified directory for the most recent cache file matching a specified prefix.
     If a recent cache file (within the cutoff time in hours) is found, the data is read from there.
-    Otherwise, it calls the data-fetching function, saves the newly fetched data to a new cache file, and returns it.
+    Otherwise, it calls the data-fetching function, saves the newly fetched data to a new cache file,
+    removes all earlier cache files with the same prefix, and returns the data.
 
     Parameters:
     - fetch_func (typing.Callable[[], pd.DataFrame]):
@@ -2103,16 +2104,18 @@ def load_fresh_data_or_pull_from_cache(fetch_func: Callable[[], pd.DataFrame], c
     - cache_cutoff_hours (int):
         The maximum age of a cache file (in hours) to be considered valid.
         If no file is fresh enough, fresh data will be fetched.
+    - dtype (dict, optional):
+        A dictionary specifying the data types for columns when reading the CSV cache file.
+        Passed to pd.read_csv() to handle mixed-type columns explicitly. Defaults to None.
 
     Returns:
     - pd.DataFrame:
         The pandas DataFrame containing either cached or freshly fetched data.
     """
-
     # Ensure the directory exists
     os.makedirs(cache_dir, exist_ok=True)
 
-    # Generate the current timestamp in the required format
+    # Generate the current timestamp
     now: datetime = datetime.now()
 
     # Initialize cache file details
@@ -2133,7 +2136,7 @@ def load_fresh_data_or_pull_from_cache(fetch_func: Callable[[], pd.DataFrame], c
 
     # If a valid cache exists and is within the cutoff time, read from it
     if latest_cache_time and now - latest_cache_time < timedelta(hours=cache_cutoff_hours):
-        df: pd.DataFrame = pd.read_csv(os.path.join(cache_dir, latest_cache_filename))
+        df: pd.DataFrame = pd.read_csv(os.path.join(cache_dir, latest_cache_filename), dtype=dtype)
     else:
         # Fetch new data via the provided function
         df = fetch_func()
@@ -2142,5 +2145,13 @@ def load_fresh_data_or_pull_from_cache(fetch_func: Callable[[], pd.DataFrame], c
         current_time_str: str = now.strftime('%Y%m%d%H%M%S')
         cache_filename: str = f"{file_prefix}_{current_time_str}.csv"
         df.to_csv(os.path.join(cache_dir, cache_filename), index=False)
+
+        # Remove all earlier cache files with the same prefix
+        for filename in os.listdir(cache_dir):
+            if filename.startswith(file_prefix) and filename.endswith(".csv") and filename != cache_filename:
+                try:
+                    os.remove(os.path.join(cache_dir, filename))
+                except OSError:
+                    continue
 
     return df
