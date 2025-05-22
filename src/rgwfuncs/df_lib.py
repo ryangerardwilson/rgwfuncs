@@ -318,7 +318,7 @@ def load_data_from_query(db_preset_name: str, query: str, config: Optional[Union
         db_preset_name: The name of the database preset in the configuration file.
         query: The SQL query to execute.
         config (Optional[Union[str, dict]], optional): Configuration source. Can be:
-            - None: Uses default path '~/.rgwfuncsrc'
+            - None: Searches for '.rgwfuncsrc' in current directory and upwards
             - str: Path to a JSON configuration file
             - dict: Direct configuration dictionary
 
@@ -326,21 +326,33 @@ def load_data_from_query(db_preset_name: str, query: str, config: Optional[Union
         A DataFrame containing the query result.
 
     Raises:
-        FileNotFoundError: If the configuration file is not found.
+        FileNotFoundError: If no '.rgwfuncsrc' file is found after traversing all parent directories.
         ValueError: If the database preset or db_type is invalid.
     """
 
     def get_config(config: Optional[Union[str, dict]] = None) -> dict:
-        """Get telegram configuration either from a path or direct dictionary."""
+        """Get configuration either from a path, direct dictionary, or by searching upwards."""
         def get_config_from_file(config_path: str) -> dict:
             """Load configuration from a JSON file."""
             with open(config_path, 'r') as file:
                 return json.load(file)
 
+        def find_config_file() -> str:
+            """Search for '.rgwfuncsrc' in current directory and upwards."""
+            current_dir = os.getcwd()
+            while True:
+                config_path = os.path.join(current_dir, '.rgwfuncsrc')
+                if os.path.isfile(config_path):
+                    return config_path
+                parent_dir = os.path.dirname(current_dir)
+                if parent_dir == current_dir:  # Reached root directory
+                    raise FileNotFoundError("No '.rgwfuncsrc' file found in current or parent directories")
+                current_dir = parent_dir
+
         # Determine the config to use
         if config is None:
-            # Default to ~/.rgwfuncsrc if no config provided
-            config_path = os.path.expanduser('~/.rgwfuncsrc')
+            # Search for .rgwfuncsrc upwards from current directory
+            config_path = find_config_file()
             return get_config_from_file(config_path)
         elif isinstance(config, str):
             # If config is a string, treat it as a path and load it
@@ -811,7 +823,7 @@ def filter_indian_mobiles(df: pd.DataFrame, mobile_col: str) -> pd.DataFrame:
     """
     Filter and return DataFrame rows containing valid Indian mobile numbers.
 
-    This function processes a DataFrame to extract and retain rows where the specified column matches the typical format for Indian mobile numbers. An Indian mobile number is expected to be a digit-only string starting with 6, 7, 8, or 9, and should have at least 4 distinct digits.
+    This function processes a DataFrame to extract and retain rows where the specified column matches the typical format for Indian mobile numbers. An Indian mobile number is expected to be a 10-digit string starting with 6, 7, 8, or 9, containing only digits, and having at least 4 distinct digits.
 
     Parameters:
     - df (pd.DataFrame): The DataFrame to filter.
@@ -828,6 +840,7 @@ def filter_indian_mobiles(df: pd.DataFrame, mobile_col: str) -> pd.DataFrame:
             df[mobile_col].apply(
                 lambda x: (
                     str(x).isdigit() and
+                    len(str(x)) == 10 and
                     str(x).startswith(('6', '7', '8', '9')) and
                     len(set(str(x))) >= 4
                 )
