@@ -48,7 +48,7 @@ def send_telegram_message(preset_name: str, message: str, config: Optional[Union
                 config_path = os.path.join(current_dir, '.rgwfuncsrc')
                 # print(f"Checking for config at: {config_path}")  # Debug line
                 if os.path.isfile(config_path):
-                    print(f"Found config at: {config_path}")  # Debug line
+                    # print(f"Found config at: {config_path}")  # Debug line
                     return config_path
                 parent_dir = os.path.dirname(current_dir)
                 if parent_dir == current_dir:  # Reached root directory
