@@ -21,27 +21,38 @@ def send_telegram_message(preset_name: str, message: str, config: Optional[Union
           - dict: Direct configuration dictionary
 
     Raises:
-        FileNotFoundError: If no '.rgwfuncsrc' file is found after traversing all parent directories.
+        FileNotFoundError: If no '.rgwfuncsrc' file is found in current or parent directories.
+        ValueError: If the config parameter is neither a path string nor a dictionary, or if the config file is empty/invalid.
         RuntimeError: If the preset is not found or necessary details are missing.
-        ValueError: If the config parameter is neither a path string nor a dictionary.
     """
     def get_config(config: Optional[Union[str, dict]] = None) -> dict:
         """Get configuration either from a path, direct dictionary, or by searching upwards."""
         def get_config_from_file(config_path: str) -> dict:
             """Load configuration from a JSON file."""
-            with open(config_path, 'r') as file:
-                return json.load(file)
+            # print(f"Reading config from: {config_path}")  # Debug line
+            with open(config_path, 'r', encoding='utf-8') as file:
+                content = file.read()
+                # print(f"Config content (first 100 chars): {content[:100]}...")  # Debug line
+                if not content.strip():
+                    raise ValueError(f"Config file {config_path} is empty")
+                try:
+                    return json.loads(content)
+                except json.JSONDecodeError as e:
+                    raise ValueError(f"Invalid JSON in config file {config_path}: {e}")
 
         def find_config_file() -> str:
             """Search for '.rgwfuncsrc' in current directory and upwards."""
             current_dir = os.getcwd()
+            # print(f"Starting config search from: {current_dir}")  # Debug line
             while True:
                 config_path = os.path.join(current_dir, '.rgwfuncsrc')
+                # print(f"Checking for config at: {config_path}")  # Debug line
                 if os.path.isfile(config_path):
+                    print(f"Found config at: {config_path}")  # Debug line
                     return config_path
                 parent_dir = os.path.dirname(current_dir)
                 if parent_dir == current_dir:  # Reached root directory
-                    raise FileNotFoundError("No '.rgwfuncsrc' file found in current or parent directories")
+                    raise FileNotFoundError(f"No '.rgwfuncsrc' file found in {os.getcwd()} or parent directories")
                 current_dir = parent_dir
 
         # Determine the config to use
