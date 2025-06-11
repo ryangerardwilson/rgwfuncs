@@ -7,7 +7,6 @@ import os
 import atexit
 from typing import Dict, Any
 from .df_lib import *  # noqa: F401, F403, E402
-from .algebra_lib import *  # noqa: F401, F403, E402
 from .str_lib import *  # noqa: F401, F403, E402
 from .docs_lib import *  # noqa: F401, F403, E402
 

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "rgwfuncs"
-version = "0.0.101"
+version = "0.0.103"
 authors = [
   { name = "Ryan Gerard Wilson", email = "ryangerardwilson@gmail.com" },
 ]
@@ -17,17 +17,17 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
-    "pandas",
-    "pymssql",
-    "mysql-connector-python",
-    "clickhouse-connect",
-    "google-cloud-bigquery",
-    "google-auth",
-    "xgboost",
-    "requests",
-    "slack-sdk",
-    "google-api-python-client",
-    "boto3"
+    "pandas",               
+    "pymssql",                   
+    "mysql-connector-python",   
+    "clickhouse-connect",      
+    "google-cloud-bigquery",    
+    "google-auth",         
+    "xgboost",                  
+    "requests",                  
+    "slack-sdk",                 
+    "google-api-python-client",  
+    "boto3"            
 ]
 
 dynamic = ["scripts"]
@@ -38,4 +38,3 @@ Issues = "https://github.com/ryangerardwilson/rgwfuncs"
 
 [tool.setuptools.packages.find]
 where = ["src"]
-
