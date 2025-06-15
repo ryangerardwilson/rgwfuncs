@@ -17,66 +17,47 @@ _PRINT_HEADING_CURRENT_CALL = 0
 _PRINT_SUBHEADING_COUNTS = defaultdict(int)  # Tracks sub-headings per heading
 _CURRENT_HEADING_NUMBER = 0
 
-def send_telegram_message(preset_name: str, message: str, config: Optional[Union[str, dict]] = None) -> None:
+
+def send_telegram_message(message: str, preset_name: Optional[str] = None, bot_token: Optional[str] = None, 
+                        chat_id: Optional[str] = None) -> None:
     """
-    Send a Telegram message using the specified preset.
+    Send a Telegram message using either a preset or provided bot token and chat ID.
 
     Args:
-        preset_name (str): The name of the preset to use for sending the message.
         message (str): The message to send.
-        config (Optional[Union[str, dict]], optional): Configuration source. Can be:
-          - None: Searches for '.rgwfuncsrc' in current directory and upwards
-          - str: Path to a JSON configuration file
-          - dict: Direct configuration dictionary
+        preset_name (Optional[str]): The name of the preset to use for sending the message.
+        bot_token (Optional[str]): The Telegram bot token.
+        chat_id (Optional[str]): The Telegram chat ID.
 
     Raises:
-        FileNotFoundError: If no '.rgwfuncsrc' file is found in current or parent directories.
-        ValueError: If the config parameter is neither a path string nor a dictionary, or if the config file is empty/invalid.
-        RuntimeError: If the preset is not found or necessary details are missing.
+        FileNotFoundError: If no '.rgwfuncsrc' file is found when preset_name is used.
+        ValueError: If preset_name is used with bot_token/chat_id, neither preset_name nor both bot_token/chat_id are provided,
+                    or the config file is empty/invalid.
+        RuntimeError: If the preset is not found or necessary preset details are missing.
     """
-    def get_config(config: Optional[Union[str, dict]] = None) -> dict:
-        """Get configuration either from a path, direct dictionary, or by searching upwards."""
-        def get_config_from_file(config_path: str) -> dict:
-            """Load configuration from a JSON file."""
-            # print(f"Reading config from: {config_path}")  # Debug line
-            with open(config_path, 'r', encoding='utf-8') as file:
-                content = file.read()
-                # print(f"Config content (first 100 chars): {content[:100]}...")  # Debug line
-                if not content.strip():
-                    raise ValueError(f"Config file {config_path} is empty")
-                try:
-                    return json.loads(content)
-                except json.JSONDecodeError as e:
-                    raise ValueError(f"Invalid JSON in config file {config_path}: {e}")
-
+    def get_config() -> dict:
+        """Get configuration by searching for '.rgwfuncsrc' in current directory and upwards."""
         def find_config_file() -> str:
             """Search for '.rgwfuncsrc' in current directory and upwards."""
             current_dir = os.getcwd()
-            # print(f"Starting config search from: {current_dir}")  # Debug line
             while True:
                 config_path = os.path.join(current_dir, '.rgwfuncsrc')
-                # print(f"Checking for config at: {config_path}")  # Debug line
                 if os.path.isfile(config_path):
-                    # print(f"Found config at: {config_path}")  # Debug line
                     return config_path
                 parent_dir = os.path.dirname(current_dir)
                 if parent_dir == current_dir:  # Reached root directory
                     raise FileNotFoundError(f"No '.rgwfuncsrc' file found in {os.getcwd()} or parent directories")
                 current_dir = parent_dir
 
-        # Determine the config to use
-        if config is None:
-            # Search for .rgwfuncsrc upwards from current directory
-            config_path = find_config_file()
-            return get_config_from_file(config_path)
-        elif isinstance(config, str):
-            # If config is a string, treat it as a path and load it
-            return get_config_from_file(config)
-        elif isinstance(config, dict):
-            # If config is already a dict, use it directly
-            return config
-        else:
-            raise ValueError("Config must be either a path string or a dictionary")
+        config_path = find_config_file()
+        with open(config_path, 'r', encoding='utf-8') as file:
+            content = file.read()
+            if not content.strip():
+                raise ValueError(f"Config file {config_path} is empty")
+            try:
+                return json.loads(content)
+            except json.JSONDecodeError as e:
+                raise ValueError(f"Invalid JSON in config file {config_path}: {e}")
 
     def get_telegram_preset(config: dict, preset_name: str) -> dict:
         """Get the Telegram preset configuration."""
@@ -90,29 +71,35 @@ def send_telegram_message(preset_name: str, message: str, config: Optional[Union
         """Retrieve the Telegram bot token and chat ID from the preset."""
         preset = get_telegram_preset(config, preset_name)
         if not preset:
-            raise RuntimeError(
-                f"Telegram bot preset '{preset_name}' not found in the configuration file")
+            raise RuntimeError(f"Telegram bot preset '{preset_name}' not found in the configuration file")
 
         bot_token = preset.get("bot_token")
         chat_id = preset.get("chat_id")
 
         if not bot_token or not chat_id:
-            raise RuntimeError(
-                f"Telegram bot token or chat ID for '{preset_name}' not found in the configuration file")
+            raise RuntimeError(f"Telegram bot token or chat ID for '{preset_name}' not found in the configuration file")
 
         return bot_token, chat_id
 
-    config = get_config(config)
-    # Get bot details from the configuration
-    bot_token, chat_id = get_telegram_bot_details(config, preset_name)
+    # Validate input parameters
+    if preset_name and (bot_token or chat_id):
+        raise ValueError("Cannot specify both preset_name and bot_token/chat_id")
+    if not preset_name and (bool(bot_token) != bool(chat_id)):
+        raise ValueError("Both bot_token and chat_id must be provided if preset_name is not used")
+    if not preset_name and not bot_token and not chat_id:
+        raise ValueError("Either preset_name or both bot_token and chat_id must be provided")
 
-    # Prepare the request
+    # Get bot token and chat ID
+    if preset_name:
+        config = get_config()
+        bot_token, chat_id = get_telegram_bot_details(config, preset_name)
+
+    # Prepare and send the request
     url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
     payload = {"chat_id": chat_id, "text": message}
-
-    # Send the message
     response = requests.post(url, json=payload)
     response.raise_for_status()
+
 
 def title(text: str, font: str = "slant", typing_speed: float = 0.005) -> None:
     """
@@ -254,7 +241,7 @@ def sub_heading(text: str, typing_speed: float = 0.002) -> None:
     # Format sub-heading
     prefix = f"[{_CURRENT_HEADING_NUMBER}.{current_sub}] "
     max_text_length = 50 - len(prefix)
-    formatted_text = text.lower()[:max_text_length]
+    formatted_text = text[:max_text_length]  # Removed .lower()
     sub_heading = f"{prefix}{formatted_text}"
 
     # Get timestamp
