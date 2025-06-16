@@ -310,98 +310,150 @@ def drop_duplicates_retain_last(
     return df.drop_duplicates(subset=columns_list, keep='last')
 
 
-def load_data_from_query(db_preset_name: str, query: str, config: Optional[Union[str, dict]] = None) -> pd.DataFrame:
+def load_data_from_query(
+    query: str,
+    preset: Optional[str] = None,
+    db_type: Optional[str] = None,
+    host: Optional[str] = None,
+    username: Optional[str] = None,
+    password: Optional[str] = None,
+    database: Optional[str] = None
+) -> pd.DataFrame:
     """
-    Load data from a database query into a DataFrame based on a configuration preset.
+    Load data from a database query into a DataFrame using either a preset or provided credentials.
 
     Parameters:
-        db_preset_name: The name of the database preset in the configuration file.
-        query: The SQL query to execute.
-        config (Optional[Union[str, dict]], optional): Configuration source. Can be:
-            - None: Searches for '.rgwfuncsrc' in current directory and upwards
-            - str: Path to a JSON configuration file
-            - dict: Direct configuration dictionary
+        query (str): The SQL query to execute.
+        preset (Optional[str]): The name of the database preset in the .rgwfuncsrc file.
+        db_type (Optional[str]): The database type ('mssql', 'mysql', or 'clickhouse').
+        host (Optional[str]): Database host.
+        username (Optional[str]): Database username.
+        password (Optional[str]): Database password.
+        database (Optional[str]): Database name.
 
     Returns:
-        A DataFrame containing the query result.
+        pd.DataFrame: DataFrame containing the query result.
 
     Raises:
-        FileNotFoundError: If no '.rgwfuncsrc' file is found after traversing all parent directories.
-        ValueError: If the database preset or db_type is invalid.
+        FileNotFoundError: If no '.rgwfuncsrc' file is found when using preset.
+        ValueError: If both preset and direct credentials are provided, neither is provided,
+                    required credentials are missing, or db_type is invalid.
+        RuntimeError: If the preset is not found or necessary preset details are missing.
     """
-
-    def get_config(config: Optional[Union[str, dict]] = None) -> dict:
-        """Get configuration either from a path, direct dictionary, or by searching upwards."""
-        def get_config_from_file(config_path: str) -> dict:
-            """Load configuration from a JSON file."""
-            with open(config_path, 'r') as file:
-                return json.load(file)
-
+    def get_config() -> dict:
+        """Get configuration by searching for '.rgwfuncsrc' in current directory and upwards."""
         def find_config_file() -> str:
-            """Search for '.rgwfuncsrc' in current directory and upwards."""
             current_dir = os.getcwd()
             while True:
                 config_path = os.path.join(current_dir, '.rgwfuncsrc')
                 if os.path.isfile(config_path):
                     return config_path
                 parent_dir = os.path.dirname(current_dir)
-                if parent_dir == current_dir:  # Reached root directory
+                if parent_dir == current_dir:
                     raise FileNotFoundError("No '.rgwfuncsrc' file found in current or parent directories")
                 current_dir = parent_dir
 
-        # Determine the config to use
-        if config is None:
-            # Search for .rgwfuncsrc upwards from current directory
-            config_path = find_config_file()
-            return get_config_from_file(config_path)
-        elif isinstance(config, str):
-            # If config is a string, treat it as a path and load it
-            return get_config_from_file(config)
-        elif isinstance(config, dict):
-            # If config is already a dict, use it directly
-            return config
-        else:
-            raise ValueError("Config must be either a path string or a dictionary")
+        config_path = find_config_file()
+        with open(config_path, 'r', encoding='utf-8') as file:
+            content = file.read()
+            if not content.strip():
+                raise ValueError(f"Config file {config_path} is empty")
+            try:
+                return json.loads(content)
+            except json.JSONDecodeError as e:
+                raise ValueError(f"Invalid JSON in config file {config_path}: {e}")
 
-    def query_mssql(db_preset: Dict[str, Any], query: str) -> pd.DataFrame:
-        server = db_preset['host']
-        user = db_preset['username']
-        password = db_preset['password']
-        database = db_preset.get('database', '')
+    def get_db_preset(config: dict, preset_name: str) -> dict:
+        """Retrieve the database preset from the configuration."""
+        db_presets = config.get('db_presets', [])
+        for preset in db_presets:
+            if preset.get('name') == preset_name:
+                return preset
+        raise RuntimeError(f"Database preset '{preset_name}' not found in the configuration file")
 
+    def validate_credentials(
+        db_type: str,
+        host: Optional[str] = None,
+        username: Optional[str] = None,
+        password: Optional[str] = None,
+        database: Optional[str] = None
+    ) -> dict:
+        """Validate credentials and return a credentials dictionary."""
+        required_fields = {
+            'mssql': ['host', 'username', 'password'],
+            'mysql': ['host', 'username', 'password'],
+            'clickhouse': ['host', 'username', 'password', 'database']
+        }
+        if db_type not in required_fields:
+            raise ValueError(f"Unsupported db_type: {db_type}")
+
+        credentials = {
+            'db_type': db_type,
+            'host': host,
+            'username': username,
+            'password': password,
+            'database': database
+        }
+        missing = [field for field in required_fields[db_type] if credentials[field] is None]
+        if missing:
+            raise ValueError(f"Missing required credentials for {db_type}: {missing}")
+        return credentials
+
+    # Validate input parameters
+    all_credentials = [host, username, password, database]
+    if preset and any(all_credentials):
+        raise ValueError("Cannot specify both preset and direct credentials")
+    if not preset and not db_type:
+        raise ValueError("Either preset or db_type with credentials must be provided")
+
+    # Get credentials
+    if preset:
+        config_dict = get_config()
+        credentials = get_db_preset(config_dict, preset)
+        db_type = credentials.get('db_type')
+        if not db_type:
+            raise ValueError(f"Preset '{preset}' does not specify db_type")
+    else:
+        credentials = validate_credentials(
+            db_type=db_type,
+            host=host,
+            username=username,
+            password=password,
+            database=database
+        )
+
+    # Query functions
+    def query_mssql(credentials: dict, query: str) -> pd.DataFrame:
+        server = credentials['host']
+        user = credentials['username']
+        password = credentials['password']
+        database = credentials.get('database', '')
         with pymssql.connect(server=server, user=user, password=password, database=database) as conn:
             with conn.cursor() as cursor:
                 cursor.execute(query)
                 rows = cursor.fetchall()
                 columns = [desc[0] for desc in cursor.description]
-
         return pd.DataFrame(rows, columns=columns)
 
-    def query_mysql(db_preset: Dict[str, Any], query: str) -> pd.DataFrame:
-        host = db_preset['host']
-        user = db_preset['username']
-        password = db_preset['password']
-        database = db_preset.get('database', '')
-
+    def query_mysql(credentials: dict, query: str) -> pd.DataFrame:
+        host = credentials['host']
+        user = credentials['username']
+        password = credentials['password']
+        database = credentials.get('database', '')
         with mysql.connector.connect(host=host, user=user, password=password, database=database) as conn:
             with conn.cursor() as cursor:
                 cursor.execute(query)
                 rows = cursor.fetchall()
-                columns = ([desc[0] for desc in cursor.description]
-                           if cursor.description else [])
-
+                columns = [desc[0] for desc in cursor.description] if cursor.description else []
         return pd.DataFrame(rows, columns=columns)
 
-    def query_clickhouse(
-            db_preset: Dict[str, Any], query: str) -> pd.DataFrame:
-        host = db_preset['host']
-        user = db_preset['username']
-        password = db_preset['password']
-        database = db_preset['database']
-
+    def query_clickhouse(credentials: dict, query: str) -> pd.DataFrame:
+        host = credentials['host']
+        user = credentials['username']
+        password = credentials['password']
+        database = credentials['database']
         max_retries = 5
         retry_delay = 5
-
         for attempt in range(max_retries):
             try:
                 client = clickhouse_connect.get_client(
@@ -411,99 +463,228 @@ def load_data_from_query(db_preset_name: str, query: str, config: Optional[Union
                 columns = data.column_names
                 return pd.DataFrame(rows, columns=columns)
             except Exception as e:
-                print(f"Attempt {attempt + 1} failed: {e}")
                 if attempt < max_retries - 1:
-                    print(f"Retrying in {retry_delay} seconds...")
                     time.sleep(retry_delay)
                 else:
-                    raise ConnectionError(
-                        "All attempts to connect to ClickHouse failed.")
+                    raise ConnectionError("All attempts to connect to ClickHouse failed.")
 
-    def query_google_big_query(db_preset: Dict[str, Any], query: str) -> pd.DataFrame:
-        json_file_path = db_preset['json_file_path']
-        project_id = db_preset['project_id']
-
-        credentials = service_account.Credentials.from_service_account_file(
-            json_file_path)
-        client = bigquery.Client(credentials=credentials, project=project_id)
-
-        query_job = client.query(query)
-        results = query_job.result()
-        rows = [list(row.values()) for row in results]
-        columns = [field.name for field in results.schema]
-
-        return pd.DataFrame(rows, columns=columns)
-
-    def query_athena(db_preset: Dict[str, Any], query: str) -> pd.DataFrame:
-
-        def execute_athena_query(athena_client, query: str, database: str, output_bucket: str) -> str:
-            response = athena_client.start_query_execution(
-                QueryString=query,
-                QueryExecutionContext={"Database": database},
-                ResultConfiguration={"OutputLocation": output_bucket}
-            )
-            return response["QueryExecutionId"]
-
-        def wait_for_athena_query_to_complete(athena_client, query_execution_id: str):
-            while True:
-                response = athena_client.get_query_execution(QueryExecutionId=query_execution_id)
-                state = response["QueryExecution"]["Status"]["State"]
-                if state == "SUCCEEDED":
-                    break
-                elif state in ("FAILED", "CANCELLED"):
-                    raise Exception(f"Query failed with state: {state}")
-                time.sleep(1)
-
-        def download_athena_query_results(athena_client, query_execution_id: str) -> pd.DataFrame:
-            paginator = athena_client.get_paginator("get_query_results")
-            result_pages = paginator.paginate(QueryExecutionId=query_execution_id)
-            rows = []
-            columns = []
-            for page in result_pages:
-                if not columns:
-                    columns = [col["Name"] for col in page["ResultSet"]["ResultSetMetadata"]["ColumnInfo"]]
-                rows.extend(page["ResultSet"]["Rows"])
-
-            data = [[col.get("VarCharValue", None) for col in row["Data"]] for row in rows[1:]]
-            return pd.DataFrame(data, columns=columns)
-
-        aws_region = db_preset['aws_region']
-        database = db_preset['database']
-        output_bucket = db_preset['output_bucket']
-
-        athena_client = boto3.client(
-            'athena',
-            region_name=aws_region,
-            aws_access_key_id=db_preset['aws_access_key'],
-            aws_secret_access_key=db_preset['aws_secret_key']
-        )
-
-        query_execution_id = execute_athena_query(athena_client, query, database, output_bucket)
-        wait_for_athena_query_to_complete(athena_client, query_execution_id)
-        return download_athena_query_results(athena_client, query_execution_id)
-
-    config = get_config(config)
-    db_presets = config.get('db_presets', [])
-    db_preset = next(
-        (preset for preset in db_presets if preset['name'] == db_preset_name),
-        None)
-    if not db_preset:
-        raise ValueError(f"No matching db_preset found for {db_preset_name}")
-
-    db_type = db_preset['db_type']
-
+    # Execute query based on db_type
     if db_type == 'mssql':
-        return query_mssql(db_preset, query)
+        return query_mssql(credentials, query)
     elif db_type == 'mysql':
-        return query_mysql(db_preset, query)
+        return query_mysql(credentials, query)
     elif db_type == 'clickhouse':
-        return query_clickhouse(db_preset, query)
-    elif db_type == 'google_big_query':
-        return query_google_big_query(db_preset, query)
-    elif db_type == 'aws_athena':
-        return query_athena(db_preset, query)
+        return query_clickhouse(credentials, query)
     else:
         raise ValueError(f"Unsupported db_type: {db_type}")
+
+
+def load_data_from_big_query(
+    query: str,
+    json_file_path: Optional[str] = None,
+    project_id: Optional[str] = None,
+    preset: Optional[str] = None
+) -> pd.DataFrame:
+    """
+    Load data from a Google Big Query query into a DataFrame.
+
+    Parameters:
+        query (str): The SQL query to execute.
+        json_file_path (Optional[str]): Path to the Google Cloud service account JSON file.
+        project_id (Optional[str]): Google Cloud project ID.
+        preset (Optional[str]): The name of the Big Query preset in the .rgwfuncsrc file.
+
+    Returns:
+        pd.DataFrame: DataFrame containing the query result.
+
+    Raises:
+        ValueError: If both preset and direct credentials are provided, neither is provided,
+                    or required credentials are missing.
+        FileNotFoundError: If no '.rgwfuncsrc' file is found when using preset.
+        RuntimeError: If the preset is not found or necessary preset details are missing.
+    """
+    def get_config() -> dict:
+        """Get configuration by searching for '.rgwfuncsrc' in current directory and upwards."""
+        def find_config_file() -> str:
+            current_dir = os.getcwd()
+            while True:
+                config_path = os.path.join(current_dir, '.rgwfuncsrc')
+                if os.path.isfile(config_path):
+                    return config_path
+                parent_dir = os.path.dirname(current_dir)
+                if parent_dir == current_dir:
+                    raise FileNotFoundError("No '.rgwfuncsrc' file found in current or parent directories")
+                current_dir = parent_dir
+
+        config_path = find_config_file()
+        with open(config_path, 'r', encoding='utf-8') as file:
+            content = file.read()
+            if not content.strip():
+                raise ValueError(f"Config file {config_path} is empty")
+            try:
+                return json.loads(content)
+            except json.JSONDecodeError as e:
+                raise ValueError(f"Invalid JSON in config file {config_path}: {e}")
+
+    def get_db_preset(config: dict, preset_name: str) -> dict:
+        """Retrieve the database preset from the configuration."""
+        db_presets = config.get('db_presets', [])
+        for preset in db_presets:
+            if preset.get('name') == preset_name:
+                return preset
+        raise RuntimeError(f"Database preset '{preset_name}' not found in the configuration file")
+
+    # Validate inputs
+    if preset and (json_file_path or project_id):
+        raise ValueError("Cannot specify both preset and json_file_path/project_id")
+    if not preset and (bool(json_file_path) != bool(project_id)):
+        raise ValueError("Both json_file_path and project_id must be provided if preset is not used")
+    if not preset and not json_file_path and not project_id:
+        raise ValueError("Either preset or both json_file_path and project_id must be provided")
+
+    # Get credentials
+    if preset:
+        config_dict = get_config()
+        credentials = get_db_preset(config_dict, preset)
+        if credentials.get('db_type') != 'google_big_query':
+            raise ValueError(f"Preset '{preset}' is not for google_big_query")
+        json_file_path = credentials.get('json_file_path')
+        project_id = credentials.get('project_id')
+        if not json_file_path or not project_id:
+            raise ValueError(f"Missing json_file_path or project_id in preset '{preset}'")
+
+    # Execute query
+    credentials_obj = service_account.Credentials.from_service_account_file(json_file_path)
+    client = bigquery.Client(credentials=credentials_obj, project=project_id)
+    query_job = client.query(query)
+    results = query_job.result()
+    rows = [list(row.values()) for row in results]
+    columns = [field.name for field in results.schema]
+    return pd.DataFrame(rows, columns=columns)
+
+
+def load_data_from_aws_athena_query(
+    query: str,
+    aws_region: Optional[str] = None,
+    database: Optional[str] = None,
+    output_bucket: Optional[str] = None,
+    aws_access_key: Optional[str] = None,
+    aws_secret_key: Optional[str] = None,
+    preset: Optional[str] = None
+) -> pd.DataFrame:
+    """
+    Load data from an AWS Athena query into a DataFrame.
+
+    Parameters:
+        query (str): The SQL query to execute.
+        aws_region (Optional[str]): AWS region for Athena.
+        database (Optional[str]): Athena database name.
+        output_bucket (Optional[str]): S3 bucket for query results.
+        aws_access_key (Optional[str]): AWS access key ID.
+        aws_secret_key (Optional[str]): AWS secret access key.
+        preset (Optional[str]): The name of the Athena preset in the .rgwfuncsrc file.
+
+    Returns:
+        pd.DataFrame: DataFrame containing the query result.
+
+    Raises:
+        ValueError: If both preset and direct credentials are provided, neither is provided,
+                    or required credentials are missing.
+        FileNotFoundError: If no '.rgwfuncsrc' file is found when using preset.
+        RuntimeError: If the preset is not found or necessary preset details are missing.
+    """
+    def get_config() -> dict:
+        """Get configuration by searching for '.rgwfuncsrc' in current directory and upwards."""
+        def find_config_file() -> str:
+            current_dir = os.getcwd()
+            while True:
+                config_path = os.path.join(current_dir, '.rgwfuncsrc')
+                if os.path.isfile(config_path):
+                    return config_path
+                parent_dir = os.path.dirname(current_dir)
+                if parent_dir == current_dir:
+                    raise FileNotFoundError("No '.rgwfuncsrc' file found in current or parent directories")
+                current_dir = parent_dir
+
+        config_path = find_config_file()
+        with open(config_path, 'r', encoding='utf-8') as file:
+            content = file.read()
+            if not content.strip():
+                raise ValueError(f"Config file {config_path} is empty")
+            try:
+                return json.loads(content)
+            except json.JSONDecodeError as e:
+                raise ValueError(f"Invalid JSON in config file {config_path}: {e}")
+
+    def get_db_preset(config: dict, preset_name: str) -> dict:
+        """Retrieve the database preset from the configuration."""
+        db_presets = config.get('db_presets', [])
+        for preset in db_presets:
+            if preset.get('name') == preset_name:
+                return preset
+        raise RuntimeError(f"Database preset '{preset_name}' not found in the configuration file")
+
+    # Validate inputs
+    if preset and any([aws_region, database, output_bucket, aws_access_key, aws_secret_key]):
+        raise ValueError("Cannot specify both preset and direct Athena credentials")
+    required = [aws_region, database, output_bucket, aws_access_key, aws_secret_key]
+    if not preset and not all(required):
+        raise ValueError("All Athena credentials (aws_region, database, output_bucket, aws_access_key, aws_secret_key) must be provided if preset is not used")
+
+    # Get credentials
+    if preset:
+        config_dict = get_config()
+        credentials = get_db_preset(config_dict, preset)
+        if credentials.get('db_type') != 'aws_athena':
+            raise ValueError(f"Preset '{preset}' is not for aws_athena")
+        aws_region = credentials.get('aws_region')
+        database = credentials.get('database')
+        output_bucket = credentials.get('output_bucket')
+        aws_access_key = credentials.get('aws_access_key')
+        aws_secret_key = credentials.get('aws_secret_key')
+        if not all([aws_region, database, output_bucket, aws_access_key, aws_secret_key]):
+            raise ValueError(f"Missing required Athena credentials in preset '{preset}'")
+
+    # Execute query
+    def execute_athena_query(athena_client, query: str, database: str, output_bucket: str) -> str:
+        response = athena_client.start_query_execution(
+            QueryString=query,
+            QueryExecutionContext={"Database": database},
+            ResultConfiguration={"OutputLocation": output_bucket}
+        )
+        return response["QueryExecutionId"]
+
+    def wait_for_athena_query_to_complete(athena_client, query_execution_id: str):
+        while True:
+            response = athena_client.get_query_execution(QueryExecutionId=query_execution_id)
+            state = response["QueryExecution"]["Status"]["State"]
+            if state == "SUCCEEDED":
+                break
+            elif state in ("FAILED", "CANCELLED"):
+                raise Exception(f"Query failed with state: {state}")
+            time.sleep(1)
+
+    def download_athena_query_results(athena_client, query_execution_id: str) -> pd.DataFrame:
+        paginator = athena_client.get_paginator("get_query_results")
+        result_pages = paginator.paginate(QueryExecutionId=query_execution_id)
+        rows = []
+        columns = []
+        for page in result_pages:
+            if not columns:
+                columns = [col["Name"] for col in page["ResultSet"]["ResultSetMetadata"]["ColumnInfo"]]
+            rows.extend(page["ResultSet"]["Rows"])
+        data = [[col.get("VarCharValue", None) for col in row["Data"]] for row in rows[1:]]
+        return pd.DataFrame(data, columns=columns)
+
+    athena_client = boto3.client(
+        'athena',
+        region_name=aws_region,
+        aws_access_key_id=aws_access_key,
+        aws_secret_access_key=aws_secret_key
+    )
+    query_execution_id = execute_athena_query(athena_client, query, database, output_bucket)
+    wait_for_athena_query_to_complete(athena_client, query_execution_id)
+    return download_athena_query_results(athena_client, query_execution_id)
 
 
 def load_data_from_path(file_path: str) -> pd.DataFrame:
