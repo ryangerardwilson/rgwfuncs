@@ -315,7 +315,7 @@ def load_data_from_query(
     preset: Optional[str] = None,
     db_type: Optional[str] = None,
     host: Optional[str] = None,
-    username: Optional[str] = None,
+    user: Optional[str] = None,
     password: Optional[str] = None,
     database: Optional[str] = None
 ) -> pd.DataFrame:
@@ -327,7 +327,7 @@ def load_data_from_query(
         preset (Optional[str]): The name of the database preset in the .rgwfuncsrc file.
         db_type (Optional[str]): The database type ('mssql', 'mysql', or 'clickhouse').
         host (Optional[str]): Database host.
-        username (Optional[str]): Database username.
+        user (Optional[str]): Database username.
         password (Optional[str]): Database password.
         database (Optional[str]): Database name.
 
@@ -374,15 +374,15 @@ def load_data_from_query(
     def validate_credentials(
         db_type: str,
         host: Optional[str] = None,
-        username: Optional[str] = None,
+        user: Optional[str] = None,
         password: Optional[str] = None,
         database: Optional[str] = None
     ) -> dict:
         """Validate credentials and return a credentials dictionary."""
         required_fields = {
-            'mssql': ['host', 'username', 'password'],
-            'mysql': ['host', 'username', 'password'],
-            'clickhouse': ['host', 'username', 'password', 'database']
+            'mssql': ['host', 'user', 'password'],
+            'mysql': ['host', 'user', 'password'],
+            'clickhouse': ['host', 'user', 'password', 'database']
         }
         if db_type not in required_fields:
             raise ValueError(f"Unsupported db_type: {db_type}")
@@ -390,7 +390,7 @@ def load_data_from_query(
         credentials = {
             'db_type': db_type,
             'host': host,
-            'username': username,
+            'user': user,
             'password': password,
             'database': database
         }
@@ -400,7 +400,7 @@ def load_data_from_query(
         return credentials
 
     # Validate input parameters
-    all_credentials = [host, username, password, database]
+    all_credentials = [host, user, password, database]
     if preset and any(all_credentials):
         raise ValueError("Cannot specify both preset and direct credentials")
     if not preset and not db_type:
@@ -417,7 +417,7 @@ def load_data_from_query(
         credentials = validate_credentials(
             db_type=db_type,
             host=host,
-            username=username,
+            user=user,
             password=password,
             database=database
         )
@@ -425,7 +425,7 @@ def load_data_from_query(
     # Query functions
     def query_mssql(credentials: dict, query: str) -> pd.DataFrame:
         server = credentials['host']
-        user = credentials['username']
+        user = credentials['user']
         password = credentials['password']
         database = credentials.get('database', '')
         with pymssql.connect(server=server, user=user, password=password, database=database) as conn:
@@ -437,7 +437,7 @@ def load_data_from_query(
 
     def query_mysql(credentials: dict, query: str) -> pd.DataFrame:
         host = credentials['host']
-        user = credentials['username']
+        user = credentials['user']
         password = credentials['password']
         database = credentials.get('database', '')
         with mysql.connector.connect(host=host, user=user, password=password, database=database) as conn:
@@ -449,7 +449,7 @@ def load_data_from_query(
 
     def query_clickhouse(credentials: dict, query: str) -> pd.DataFrame:
         host = credentials['host']
-        user = credentials['username']
+        user = credentials['user']
         password = credentials['password']
         database = credentials['database']
         max_retries = 5
