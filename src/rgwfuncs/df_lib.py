@@ -635,7 +635,7 @@ def load_data_from_snowflake(
     if not preset and not has_direct:  # Wait, better: require at least the core ones
         if not private_key_path or not account or not user:
             raise ValueError("Need private_key_path, account, and user if no preset")
-    if not preset and not preset:
+    if not preset and not has_direct:
         raise ValueError("Provide preset or direct creds")
 
     # Load creds from preset
