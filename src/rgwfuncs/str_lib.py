@@ -101,17 +101,19 @@ def send_telegram_message(message: str, preset_name: Optional[str] = None, bot_t
     response.raise_for_status()
 
 
-def title(text: str, font: str = "slant", typing_speed: float = 0.005) -> None:
+def title(text: str, font: str = "slant", typing_speed: float = 0.005, animate: bool = True) -> None:
     """
-    Print text as ASCII art with a typewriter effect using the specified font (default: slant),
+    Print text as ASCII art with an optional typewriter effect using the specified font (default: slant),
     indented by 4 spaces. All output, including errors and separators, is printed with the
-    typewriter effect within this function.
+    typewriter effect if animate is True.
 
     Args:
         text (str): The text to convert to ASCII art.
         font (str, optional): The pyfiglet font to use. Defaults to "slant".
         typing_speed (float, optional): Delay between printing each character in seconds.
                                       Defaults to 0.005.
+        animate (bool, optional): If True, applies typewriter effect. If False, prints instantly.
+                                 Defaults to True.
 
     Raises:
         ValueError: If the specified font is invalid or unavailable.
@@ -129,20 +131,26 @@ def title(text: str, font: str = "slant", typing_speed: float = 0.005) -> None:
         # Indent each line by 4 spaces
         indented_ascii_art = '\n'.join('    ' + line for line in ascii_art.splitlines())
 
-        # Print ASCII art with typewriter effect
+        # Print ASCII art with or without typewriter effect
         print(heading_color, end='')
-        for char in indented_ascii_art + '\n':
-            print(char, end='', flush=True)
-            if char != '\n':  # Don't delay on newlines
-                time.sleep(typing_speed)
+        if animate:
+            for char in indented_ascii_art + '\n':
+                print(char, end='', flush=True)
+                if char != '\n':  # Don't delay on newlines
+                    time.sleep(typing_speed)
+        else:
+            print(indented_ascii_art + '\n', end='', flush=True)
         print(reset_color, end='')
 
-        # Print separator line with typewriter effect
+        # Print separator line with or without typewriter effect
         print(heading_color, end='')
-        for char in '=' * 79 + '\n':
-            print(char, end='', flush=True)
-            if char != '\n':
-                time.sleep(typing_speed)
+        if animate:
+            for char in '=' * 79 + '\n':
+                print(char, end='', flush=True)
+                if char != '\n':
+                    time.sleep(typing_speed)
+        else:
+            print('=' * 79 + '\n', end='', flush=True)
         print(reset_color, end='')
 
     except Exception as e:
@@ -150,18 +158,25 @@ def title(text: str, font: str = "slant", typing_speed: float = 0.005) -> None:
         if "font" in str(e).lower():
             error_msg = f"Invalid or unavailable font: {font}. Ensure the font is supported by pyfiglet.\n"
             print(reset_color, end='')
+            if animate:
+                for char in error_msg:
+                    print(char, end='', flush=True)
+                    if char != '\n':
+                        time.sleep(typing_speed)
+            else:
+                print(error_msg, end='', flush=True)
+            raise ValueError(error_msg)
+        error_msg = f"Error generating ASCII art for \"{text}\" with font {font}: {e}\n"
+        print(reset_color, end='')
+        if animate:
             for char in error_msg:
                 print(char, end='', flush=True)
                 if char != '\n':
                     time.sleep(typing_speed)
-            raise ValueError(error_msg)
-        error_msg = f"Error generating ASCII art for \"{text}\" with font {font}: {e}\n"
-        print(reset_color, end='')
-        for char in error_msg:
-            print(char, end='', flush=True)
-            if char != '\n':
-                time.sleep(typing_speed)
+        else:
+            print(error_msg, end='', flush=True)
         raise RuntimeError(error_msg)
+
 
 def heading(text: str, typing_speed: float = 0.002) -> None:
     """

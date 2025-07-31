@@ -40,7 +40,6 @@ def create_init_file():
 
 def increment_version():
     version_file = Path("pyproject.toml")
-    setup_file = Path("setup.cfg")
 
     # Read the current version from pyproject.toml
     with version_file.open('r') as f:
@@ -55,17 +54,10 @@ def increment_version():
         version_parts[2] = str(int(version_parts[2]) + 1)
         new_version = '.'.join(version_parts)
 
-        # Update the version in both files
+        # Update the version in pyproject.toml
         new_content = content.replace(current_version, new_version)
         with version_file.open('w') as f:
             f.write(new_content)
-
-        with setup_file.open('r') as f:
-            setup_content = f.read()
-
-        setup_content = setup_content.replace(f'version = {current_version}', f'version = {new_version}')
-        with setup_file.open('w') as f:
-            f.write(setup_content)
 
         print(f'Updated version to {new_version}')
         return new_version

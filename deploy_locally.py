@@ -1,6 +1,5 @@
 import subprocess
 import shutil
-import sys
 import inspect
 import importlib
 from pathlib import Path
@@ -17,6 +16,7 @@ def create_init_file():
     rgwfuncs_path = src_path / 'rgwfuncs'
 
     # Ensure rgwfuncs module can be imported
+    import sys
     sys.path.insert(0, str(src_path))
 
     for module_file in rgwfuncs_path.glob('*.py'):

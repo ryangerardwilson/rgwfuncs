@@ -20,6 +20,9 @@ from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
 from googleapiclient.discovery import build
+import snowflake.connector
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.backends import default_backend
 import base64
 import boto3
 from typing import Optional, Dict, List, Tuple, Any, Callable, Union
@@ -561,6 +564,129 @@ def load_data_from_big_query(
     rows = [list(row.values()) for row in results]
     columns = [field.name for field in results.schema]
     return pd.DataFrame(rows, columns=columns)
+
+
+def load_data_from_snowflake(
+    query: str,
+    private_key_path: Optional[str] = None,
+    private_key_password: Optional[str] = None,
+    account: Optional[str] = None,
+    user: Optional[str] = None,
+    warehouse: Optional[str] = None,
+    database: Optional[str] = None,
+    schema: Optional[str] = None,
+    preset: Optional[str] = None
+) -> pd.DataFrame:
+    """
+    Load data from Snowflake with a query, returning a DataFrame.
+
+    Parameters:
+        query (str): The SQL query to execute.
+        private_key_path (Optional[str]): Path to the private key file (PEM).
+        private_key_password (Optional[str]): Password for the encrypted private key (if any).
+        account (Optional[str]): Snowflake account identifier.
+        user (Optional[str]): Snowflake username.
+        warehouse (Optional[str]): Snowflake warehouse name.
+        database (Optional[str]): Snowflake database name.
+        schema (Optional[str]): Snowflake schema name.
+        preset (Optional[str]): Name of the Snowflake preset in the .rgwfuncsrc file.
+
+    Returns:
+        pd.DataFrame: DataFrame with the query results.
+
+    Raises:
+        ValueError: If both preset and direct creds are mixed, neither provided,
+                    or required creds missing.
+        FileNotFoundError: If no '.rgwfuncsrc' found for preset.
+        RuntimeError: If preset not found or missing details.
+    """
+    def get_config() -> dict:
+        """Hunt for '.rgwfuncsrc' upwards like a sane person."""
+        current_dir = os.getcwd()
+        while True:
+            config_path = os.path.join(current_dir, '.rgwfuncsrc')  # Wait, your example had .rgwfuncsrc, assuming that's not a typo.
+            if os.path.isfile(config_path):
+                with open(config_path, 'r', encoding='utf-8') as f:
+                    content = f.read().strip()
+                    if not content:
+                        raise ValueError(f"Empty config at {config_path}'")
+                    try:
+                        return json.loads(content)
+                    except json.JSONDecodeError as e:
+                        raise ValueError(f"JSON crap in {config_path}: {e}")
+            parent = os.path.dirname(current_dir)
+            if parent == current_dir:
+                raise FileNotFoundError("Can't find '.rgwfuncsrc' anywhere useful")
+            current_dir = parent
+
+    def get_db_preset(config: dict, preset_name: str) -> dict:
+        """Grab the preset or complain."""
+        db_presets = config.get('db_presets', [])
+        for p in db_presets:
+            if p.get('name') == preset_name:
+                return p
+        raise RuntimeError(f"Preset '{preset_name}' missing, go add it")
+
+    # Input validation—because people are idiots and will screw this up
+    direct_creds = [private_key_path, private_key_password, account, user, warehouse, database, schema]
+    has_direct = any(d is not None for d in direct_creds)
+    if preset and has_direct:
+        raise ValueError("Don't mix preset with direct params, pick one")
+    if not preset and not has_direct:  # Wait, better: require at least the core ones
+        if not private_key_path or not account or not user:
+            raise ValueError("Need private_key_path, account, and user if no preset")
+    if not preset and not preset:
+        raise ValueError("Provide preset or direct creds")
+
+    # Load creds from preset
+    if preset:
+        config = get_config()
+        creds = get_db_preset(config, preset)
+        if creds.get('db_type') != 'snowflake':
+            raise ValueError(f"Preset '{preset}' isn't for Snowflake")
+        private_key_path = creds.get('private_key_path')
+        private_key_password = creds.get('private_key_password')
+        account = creds.get('account')
+        user = creds.get('user')
+        warehouse = creds.get('warehouse')
+        database = creds.get('database')
+        schema = creds.get('schema')
+        if not private_key_path or not account or not user:
+            raise ValueError(f"Missing key creds in preset '{preset}'")
+
+    # Load the damn private key
+    if not os.path.exists(private_key_path):
+        raise FileNotFoundError(f"Private key missing at {private_key_path}")
+    with open(private_key_path, "rb") as key_file:
+        pkey_data = key_file.read()
+        private_key = serialization.load_pem_private_key(
+            pkey_data,
+            password=private_key_password.encode() if private_key_password else None,
+            backend=default_backend()
+        )
+
+    # Connect and query—keep it tight, no bloat
+    try:
+        conn = {
+            'account': account,
+            'user': user,
+            'private_key': private_key,
+        }
+        if warehouse:
+            conn['warehouse'] = warehouse
+        if database:
+            conn['database'] = database
+        if schema:
+            conn['schema'] = schema
+        conn = snowflake.connector.connect(**conn)
+        cur = conn.cursor()
+        results = cur.execute(query).fetchall()
+        columns = [desc[0] for desc in cur.description]
+        cur.close()
+        conn.close()
+        return pd.DataFrame(results, columns=columns)
+    except Exception as e:
+        raise RuntimeError(f"Query bombed: {e}")
 
 
 def load_data_from_aws_athena_query(
